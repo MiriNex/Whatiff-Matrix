@@ -324,10 +324,10 @@ export class GalleryViewService {
     const { succeeded, failed } = await settleWithLimit(rows, BULK_DELETE_CONCURRENCY, row =>
       firstValueFrom(this.galleryService.deleteFile(row)),
     );
+    // removeImage also unpicks it, so only the failures stay selected.
     for (const row of succeeded) {
       this.removeImage(row.id);
     }
-    this.selection.setAll(succeeded.map(row => row.id), false);
     this.bulkResult.set({
       text: describeBulkDelete(succeeded.length, failed.map(({ item }) => item.name)),
       failed: failed.length > 0,

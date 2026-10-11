@@ -21,8 +21,9 @@ import { GalleryTileVm } from '../helpers/gallery-vm.helpers';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GalleryListRowComponent {
-  /** The file this row shows; set this or {@link folder}. */
+  /** The file this row shows. Set exactly one of this and {@link folder}; a folder wins if both are. */
   readonly tile = input<GalleryTileVm | null>(null);
+  /** The folder this row shows (a link into it, no checkbox). */
   readonly folder = input<FolderTileVm | null>(null);
   readonly checked = input(false);
 
