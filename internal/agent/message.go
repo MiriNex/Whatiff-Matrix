@@ -642,7 +642,7 @@ func (a *Agent) buildModelContextForChatMessage(ctx context.Context, userID uuid
 }
 
 func mcpLifecycleDeveloperContext() string {
-	return "Tool lifecycle: MCP tools and the loadable built-in tools are NOT auto-loaded, and their definitions are only sent once loaded. For MCP tools, first call list(kind=\"mcp_servers\") to inspect connectors and discoverable tool names, then call load_tools with mcp_server_id + tools to activate only the tools you need. Loaded tools remain active across future turns in this chat until you call unload_tools. Use unload_tools with tools [\"all\"] or [\"*\"] (optionally with mcp_server_id) to clear loaded tools."
+	return "Tool lifecycle: MCP tools and the loadable built-in tools are NOT auto-loaded, and their definitions are only sent once loaded. For MCP tools, first call list(kind=\"mcp_servers\") to inspect connectors and discoverable tool names, then call load_tools with mcp_server_id + tools to activate only the tools you need. Loaded tools remain active across future turns in this chat until you call unload_tools; when the conversation is checkpointed, tools it did not use since the last checkpoint are unloaded, so load them again if you need them. Use unload_tools with tools [\"all\"] or [\"*\"] (optionally with mcp_server_id) to clear loaded tools."
 }
 
 // loadImageBytesForClaude downloads raw image bytes for each image attachment on the
@@ -2879,6 +2879,7 @@ func (a *Agent) runCheckpointOpenAI(ctx context.Context, userID uuid.UUID, chatM
 	donePersist := a.timeTurnStage(ctx, turnStageCheckpointPersist)
 	if a.persistCheckpointSummary(ctx, userID, chatMessage.ChatID, summary, assistantMessageCount, "OpenAI", chatMessage, agentMessage) {
 		a.finishCompactionEvent(ctx, userID, compactionEventID, summary)
+		a.unloadToolsUnusedInSegment(ctx, userID, chatMessage.ChatID, checkpointSegmentStart(chatCtx))
 	}
 	donePersist()
 }
@@ -2959,6 +2960,7 @@ func (a *Agent) runCheckpointClaude(ctx context.Context, userID uuid.UUID, chatM
 	donePersist := a.timeTurnStage(ctx, turnStageCheckpointPersist)
 	if a.persistCheckpointSummary(ctx, userID, chatMessage.ChatID, summary, assistantMessageCount, "Claude", chatMessage, agentMessage) {
 		a.finishCompactionEvent(ctx, userID, compactionEventID, summary)
+		a.unloadToolsUnusedInSegment(ctx, userID, chatMessage.ChatID, checkpointSegmentStart(chatCtx))
 	}
 	donePersist()
 }

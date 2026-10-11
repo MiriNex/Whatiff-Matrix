@@ -40,6 +40,7 @@ Application **repository layer** over Ent: CRUD, ownership checks, pagination, v
   - Users & access: `user.go`, `userpreferences.go`, `role.go`, `admin.go`.
   - MCP: `mcpserver.go`.
     Per-chat loaded tools live in `chat_mcp_tool_states`: one row per connector, plus the built-in tools' row under the nil connector ID (`ListChatLoadedBuiltinTools` / `SetChatLoadedBuiltinTools`), which `ListChatMCPLoadedTools` leaves out.
+    `RetainChatLoadedTools` prunes every row of a chat to a kept set in one transaction (the checkpoint's unload step), and `ChatToolNamesUsedSince` (`toolcall.go`) lists the tools a chat's messages called since a time.
   - Models: `model.go`.
   - Safety violations: `safety_violation_event.go`.
   - Tool call persistence: `toolcall.go`.

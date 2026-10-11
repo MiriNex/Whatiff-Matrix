@@ -1100,6 +1100,71 @@ func (d *Datastore) ClearChatMCPLoadedTools(ctx context.Context, userID, chatID,
 	return d.SetChatMCPLoadedTools(ctx, userID, chatID, mcpServerID, nil)
 }
 
+// RetainChatLoadedTools keeps only the loaded tools of a chat whose names are in keep, across
+// every connector's row and the built-in tools' row, in one transaction. It returns the names it
+// unloaded, sorted.
+func (d *Datastore) RetainChatLoadedTools(ctx context.Context, userID, chatID uuid.UUID, keep map[string]struct{}) ([]string, error) {
+	tx, err := d.dbClient.Tx(ctx)
+	if err != nil {
+		d.logger.Error("failed to start transaction", zap.Error(err))
+		return nil, err
+	}
+	defer func() {
+		if v := recover(); v != nil {
+			tx.Rollback()
+			panic(v)
+		}
+	}()
+
+	chatExists, err := tx.Chat.Query().
+		Where(entchat.ID(chatID), entchat.HasOwnerWith(user.ID(userID))).
+		Exist(ctx)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	if !chatExists {
+		tx.Rollback()
+		return nil, ErrChatNotFound
+	}
+	rows, err := tx.ChatMCPToolState.Query().
+		Where(entchatmcptoolstate.ChatIDEQ(chatID)).
+		All(ctx)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	var unloaded []string
+	for _, row := range rows {
+		var kept []string
+		for _, name := range row.LoadedTools {
+			if _, ok := keep[name]; ok {
+				kept = append(kept, name)
+			} else {
+				unloaded = append(unloaded, name)
+			}
+		}
+		if len(kept) == len(row.LoadedTools) {
+			continue
+		}
+		if len(kept) == 0 {
+			err = tx.ChatMCPToolState.DeleteOneID(row.ID).Exec(ctx)
+		} else {
+			err = tx.ChatMCPToolState.UpdateOneID(row.ID).SetLoadedTools(kept).Exec(ctx)
+		}
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+	sort.Strings(unloaded)
+	return unloaded, nil
+}
+
 // ClearAllChatMCPLoadedTools clears every loaded tool of a chat: all connectors' and the built-in
 // tools'.
 func (d *Datastore) ClearAllChatMCPLoadedTools(ctx context.Context, userID, chatID uuid.UUID) error {
