@@ -6811,6 +6811,52 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /image-gallery/delete:
+    post:
+      summary: Delete many gallery files
+      description: >-
+        Deletes the given files (images, documents or any other upload), each with the cleanup its
+        own route does: an image as `DELETE /image-gallery/{id}` (its stored image and thumbnail),
+        any other file as `DELETE /file-attachment/{id}` (its provider copy unless a chat-reuse copy
+        shares it, and stored objects nothing else references). One failure does not stop the
+        rest. Ids that are not the caller's files, or do not exist, are reported in `failed` as
+        "not found" rather than failing the request. Duplicate ids are deleted once.
+      tags: [Image Gallery]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  minItems: 1
+                  maxItems: 500
+                  items:
+                    type: string
+                    format: uuid
+              required: [ids]
+      responses:
+        '200':
+          description: Which files were deleted and which failed, and why
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryDeleteResult'
+        '400':
+          description: Not JSON, an id that is not a UUID, no ids, or more than 500 ids
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /image-gallery/folders/move:
     post:
       summary: Rename or move a gallery folder
@@ -8686,6 +8732,37 @@ components:
       example:
         path: "charts/oura"
         count: 12
+    GalleryDeleteResult:
+      type: object
+      properties:
+        deleted:
+          type: array
+          description: Ids that were deleted, in request order
+          items:
+            type: string
+            format: uuid
+        failed:
+          type: array
+          description: Ids that were not deleted, in request order
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              error:
+                type: string
+                description: >-
+                  Why, safe to show the user. One of "not found", "could not read the file",
+                  "could not delete the stored image", "could not delete the provider's copy" or
+                  "could not delete the file".
+            required: [id, error]
+      required: [deleted, failed]
+      example:
+        deleted: ["123e4567-e89b-12d3-a456-426614174000"]
+        failed:
+          - id: "123e4567-e89b-12d3-a456-426614174001"
+            error: "not found"
     GalleryMoveResult:
       type: object
       properties:

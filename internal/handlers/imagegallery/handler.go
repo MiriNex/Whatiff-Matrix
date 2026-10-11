@@ -3,6 +3,7 @@ package imagegallery
 import (
 	"github.com/gorilla/mux"
 	"github.com/theimaginaryfoundation/what-iff/internal/agent"
+	"github.com/theimaginaryfoundation/what-iff/internal/filedelete"
 	"github.com/theimaginaryfoundation/what-iff/internal/storage"
 	"go.uber.org/zap"
 )
@@ -25,6 +26,16 @@ func NewHandler(ds Store, logger *zap.Logger, fileStore storage.FileStore, agent
 	return &Handler{ds: ds, logger: logger, fileStore: fileStore, agent: a}
 }
 
+// deleter deletes gallery files with the cleanup each kind needs. Without an agent, a file that
+// has a provider copy cannot be deleted (rather than leaving the copy behind).
+func (h *Handler) deleter() *filedelete.Service {
+	var provider filedelete.ProviderFiles
+	if h.agent != nil {
+		provider = h.agent
+	}
+	return filedelete.New(h.ds, h.fileStore, provider, h.logger)
+}
+
 // RegisterRoutes wires the gallery endpoints onto the authenticated subrouter.
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	gallery := router.PathPrefix("/image-gallery").Subrouter()
@@ -34,6 +45,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	gallery.HandleFunc("/folders", h.ListFolders).Methods("GET")
 	gallery.HandleFunc("/folders/move", h.MoveFolder).Methods("POST")
 	gallery.HandleFunc("/move", h.MoveImages).Methods("POST")
+	gallery.HandleFunc("/delete", h.DeleteFiles).Methods("POST")
 	gallery.HandleFunc("/{id}", h.GetImageContent).Methods("GET")
 	gallery.HandleFunc("/{id}", h.DeleteImage).Methods("DELETE")
 	gallery.HandleFunc("/{id}", h.RenameImage).Methods("PATCH")

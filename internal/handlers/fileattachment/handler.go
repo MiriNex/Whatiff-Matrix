@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/theimaginaryfoundation/what-iff/internal/agent"
 	"github.com/theimaginaryfoundation/what-iff/internal/datastore"
+	"github.com/theimaginaryfoundation/what-iff/internal/filedelete"
 	"github.com/theimaginaryfoundation/what-iff/internal/models"
 	"github.com/theimaginaryfoundation/what-iff/internal/storage"
 
@@ -15,13 +16,8 @@ import (
 
 type attachmentStore interface {
 	ListFileAttachments(ctx context.Context, userID uuid.UUID, pageNum, pageSize int, filters models.FileAttachmentFilters) (*models.PaginatedResponse, error)
-	GetFileAttachment(ctx context.Context, userID, id uuid.UUID) (*models.FileAttachment, error)
-	DeleteFileAttachment(ctx context.Context, userID, id uuid.UUID) error
-	// FileAttachmentProviderFileShared reports whether another row (a reference copy) shares the
-	// provider file, so deleting this row must not delete it.
-	FileAttachmentProviderFileShared(ctx context.Context, id uuid.UUID, fileID string) (bool, error)
-	// Answers which object keys remaining rows still reference (storage.AttachmentKeyRefs).
-	storage.AttachmentKeyRefs
+	// Get, delete and the reference checks a delete needs (filedelete.Service.DeleteFile).
+	filedelete.Store
 }
 
 type attachmentAgent interface {

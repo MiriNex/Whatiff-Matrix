@@ -133,7 +133,7 @@ func TestMoveImagesToTheTopLevel(t *testing.T) {
 }
 
 func TestMoveImagesRefusesBadRequests(t *testing.T) {
-	tooMany := make([]uuid.UUID, maxMoveIDs+1)
+	tooMany := make([]uuid.UUID, maxBatchIDs+1)
 	for i := range tooMany {
 		tooMany[i] = uuid.New()
 	}

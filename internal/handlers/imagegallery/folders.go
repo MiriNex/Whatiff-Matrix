@@ -18,8 +18,9 @@ import (
 // created, still-empty folder to itself until something is moved into it.
 
 const (
-	maxMoveIDs       = 500
-	maxFolderBodyLen = 1 << 20
+	// maxBatchIDs is the most ids one move (POST /move) or delete (POST /delete) takes.
+	maxBatchIDs     = 500
+	maxBatchBodyLen = 1 << 20
 )
 
 type folderListResponse struct {
@@ -71,7 +72,7 @@ func (h *Handler) MoveImages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req moveImagesRequest
-	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxFolderBodyLen)).Decode(&req); err != nil {
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBatchBodyLen)).Decode(&req); err != nil {
 		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Invalid request body", err)
 		return
 	}
@@ -79,7 +80,7 @@ func (h *Handler) MoveImages(w http.ResponseWriter, r *http.Request) {
 		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Choose at least one file", nil)
 		return
 	}
-	if len(req.IDs) > maxMoveIDs {
+	if len(req.IDs) > maxBatchIDs {
 		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Too many files in one move", nil)
 		return
 	}
@@ -105,7 +106,7 @@ func (h *Handler) MoveFolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req moveFolderRequest
-	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxFolderBodyLen)).Decode(&req); err != nil {
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBatchBodyLen)).Decode(&req); err != nil {
 		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Invalid request body", err)
 		return
 	}

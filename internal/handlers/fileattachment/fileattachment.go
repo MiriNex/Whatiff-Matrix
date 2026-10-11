@@ -1,7 +1,6 @@
 package fileattachment
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -12,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/theimaginaryfoundation/what-iff/internal/datastore"
+	"github.com/theimaginaryfoundation/what-iff/internal/filedelete"
 	"github.com/theimaginaryfoundation/what-iff/internal/handlers/handlerutils"
 	"github.com/theimaginaryfoundation/what-iff/internal/middleware"
 	"github.com/theimaginaryfoundation/what-iff/internal/models"
@@ -100,6 +100,9 @@ func (h *Handler) ListFileAttachments(w http.ResponseWriter, r *http.Request) {
 	handlerutils.RespondWithJSON(w, h.logger, http.StatusOK, fileAttachmentsPage)
 }
 
+// DeleteFileAttachment deletes any of the caller's attachments: its provider copy (unless a
+// reference copy shares it), the row, then the stored objects nothing else references
+// (filedelete.Service.DeleteFile).
 func (h *Handler) DeleteFileAttachment(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
@@ -115,40 +118,15 @@ func (h *Handler) DeleteFileAttachment(w http.ResponseWriter, r *http.Request) {
 		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Invalid attachment ID", err)
 		return
 	}
-	fileAttachment, err := h.ds.GetFileAttachment(r.Context(), userID, id)
-	if err != nil {
+	err = filedelete.New(h.ds, h.agent.FileStore(), h.agent, h.logger).DeleteFile(r.Context(), userID, id)
+	switch {
+	case err == nil:
+		handlerutils.RespondWithJSON(w, h.logger, http.StatusOK, nil)
+	case errors.Is(err, filedelete.ErrNotFound), filedelete.StageOf(err) == filedelete.StageLookup:
 		handlerutils.RespondWithError(w, h.logger, http.StatusNotFound, handlerutils.CodeNotSet, "File attachment not found", err)
-		return
-	}
-
-	// Reference copies clone the provider FileID; only the last row to go deletes the file.
-	if fileAttachment.FileID != nil && *fileAttachment.FileID != "" {
-		shared, err := h.ds.FileAttachmentProviderFileShared(r.Context(), id, *fileAttachment.FileID)
-		if err != nil {
-			handlerutils.RespondWithError(w, h.logger, http.StatusInternalServerError, handlerutils.CodeNotSet, "Error deleting file attachment", err)
-			return
-		}
-		if !shared {
-			if err := h.agent.DeleteProviderFileAttachment(r.Context(), *fileAttachment.FileID); err != nil {
-				handlerutils.RespondWithError(w, h.logger, http.StatusInternalServerError, handlerutils.CodeNotSet, "Error deleting file attachment", err)
-				return
-			}
-		}
-	}
-
-	err = h.ds.DeleteFileAttachment(r.Context(), userID, id)
-	if err != nil {
+	default:
 		handlerutils.RespondWithError(w, h.logger, http.StatusInternalServerError, handlerutils.CodeNotSet, "Error deleting file attachment", err)
-		return
 	}
-
-	// The row is gone, so the stored object goes too unless a reference copy still points at it.
-	// Best effort: the delete has happened; an object that cannot be removed is left orphaned.
-	// WithoutCancel so a client hanging up does not abandon the cleanup halfway.
-	storage.ReleaseAttachmentObjects(context.WithoutCancel(r.Context()), h.logger, h.agent.FileStore(), h.ds, userID,
-		[]models.FileAttachment{*fileAttachment})
-
-	handlerutils.RespondWithJSON(w, h.logger, http.StatusOK, nil)
 }
 
 // GetFileAttachmentContent returns attachment bytes for the authenticated user.

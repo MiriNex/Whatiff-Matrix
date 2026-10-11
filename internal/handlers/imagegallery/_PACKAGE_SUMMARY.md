@@ -9,15 +9,18 @@ The web app's gallery doubles as a read-only file view; other files' bytes come 
 
 - **`Handler` (`handler.go`, `gallery.go`, `import.go`, `manage.go`):** list (`GET /image-gallery`, filtered by `kind`, name, personality, `global_only` and `folder`), content (`GET /{id}?size=thumbnail|full`, images only), file info (`GET /{id}/info`, any kind, for opening a linked file), import, rename, delete, and reference (`POST /{id}/reference`, a chat-reuse copy that shares the stored object).
 - **`kind`** on the list and on `/folders` is `images` (the default, so older clients see only images), `files` (everything that is not `image/*`) or `all`; anything else is a 400.
-  Import, thumbnails and `DELETE /{id}` stay image-only; the web app deletes other files through `DELETE /file-attachment/{id}`, which also removes the provider file.
+  Import, thumbnails and `DELETE /{id}` stay image-only; a single other file is deleted through `DELETE /file-attachment/{id}`, which also removes the provider file.
+- **Bulk delete (`delete.go`):** `POST /delete` with `{"ids": [...]}` (1 to 500) deletes any mix of the caller's files, each with its own route's cleanup (`filedelete.Service.DeleteMany`).
+  It answers 200 with `{"deleted": [ids], "failed": [{"id", "error"}]}`; an id that is not the caller's file fails as `not found` instead of failing the batch.
+  `DELETE /{id}` runs `filedelete.Service.DeleteImage` and only maps its errors to statuses.
 - **Folders (`folders.go`):** `GET /folders` lists the folders that hold files of the requested kind with the count directly in each, `POST /move` files any of the caller's files in a folder, and `POST /folders/move` renames a folder and everything beneath it (every kind).
   These routes are registered before `/{id}` so `folders` is not read as an image id.
-- **`Store` (`provider.go`):** the narrow datastore surface the handlers need, which `*datastore.Datastore` satisfies.
+- **`Store` (`provider.go`):** the narrow datastore surface the handlers need (including `filedelete.Store`), which `*datastore.Datastore` satisfies.
 
 ## Dependencies
 
 - **Inbound:** `internal/server`.
-- **Outbound:** `internal/datastore`, `internal/storage`, `internal/models`, `internal/agent` (import only), `handlerutils`, `mux`.
+- **Outbound:** `internal/datastore`, `internal/filedelete`, `internal/storage`, `internal/models`, `internal/agent` (import, and provider-file deletes in bulk delete), `handlerutils`, `mux`.
 
 ## Non-obvious decisions
 
@@ -28,6 +31,7 @@ The web app's gallery doubles as a read-only file view; other files' bytes come 
 - **`folder` on the list is a presence check.** Absent lists every file of the kind (the pre-folders behavior), and an empty value is the top level.
 - **Reference copies never carry a folder and are never counted.** Moving by a copy's id moves the original it shares a stored object with.
 - **Moves are scoped in the datastore** to the caller's own rows, so an id that is someone else's is skipped and the response says how many moved.
+- **Moves and bulk deletes take at most 500 ids** (`maxBatchIDs`); the web app sends larger selections in chunks.
 - **Import takes an optional `folder` form field**, so an image imported while viewing a folder lands in it.
 
 ## Testing
@@ -35,6 +39,7 @@ The web app's gallery doubles as a read-only file view; other files' bytes come 
 - `folders_test.go` — the folder routes (normalization, validation, route precedence over `/{id}`, auth) and the list `folder` presence check, against a fake store.
 - `kind_test.go` — the `kind` parameter on the list and `/folders` (default, values, refusal) and `GET /{id}/info`.
 - `gallery_test.go`, `list_test.go` — content streaming and list filter parsing.
+- `delete_test.go` — bulk delete (per-id results, strangers' ids, validation, auth) and the statuses of `DELETE /{id}`; the cleanup itself is tested in `internal/filedelete`.
 - Datastore behavior (grouping, moves, nested renames, ownership, reference copies) is tested in `internal/datastore/fileattachment_folders_test.go`.
 
 ## Related documentation

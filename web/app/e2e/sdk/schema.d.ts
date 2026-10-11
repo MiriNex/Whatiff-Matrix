@@ -9873,6 +9873,69 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/image-gallery/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete many gallery files
+         * @description Deletes the given files (images, documents or any other upload), each with the cleanup its own route does: an image as `DELETE /image-gallery/{id}` (its stored image and thumbnail), any other file as `DELETE /file-attachment/{id}` (its provider copy unless a chat-reuse copy shares it, and stored objects nothing else references). One failure does not stop the rest. Ids that are not the caller's files, or do not exist, are reported in `failed` as "not found" rather than failing the request. Duplicate ids are deleted once.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        ids: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Which files were deleted and which failed, and why */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GalleryDeleteResult"];
+                    };
+                };
+                /** @description Not JSON, an id that is not a UUID, no ids, or more than 500 ids */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/image-gallery/folders/move": {
         parameters: {
             query?: never;
@@ -11149,6 +11212,30 @@ export interface components {
             path: string;
             /** @description Gallery files of the requested kind directly in this folder (not in folders beneath it) */
             count: number;
+        };
+        /**
+         * @example {
+         *       "deleted": [
+         *         "123e4567-e89b-12d3-a456-426614174000"
+         *       ],
+         *       "failed": [
+         *         {
+         *           "id": "123e4567-e89b-12d3-a456-426614174001",
+         *           "error": "not found"
+         *         }
+         *       ]
+         *     }
+         */
+        GalleryDeleteResult: {
+            /** @description Ids that were deleted, in request order */
+            deleted: string[];
+            /** @description Ids that were not deleted, in request order */
+            failed: {
+                /** Format: uuid */
+                id: string;
+                /** @description Why, safe to show the user. One of "not found", "could not read the file", "could not delete the stored image", "could not delete the provider's copy" or "could not delete the file". */
+                error: string;
+            }[];
         };
         /**
          * @example {

@@ -11,7 +11,7 @@ HTTP API for **file attachments** metadata and download flows at `/api/file-atta
 ## Dependencies
 
 - **Inbound:** `internal/server`.
-- **Outbound:** `internal/datastore`, `internal/storage`, `internal/models`, `mux`.
+- **Outbound:** `internal/datastore`, `internal/filedelete`, `internal/storage`, `internal/models`, `mux`.
 
 ## Non-obvious decisions
 
@@ -20,6 +20,7 @@ HTTP API for **file attachments** metadata and download flows at `/api/file-atta
   `CreateFileAttachmentReference` copies share the source's `s3_key` and provider `FileID`.
   `DELETE /file-attachment/{id}` deletes the provider file only when no other row carries the `FileID`, then the row, then releases the stored object and thumbnail via `storage.ReleaseAttachmentObjects` (skipped while another row references the key).
   The object step is best effort and never fails the request; an object it cannot remove is left orphaned.
+  The steps live in `filedelete.Service.DeleteFile`, which the gallery's bulk delete shares; the handler only maps its errors (not found or unreadable is 404, anything else 500).
 - **Download fallback uses the chat id.**
   For rows without `s3_key` the derived key comes from `FileKeyForAttachment(..., ChatID, PersonalityID)`; `ChatID` is resolved by the datastore through the chat message (issue #253).
 

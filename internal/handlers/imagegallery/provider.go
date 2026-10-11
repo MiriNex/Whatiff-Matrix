@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/theimaginaryfoundation/what-iff/internal/filedelete"
 	"github.com/theimaginaryfoundation/what-iff/internal/models"
 )
 
@@ -19,4 +20,6 @@ type Store interface {
 	ListGalleryFolders(ctx context.Context, userID uuid.UUID, kind models.GalleryKind) ([]models.FolderCount, error)
 	MoveFileAttachmentsToFolder(ctx context.Context, userID uuid.UUID, ids []uuid.UUID, folder string) (int, error)
 	MoveGalleryFolder(ctx context.Context, userID uuid.UUID, from, to string) (int, error)
+	// Deletes (single and bulk) go through filedelete, which also needs the reference checks.
+	filedelete.Store
 }
