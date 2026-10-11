@@ -26,6 +26,7 @@ type MistralProvider struct {
 type MistralAdapter struct {
 	provider         *MistralProvider
 	params           openai.ChatCompletionNewParams
+	tools            scopedToolList[openai.ChatCompletionToolUnionParam]
 	textDeltaHandler func(delta string)
 }
 
@@ -58,13 +59,8 @@ func (p *MistralProvider) CallStreaming(ctx context.Context, params openai.ChatC
 }
 
 func NewMistralAdapter(provider *MistralProvider, params openai.ChatCompletionNewParams, functionTools []openai.ChatCompletionToolUnionParam, disabledTools map[string]bool) *MistralAdapter {
-	for _, t := range functionTools {
-		if t.OfFunction != nil && disabledTools[t.OfFunction.Function.Name] {
-			continue
-		}
-		params.Tools = append(params.Tools, t)
-	}
-	return &MistralAdapter{provider: provider, params: params}
+	tools := chatCompletionScopedTools(&params, functionTools, disabledTools)
+	return &MistralAdapter{provider: provider, params: params, tools: tools}
 }
 
 func (a *MistralAdapter) Call(ctx context.Context) (*GenerateResponse, []ToolUse, error) {
@@ -122,4 +118,9 @@ func (a *MistralAdapter) toGenerateResponse(resp *openai.ChatCompletion) *Genera
 		InputTokens:  inputTokens,
 		OutputTokens: outputTokens,
 	}
+}
+
+// ScopeTools implements ToolScoper.
+func (a *MistralAdapter) ScopeTools(hidden func(name string) bool) {
+	a.params.Tools = a.tools.scope(hidden)
 }

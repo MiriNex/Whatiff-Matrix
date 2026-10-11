@@ -27,6 +27,7 @@ import (
 type GeminiAdapter struct {
 	provider         *GeminiProvider
 	params           openai.ChatCompletionNewParams
+	tools            scopedToolList[openai.ChatCompletionToolUnionParam]
 	logger           *zap.Logger
 	callSeq          int
 	lastRequested    []ToolUse
@@ -44,18 +45,14 @@ type GeminiAdapter struct {
 // are appended (minus any whose name appears in disabledTools). The caller is
 // responsible for messages and model in params. logger may be nil (logging is skipped).
 func NewGeminiAdapter(provider *GeminiProvider, params openai.ChatCompletionNewParams, functionTools []openai.ChatCompletionToolUnionParam, disabledTools map[string]bool, logger *zap.Logger) *GeminiAdapter {
-	for _, t := range functionTools {
-		if t.OfFunction != nil && disabledTools[t.OfFunction.Function.Name] {
-			continue
-		}
-		params.Tools = append(params.Tools, t)
-	}
+	tools := chatCompletionScopedTools(&params, functionTools, disabledTools)
 	if logger == nil {
 		logger = zap.NewNop()
 	}
 	return &GeminiAdapter{
 		provider: provider,
 		params:   params,
+		tools:    tools,
 		logger:   logger,
 	}
 }
@@ -316,4 +313,9 @@ func summarizeGeminiMessages(messages []openai.ChatCompletionMessageParamUnion) 
 		return ""
 	}
 	return string(b)
+}
+
+// ScopeTools implements ToolScoper.
+func (a *GeminiAdapter) ScopeTools(hidden func(name string) bool) {
+	a.params.Tools = a.tools.scope(hidden)
 }

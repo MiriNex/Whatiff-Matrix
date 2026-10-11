@@ -39,6 +39,7 @@ Application **repository layer** over Ent: CRUD, ownership checks, pagination, v
     Quota-bucket types live in `internal/models` (`billing.go`, `quotabucket.go`); the quota-enforcement logic itself (free-tier limits, trial grants, subscription reconciliation) is in a private extension, not this tree.
   - Users & access: `user.go`, `userpreferences.go`, `role.go`, `admin.go`.
   - MCP: `mcpserver.go`.
+    Per-chat loaded tools live in `chat_mcp_tool_states`: one row per connector, plus the built-in tools' row under the nil connector ID (`ListChatLoadedBuiltinTools` / `SetChatLoadedBuiltinTools`), which `ListChatMCPLoadedTools` leaves out.
   - Models: `model.go`.
   - Safety violations: `safety_violation_event.go`.
   - Tool call persistence: `toolcall.go`.

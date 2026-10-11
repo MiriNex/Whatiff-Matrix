@@ -526,7 +526,7 @@ func TestListMCPServers_DiscoveryErrorWithPartialToolsStillReturnsInventory(t *t
 	if len(res.Items) != 1 || len(res.Items[0].MCPTools) != 1 {
 		t.Fatalf("expected one discoverable tool despite discovery error, got %+v", res)
 	}
-	if !strings.Contains(res.Note, "load_mcp_tools") {
+	if !strings.Contains(res.Note, "load_tools") {
 		t.Fatalf("expected MCP lifecycle guidance note, got %q", res.Note)
 	}
 }

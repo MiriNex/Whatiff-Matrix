@@ -196,7 +196,7 @@ type listPageMeta struct {
 
 // MCPScopeFunc resolves the MCP connectors in scope for the current turn (attached to the
 // thread plus those of the skills active now). The agent supplies it so kind="mcp_servers"
-// agrees with what load_mcp_tools can load and what the turn registers.
+// agrees with what load_tools can load and what the turn registers.
 type MCPScopeFunc func(ctx context.Context) ([]*models.MCPServer, error)
 
 // List executes a list tool call, routing on `kind`. kind="mcp_servers" lists only the

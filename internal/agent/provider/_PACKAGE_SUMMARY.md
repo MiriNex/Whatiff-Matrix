@@ -11,6 +11,9 @@ Maps **`ModelContext`** (ordered prompt segments) to OpenAI Responses and Anthro
 - **OpenAI:** `RenderOpenAIInputItems`, `ModelContext.BuildOpenAIResponseParams`, `OpenAIProvider`, `OpenAIAdapter`, `ProcessResponseOutput` (assistant text extraction / dedup), `BuildOpenAITools`, image generation helpers, file-attachment upload helpers.
   **`SegmentKindUserMessage` with `RoleDeveloper` and images** (expression continuity portrait) is rendered as **two** input items—developer text plus a **user** message carrying `input_image`, because the Responses API allows images only under the user role for message parts.
 - **Claude:** `BuildClaudeParams`, `ClaudeProvider`, `ClaudeAdapter`, `ClaudeFunctionTool`, `ExtractClaudeText`, `ExtractClaudeBetaText`, `UnmarshalClaudeTextJSON`.
+- **Per-round tool scoping (`tool_scope.go`):** every agent adapter implements the optional `ToolScoper` (`ScopeTools(hidden)`).
+  It keeps the full tool list it was built with and, before each call, sends only the function tools `hidden` does not exclude; non-function tools such as a vendor's native web search are always kept.
+  The agent uses it to send only loaded MCP and loadable built-in tools (see `internal/agent` package summary).
   **`renderClaudeContext`** splits **developer continuity + portrait** like OpenAI: text turn includes `ExpressionPortraitContinuityPointerNote`; the next user message carries caption + image blocks.
   **Prompt caching:** the last block of the leading **contiguous `Cacheable` segment prefix** gets Anthropic **`cache_control` `ephemeral`** with **5m TTL** (see `model_context_claude.go`).
 - **z.ai GLM (Anthropic-compatible):** GLM models (`provider = "zai"`) reuse the **entire Claude path** via `NewClaudeProviderWithBaseURL` pointed at z.ai's Anthropic-compatible endpoint (`DefaultZAIBaseURL`).

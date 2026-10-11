@@ -1,6 +1,10 @@
 package tools
 
-import "github.com/openai/openai-go/v3/responses"
+import (
+	"strings"
+
+	"github.com/openai/openai-go/v3/responses"
+)
 
 // FunctionToolDefinition describes one provider-agnostic function tool.
 // Provider packages project these specs into SDK-specific request types.
@@ -17,6 +21,12 @@ type FunctionToolDefinition struct {
 	// SandboxPolicy is what a sandboxed chat does with the tool (see SandboxPolicy). Declare it:
 	// the zero value is SandboxNever.
 	SandboxPolicy SandboxPolicy
+	// Loadable tools follow the MCP tools' lifecycle: the model is not sent their definition until
+	// it loads them in the chat with load_tools (they are listed by name in the developer context
+	// instead), they stay loaded across turns, and they unload with unload_tools or when a
+	// checkpoint finds them unused. For heavy tools whose schemas cost tokens on every request but
+	// that most turns never call.
+	Loadable bool
 }
 
 var functionToolCatalog = []FunctionToolDefinition{
@@ -25,17 +35,17 @@ var functionToolCatalog = []FunctionToolDefinition{
 	{Spec: ListToolSpec, HumanDescription: "Browse available models, personalities, skills, files, threads, jobs, and MCP servers.", UserGuide: "Browses your threads (including archived and imported ones), files, scheduled jobs, personalities, skills, models and this thread's MCP servers. Ask for threads about a topic, then read one with Find Context.", AgentDefault: true, UserToggleable: true, SandboxPolicy: SandboxAllowed},
 	{Spec: ListMoodsToolSpec, AgentDefault: true, MoodOnly: true, UserToggleable: false, SandboxPolicy: SandboxAllowed},
 	{Spec: ChangeMoodToolSpec, AgentDefault: true, MoodOnly: true, UserToggleable: false, SandboxPolicy: SandboxAllowed},
-	{Spec: RunSubagentToolSpec, HumanDescription: "Run a focused sub-agent with an optional personality, model, or skills and return its result.", UserGuide: "Hands one task to a helper, optionally with a different personality, model or skills, and brings back the answer. The helper sees only the task, not this thread. Good for a second opinion, or heavy research a smaller, cheaper model can do.", AgentDefault: true, UserToggleable: true, SandboxPolicy: SandboxDefaultOff},
+	{Spec: RunSubagentToolSpec, HumanDescription: "Run a focused sub-agent with an optional personality, model, or skills and return its result.", UserGuide: "Hands one task to a helper, optionally with a different personality, model or skills, and brings back the answer. The helper sees only the task, not this thread. Good for a second opinion, or heavy research a smaller, cheaper model can do.", AgentDefault: true, UserToggleable: true, SandboxPolicy: SandboxDefaultOff, Loadable: true},
 	{Spec: MoveFilesToolSpec, HumanDescription: "Sort gallery files into folders, or back to the top level.", UserGuide: "Moves images and other files into gallery folders such as \"charts\", or back out. Ask it to tidy recurring files, for example \"put the charts you made this week in a charts folder\". Only the label changes.", AgentDefault: true, UserToggleable: true, SandboxPolicy: SandboxNever},
-	{Spec: GenerateImageToolSpec, HumanDescription: "Create an image from a written description.", UserGuide: "Creates up to 4 images at a time. Choose square, landscape or portrait, and low, medium or high quality (higher quality costs more). Ask for a few options or a specific style.", AgentDefault: true, UserToggleable: true, SandboxPolicy: SandboxDefaultOff},
-	{Spec: CreateAgentJobToolSpec, HumanDescription: "Create a one-time or recurring task using natural-language timing. Run it in the current or a new thread, optionally with a different model or skills.", UserGuide: "Schedules a one-time or repeating task in plain language (\"in 2 hours\", \"every weekday at 8am\"). It can post in this thread or its own, with a chosen model or skills. Manage jobs under Config > Jobs.", AgentDefault: true, UserToggleable: true, SandboxPolicy: SandboxNever},
-	{Spec: LoadMCPToolsToolSpec, HumanDescription: "Load MCP tools from one connector into this chat. Loaded MCP tools persist across turns until unloaded.", AgentDefault: true, UserToggleable: false, SandboxPolicy: SandboxAllowed},
-	{Spec: UnloadMCPToolsToolSpec, HumanDescription: "Unload previously loaded MCP tools from this chat, per connector or globally.", AgentDefault: true, UserToggleable: false, SandboxPolicy: SandboxAllowed},
+	{Spec: GenerateImageToolSpec, HumanDescription: "Create an image from a written description.", UserGuide: "Creates up to 4 images at a time. Choose square, landscape or portrait, and low, medium or high quality (higher quality costs more). Ask for a few options or a specific style.", AgentDefault: true, UserToggleable: true, SandboxPolicy: SandboxDefaultOff, Loadable: true},
+	{Spec: CreateAgentJobToolSpec, HumanDescription: "Create a one-time or recurring task using natural-language timing. Run it in the current or a new thread, optionally with a different model or skills.", UserGuide: "Schedules a one-time or repeating task in plain language (\"in 2 hours\", \"every weekday at 8am\"). It can post in this thread or its own, with a chosen model or skills. Manage jobs under Config > Jobs.", AgentDefault: true, UserToggleable: true, SandboxPolicy: SandboxNever, Loadable: true},
+	{Spec: LoadToolsToolSpec, HumanDescription: "Load built-in or MCP tools into this chat. Loaded tools persist across turns until unloaded.", AgentDefault: true, UserToggleable: false, SandboxPolicy: SandboxAllowed},
+	{Spec: UnloadToolsToolSpec, HumanDescription: "Unload previously loaded built-in or MCP tools from this chat.", AgentDefault: true, UserToggleable: false, SandboxPolicy: SandboxAllowed},
 	// First-party web search (ADR 0x021). Not user-toggleable here: GetAvailableTools already lists
 	// web_search for the toggle, and fetch_page follows it. The per-turn policy hides both when no
 	// backend is configured.
-	{Spec: WebSearchFunctionToolSpec, AgentDefault: true, SandboxPolicy: SandboxDefaultOff},
-	{Spec: FetchPageToolSpec, AgentDefault: true, SandboxPolicy: SandboxDefaultOff},
+	{Spec: WebSearchFunctionToolSpec, AgentDefault: true, SandboxPolicy: SandboxDefaultOff, Loadable: true},
+	{Spec: FetchPageToolSpec, AgentDefault: true, SandboxPolicy: SandboxDefaultOff, Loadable: true},
 	{Spec: RecallToolSpec, HumanDescription: "Search or read your memories, files, thread summaries and past threads.", UserGuide: "Ask a question about past threads, memories or files and get an answer with sources. It can also read a whole thread or file, look back over a time range (\"last week\"), show a thread's bookmarks, or explain where a memory came from.", AgentDefault: true, UserToggleable: true, SandboxPolicy: SandboxAllowed},
 }
 
@@ -59,6 +69,32 @@ func AgentFunctionToolSpecs(includeMoodTools bool) []FunctionToolSpec {
 		specs = append(specs, def.Spec)
 	}
 	return specs
+}
+
+// LoadableFunctionToolNames lists the catalog tools that must be loaded before the model is sent
+// their definitions (see FunctionToolDefinition.Loadable), with the one-line summary the developer
+// context shows for each.
+func LoadableFunctionToolNames() map[string]string {
+	out := map[string]string{}
+	for _, def := range mergedFunctionToolCatalog() {
+		if def.Loadable {
+			out[def.Spec.Name] = loadableToolSummary(def)
+		}
+	}
+	return out
+}
+
+// loadableToolSummary is the tool's human description, or else the first sentence of its model
+// description.
+func loadableToolSummary(def FunctionToolDefinition) string {
+	if d := strings.TrimSpace(def.HumanDescription); d != "" {
+		return d
+	}
+	d := strings.TrimSpace(def.Spec.Description)
+	if i := strings.Index(d, ". "); i >= 0 {
+		return d[:i+1]
+	}
+	return d
 }
 
 func UserToggleableFunctionToolSpecs() []FunctionToolSpec {

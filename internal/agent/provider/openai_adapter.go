@@ -17,6 +17,7 @@ import (
 type OpenAIAdapter struct {
 	provider           *OpenAIProvider
 	params             responses.ResponseNewParams
+	tools              scopedToolList[responses.ToolUnionParam]
 	previousResponseID string
 	lastResponse       *responses.Response
 	rawResponses       []*responses.Response
@@ -31,6 +32,7 @@ func NewOpenAIAdapter(provider *OpenAIProvider, params responses.ResponseNewPara
 	return &OpenAIAdapter{
 		provider: provider,
 		params:   params,
+		tools:    newScopedToolList(params.Tools, responsesToolName),
 	}
 }
 
@@ -192,4 +194,9 @@ func extractOpenAIToolUses(resp *responses.Response) []ToolUse {
 		}
 	}
 	return uses
+}
+
+// ScopeTools implements ToolScoper.
+func (a *OpenAIAdapter) ScopeTools(hidden func(name string) bool) {
+	a.params.Tools = a.tools.scope(hidden)
 }

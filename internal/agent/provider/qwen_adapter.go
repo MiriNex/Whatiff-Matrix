@@ -28,6 +28,7 @@ type QwenProvider struct {
 type QwenAdapter struct {
 	provider         *QwenProvider
 	params           openai.ChatCompletionNewParams
+	tools            scopedToolList[openai.ChatCompletionToolUnionParam]
 	textDeltaHandler func(delta string)
 }
 
@@ -60,13 +61,8 @@ func (p *QwenProvider) CallStreaming(ctx context.Context, params openai.ChatComp
 }
 
 func NewQwenAdapter(provider *QwenProvider, params openai.ChatCompletionNewParams, functionTools []openai.ChatCompletionToolUnionParam, disabledTools map[string]bool) *QwenAdapter {
-	for _, t := range functionTools {
-		if t.OfFunction != nil && disabledTools[t.OfFunction.Function.Name] {
-			continue
-		}
-		params.Tools = append(params.Tools, t)
-	}
-	return &QwenAdapter{provider: provider, params: params}
+	tools := chatCompletionScopedTools(&params, functionTools, disabledTools)
+	return &QwenAdapter{provider: provider, params: params, tools: tools}
 }
 
 func (a *QwenAdapter) Call(ctx context.Context) (*GenerateResponse, []ToolUse, error) {
@@ -122,4 +118,9 @@ func (a *QwenAdapter) toGenerateResponse(resp *openai.ChatCompletion) *GenerateR
 		InputTokens:  inputTokens,
 		OutputTokens: outputTokens,
 	}
+}
+
+// ScopeTools implements ToolScoper.
+func (a *QwenAdapter) ScopeTools(hidden func(name string) bool) {
+	a.params.Tools = a.tools.scope(hidden)
 }

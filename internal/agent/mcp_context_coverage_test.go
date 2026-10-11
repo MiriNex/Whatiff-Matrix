@@ -29,7 +29,7 @@ func TestSetMCPServerCacheBuildsLoadedSet(t *testing.T) {
 func TestMCPLifecycleDeveloperContextMentionsLifecycle(t *testing.T) {
 	ctx := mcpLifecycleDeveloperContext()
 	require.Contains(t, ctx, "list(kind=\"mcp_servers\")")
-	require.Contains(t, ctx, "load_mcp_tools")
-	require.Contains(t, ctx, "unload_mcp_tools")
+	require.Contains(t, ctx, "load_tools")
+	require.Contains(t, ctx, "unload_tools")
 	require.Contains(t, ctx, "across future turns")
 }

@@ -96,6 +96,7 @@ func sanitizeClaudeSchemaValue(v interface{}) interface{} {
 type ClaudeAdapter struct {
 	provider   *ClaudeProvider
 	params     anthropic.MessageNewParams
+	tools      scopedToolList[anthropic.ToolUnionParam]
 	useBetaMCP bool
 	betaParams anthropic.BetaMessageNewParams
 	initErr    error
@@ -140,6 +141,7 @@ func NewClaudeAdapter(provider *ClaudeProvider, params anthropic.MessageNewParam
 	adapter := &ClaudeAdapter{
 		provider: provider,
 		params:   params,
+		tools:    claudeScopedTools(params.Tools),
 	}
 	if mcpConfig == nil || len(mcpConfig.Servers) == 0 {
 		return adapter
@@ -757,4 +759,13 @@ func copyViaJSONIfPresent[S any, D any](field string, src S, dst *D) error {
 		return fmt.Errorf("unmarshal %s: %w", field, err)
 	}
 	return nil
+}
+
+// ScopeTools implements ToolScoper. The beta MCP path builds its tool list once from the scoped
+// set at construction and is left as is.
+func (a *ClaudeAdapter) ScopeTools(hidden func(name string) bool) {
+	if a.useBetaMCP {
+		return
+	}
+	a.params.Tools = a.tools.scope(hidden)
 }

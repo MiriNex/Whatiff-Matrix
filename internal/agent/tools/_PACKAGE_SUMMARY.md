@@ -31,6 +31,7 @@ Provider-neutral function tool catalog plus concrete tool implementations, JSON 
 | `FunctionToolSpec` | Name, agent-facing description, JSON schema map for provider tools. |
 | `FunctionToolDefinition` | Catalog metadata, including optional human-facing description and user-toggleable/default flags. |
 | `FunctionToolCatalog` / `AgentFunctionToolSpecs` / `UserToggleableFunctionToolSpecs` | Ordered static catalog projections used by agent/tool metadata assembly. |
+| `LoadableFunctionToolNames` | The catalog tools marked `Loadable` (sent to the model only after `load_tools`), each with a one-line summary for the developer context. |
 | `RecallTool`, `NewVectorStoreMemoryTool`, `NewScratchpadTool` | Wired from `internal/agent` when building tool lists. |
 | `OpenAIToolUnionParam` | Builds `responses.ToolUnionParam` from a spec. |
 

@@ -24,6 +24,13 @@ func (a *Agent) handleAgentLoop(
 	var allGeneratedAttachments []*models.FileAttachment
 
 	for round := 0; round < maxToolCallRounds; round++ {
+		// Send only the tools loaded so far: a load_tools call in the previous round shows its
+		// tools in this one (see provider.ToolScoper).
+		if scoper, ok := adapter.(provider.ToolScoper); ok {
+			if hidden := chatCtx.loadedToolFilter(); hidden != nil {
+				scoper.ScopeTools(hidden)
+			}
+		}
 		logInferenceCall(ctx, a.logger, chatCtx, adapter, round)
 		result, toolUses, err := adapter.Call(ctx)
 		if err != nil {

@@ -81,7 +81,7 @@ func TestMCPLifecycleTools_UnloadAllWithoutServerID(t *testing.T) {
 	require.NoError(t, err)
 	var res mcpToolLifecycleResult
 	require.NoError(t, json.Unmarshal([]byte(out), &res))
-	require.Contains(t, res.Note, "Unloaded all MCP tools")
+	require.Contains(t, res.Note, "Unloaded all tools")
 }
 
 func TestLoadMCPToolsTool_ServerNotConnected(t *testing.T) {
@@ -154,7 +154,7 @@ func TestMCPLifecycleTools_SkillOnlyConnectorListLoadCall(t *testing.T) {
 	require.Contains(t, listOut, skillServerID.String())
 	require.Contains(t, listOut, threadServerID.String())
 
-	// load_mcp_tools resolves the skill-only connector.
+	// load_tools resolves the skill-only connector.
 	loadRaw, _ := json.Marshal(map[string]any{"mcp_server_id": skillServerID.String(), "tools": []string{"search"}})
 	out, err := agent.loadMCPToolsTool(ctx, chatCtx, loadRaw)
 	require.NoError(t, err)

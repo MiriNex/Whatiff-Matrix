@@ -48,9 +48,10 @@ func (a *Agent) getSubagentMCPFunctionToolSpecs(ctx context.Context, userID uuid
 }
 
 // prepareTurnMCPToolSpecs returns all discoverable MCP tool definitions for this
-// conversation turn. Execution eligibility is enforced separately in
-// dispatchMCPToolUse via chatCtx.loadedMCPTools, so load_mcp_tools/unload_mcp_tools
-// changes are effective on the next agent-loop iteration without waiting for a new turn.
+// conversation turn. The adapter holds them all, but each request carries only the loaded ones
+// (chatContext.loadedToolFilter), so load_tools/unload_tools changes are effective on the next
+// agent-loop iteration without waiting for a new turn and unloaded tools cost no tokens.
+// Execution is gated separately in dispatchMCPToolUse via chatCtx.loadedMCPTools.
 func (a *Agent) prepareTurnMCPToolSpecs(ctx context.Context, chatCtx *chatContext, userID, chatID uuid.UUID, ritualIDs []uuid.UUID) []agenttools.FunctionToolSpec {
 	servers := a.getChatMCPServers(ctx, userID, chatID, ritualIDs)
 	if chatCtx != nil {
@@ -72,8 +73,7 @@ func (a *Agent) prepareTurnMCPToolSpecs(ctx context.Context, chatCtx *chatContex
 		chatCtx.setMCPServerCache(servers, loadedByServer)
 	}
 	// Register all discoverable MCP tool definitions for the turn so that
-	// load_mcp_tools/unload_mcp_tools changes take effect on the next loop round.
-	// Execution gating still happens in dispatchMCPToolUse via loadedMCPTools.
+	// load_tools/unload_tools changes take effect on the next loop round.
 	specs := a.discoverMCPFunctionToolSpecs(ctx, userID, servers, sessionStateFromChatContext(chatCtx))
 	return specs
 }
@@ -94,7 +94,7 @@ func (a *Agent) getChatMCPServers(ctx context.Context, userID, chatID uuid.UUID,
 
 // mcpServersInScope is the single answer to "which connectors may this turn use": the cache
 // prepareTurnMCPToolSpecs filled for the turn, or (cache miss) a fresh resolve over the same
-// thread-attached + active-skill sources. list(kind="mcp_servers"), load/unload_mcp_tools and
+// thread-attached + active-skill sources. list(kind="mcp_servers"), load/unload_tools and
 // dispatchMCPToolUse all use it so a connector that is registered is also findable, loadable
 // and callable.
 func (a *Agent) mcpServersInScope(ctx context.Context, chatCtx *chatContext) ([]*models.MCPServer, error) {

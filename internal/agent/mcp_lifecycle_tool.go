@@ -31,19 +31,22 @@ type mcpToolLifecycleResult struct {
 
 func (a *Agent) loadMCPToolsTool(ctx context.Context, chatCtx *chatContext, input []byte) (string, error) {
 	if chatCtx == nil || chatCtx.chat == nil {
-		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Error: "load_mcp_tools requires an active chat context"})
+		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Error: "load_tools requires an active chat context"})
 	}
 	var args mcpToolLifecycleArgs
 	if err := json.Unmarshal(input, &args); err != nil {
 		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Error: fmt.Sprintf("invalid arguments: %v", err)})
 	}
+	requested := normalizeRequestedTools(args.Tools)
+	if len(requested.names) == 0 && !requested.all {
+		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{ServerID: strings.TrimSpace(args.MCPServerID), Error: "tools is required and must include at least one tool name"})
+	}
+	if strings.TrimSpace(args.MCPServerID) == "" {
+		return a.loadBuiltinTools(ctx, chatCtx, requested)
+	}
 	serverID, err := parseMCPServerIDArg(args.MCPServerID)
 	if err != nil {
 		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Error: err.Error()})
-	}
-	requested := normalizeRequestedTools(args.Tools)
-	if len(requested.names) == 0 && !requested.all {
-		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{ServerID: serverID.String(), Error: "tools is required and must include at least one tool name"})
 	}
 
 	scope, err := a.mcpServersInScope(ctx, chatCtx)
@@ -114,7 +117,7 @@ func (a *Agent) loadMCPToolsTool(ctx context.Context, chatCtx *chatContext, inpu
 
 func (a *Agent) unloadMCPToolsTool(ctx context.Context, chatCtx *chatContext, input []byte) (string, error) {
 	if chatCtx == nil || chatCtx.chat == nil {
-		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Error: "unload_mcp_tools requires an active chat context"})
+		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Error: "unload_tools requires an active chat context"})
 	}
 	var args mcpToolLifecycleArgs
 	if err := json.Unmarshal(input, &args); err != nil {
@@ -130,7 +133,11 @@ func (a *Agent) unloadMCPToolsTool(ctx context.Context, chatCtx *chatContext, in
 			return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Error: err.Error()})
 		}
 		chatCtx.setMCPServerCache(chatCtx.mcpServers, map[uuid.UUID][]string{})
-		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Note: "Unloaded all MCP tools for this chat."})
+		chatCtx.loadedTools = map[string]struct{}{}
+		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Note: "Unloaded all tools for this chat."})
+	}
+	if strings.TrimSpace(args.MCPServerID) == "" {
+		return a.unloadToolsByName(ctx, chatCtx, requested.names)
 	}
 
 	serverID, err := parseMCPServerIDArg(args.MCPServerID)
@@ -193,6 +200,48 @@ func (a *Agent) unloadMCPToolsTool(ctx context.Context, chatCtx *chatContext, in
 		NotLoaded: notLoaded,
 		Remaining: next,
 	})
+}
+
+// unloadToolsByName is unload_tools with names and no mcp_server_id: each name is unloaded
+// wherever it is loaded, from the built-in tools or from any connector.
+func (a *Agent) unloadToolsByName(ctx context.Context, chatCtx *chatContext, names []string) (string, error) {
+	unloaded, err := a.unloadBuiltinTools(ctx, chatCtx, names)
+	if err != nil {
+		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Error: err.Error()})
+	}
+	removed := sliceToSet(unloaded)
+	loadedByServer, err := a.ds.ListChatMCPLoadedTools(ctx, chatCtx.userID, chatCtx.chat.ID)
+	if err != nil {
+		return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Unloaded: unloaded, Error: err.Error()})
+	}
+	for serverID, loaded := range loadedByServer {
+		current := sliceToSet(loaded)
+		changed := false
+		for _, name := range names {
+			if _, ok := current[name]; ok {
+				delete(current, name)
+				removed[name] = struct{}{}
+				changed = true
+			}
+		}
+		if !changed {
+			continue
+		}
+		next := setToSortedSlice(current)
+		if err := a.ds.SetChatMCPLoadedTools(ctx, chatCtx.userID, chatCtx.chat.ID, serverID, next); err != nil {
+			return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Unloaded: setToSortedSlice(removed), Error: err.Error()})
+		}
+		loadedByServer = loadedByServerWithUpdate(loadedByServer, serverID, next)
+	}
+	chatCtx.setMCPServerCache(chatCtx.mcpServers, loadedByServer)
+	var notLoaded []string
+	for _, name := range names {
+		if _, ok := removed[name]; !ok {
+			notLoaded = append(notLoaded, name)
+		}
+	}
+	sort.Strings(notLoaded)
+	return marshalMCPToolLifecycleResult(mcpToolLifecycleResult{Unloaded: setToSortedSlice(removed), NotLoaded: notLoaded})
 }
 
 func parseMCPServerIDArg(raw string) (uuid.UUID, error) {

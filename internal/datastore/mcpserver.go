@@ -911,6 +911,52 @@ func (d *Datastore) RemoveMCPServerFromChat(ctx context.Context, userID, chatID,
 
 // ListChatMCPLoadedTools returns loaded MCP full tool names grouped by connector for one chat.
 func (d *Datastore) ListChatMCPLoadedTools(ctx context.Context, userID, chatID uuid.UUID) (map[uuid.UUID][]string, error) {
+	rows, err := d.listChatToolStateRows(ctx, userID, chatID)
+	if err != nil {
+		return nil, err
+	}
+	out := make(map[uuid.UUID][]string, len(rows))
+	for _, row := range rows {
+		if row == nil || row.McpServerID == builtinToolStateKey {
+			continue
+		}
+		tools := normalizeLoadedMCPToolNames(row.LoadedTools)
+		if len(tools) == 0 {
+			continue
+		}
+		out[row.McpServerID] = tools
+	}
+	return out, nil
+}
+
+// builtinToolStateKey is the mcp_server_id of the chat_mcp_tool_states row holding a chat's loaded
+// built-in tools: the loadable native tools (web search, image generation, sub-agents, jobs) keep
+// their per-chat loaded state alongside the MCP connectors' (#305). No connector has the nil ID.
+var builtinToolStateKey = uuid.Nil
+
+// ListChatLoadedBuiltinTools returns the built-in tool names loaded in one chat.
+func (d *Datastore) ListChatLoadedBuiltinTools(ctx context.Context, userID, chatID uuid.UUID) ([]string, error) {
+	rows, err := d.listChatToolStateRows(ctx, userID, chatID)
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		if row != nil && row.McpServerID == builtinToolStateKey {
+			return normalizeLoadedBuiltinToolNames(row.LoadedTools), nil
+		}
+	}
+	return nil, nil
+}
+
+// SetChatLoadedBuiltinTools replaces the built-in tool names loaded in one chat. An empty list
+// clears them.
+func (d *Datastore) SetChatLoadedBuiltinTools(ctx context.Context, userID, chatID uuid.UUID, names []string) error {
+	return d.setChatToolStateRow(ctx, userID, chatID, builtinToolStateKey, normalizeLoadedBuiltinToolNames(names))
+}
+
+// listChatToolStateRows returns every loaded-tool row of a chat the user owns: one per MCP
+// connector, plus the built-in tools' row.
+func (d *Datastore) listChatToolStateRows(ctx context.Context, userID, chatID uuid.UUID) ([]*ent.ChatMCPToolState, error) {
 	tx, err := d.dbClient.Tx(ctx)
 	if err != nil {
 		d.logger.Error("failed to start transaction", zap.Error(err))
@@ -946,25 +992,23 @@ func (d *Datastore) ListChatMCPLoadedTools(ctx context.Context, userID, chatID u
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
-
-	out := make(map[uuid.UUID][]string, len(rows))
-	for _, row := range rows {
-		if row == nil || row.McpServerID == uuid.Nil {
-			continue
-		}
-		tools := normalizeLoadedMCPToolNames(row.LoadedTools)
-		if len(tools) == 0 {
-			continue
-		}
-		out[row.McpServerID] = tools
-	}
-	return out, nil
+	return rows, nil
 }
 
 // SetChatMCPLoadedTools replaces the loaded MCP tool set for one chat+connector. The connector
 // only has to belong to the user: it may be attached to the chat or reach it through a skill, and
 // the agent decides which connectors are in scope for a turn.
 func (d *Datastore) SetChatMCPLoadedTools(ctx context.Context, userID, chatID, mcpServerID uuid.UUID, fullToolNames []string) error {
+	if mcpServerID == builtinToolStateKey {
+		return ErrMCPServerNotFound
+	}
+	return d.setChatToolStateRow(ctx, userID, chatID, mcpServerID, normalizeLoadedMCPToolNames(fullToolNames))
+}
+
+// setChatToolStateRow replaces one loaded-tool row of a chat the user owns: an MCP connector's
+// (which must belong to the user too) or, for builtinToolStateKey, the built-in tools'. tools is
+// already normalized; empty deletes the row.
+func (d *Datastore) setChatToolStateRow(ctx context.Context, userID, chatID, mcpServerID uuid.UUID, tools []string) error {
 	tx, err := d.dbClient.Tx(ctx)
 	if err != nil {
 		d.logger.Error("failed to start transaction", zap.Error(err))
@@ -989,22 +1033,23 @@ func (d *Datastore) SetChatMCPLoadedTools(ctx context.Context, userID, chatID, m
 		return ErrChatNotFound
 	}
 
-	serverOwned, err := tx.MCPServer.Query().
-		Where(
-			entmcp.ID(mcpServerID),
-			entmcp.HasOwnerWith(user.ID(userID)),
-		).
-		Exist(ctx)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	if !serverOwned {
-		tx.Rollback()
-		return ErrMCPServerNotFound
+	if mcpServerID != builtinToolStateKey {
+		serverOwned, err := tx.MCPServer.Query().
+			Where(
+				entmcp.ID(mcpServerID),
+				entmcp.HasOwnerWith(user.ID(userID)),
+			).
+			Exist(ctx)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		if !serverOwned {
+			tx.Rollback()
+			return ErrMCPServerNotFound
+		}
 	}
 
-	tools := normalizeLoadedMCPToolNames(fullToolNames)
 	if len(tools) == 0 {
 		if _, err := tx.ChatMCPToolState.Delete().
 			Where(
@@ -1055,6 +1100,8 @@ func (d *Datastore) ClearChatMCPLoadedTools(ctx context.Context, userID, chatID,
 	return d.SetChatMCPLoadedTools(ctx, userID, chatID, mcpServerID, nil)
 }
 
+// ClearAllChatMCPLoadedTools clears every loaded tool of a chat: all connectors' and the built-in
+// tools'.
 func (d *Datastore) ClearAllChatMCPLoadedTools(ctx context.Context, userID, chatID uuid.UUID) error {
 	tx, err := d.dbClient.Tx(ctx)
 	if err != nil {
@@ -1101,6 +1148,29 @@ func normalizeLoadedMCPToolNames(fullToolNames []string) []string {
 	for _, name := range fullToolNames {
 		n := strings.TrimSpace(name)
 		if n == "" || !strings.HasPrefix(n, "mcp__") {
+			continue
+		}
+		if _, ok := seen[n]; ok {
+			continue
+		}
+		seen[n] = struct{}{}
+		out = append(out, n)
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	sort.Strings(out)
+	return slices.Clip(out)
+}
+
+// normalizeLoadedBuiltinToolNames trims, de-duplicates and sorts built-in tool names. MCP names
+// never belong in the built-in row.
+func normalizeLoadedBuiltinToolNames(names []string) []string {
+	seen := make(map[string]struct{}, len(names))
+	out := make([]string, 0, len(names))
+	for _, name := range names {
+		n := strings.TrimSpace(name)
+		if n == "" || strings.HasPrefix(n, "mcp__") {
 			continue
 		}
 		if _, ok := seen[n]; ok {

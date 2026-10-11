@@ -33,6 +33,7 @@ type XiaomiProvider struct {
 type XiaomiAdapter struct {
 	provider         *XiaomiProvider
 	params           openai.ChatCompletionNewParams
+	tools            scopedToolList[openai.ChatCompletionToolUnionParam]
 	textDeltaHandler func(delta string)
 
 	// reasoning collects reasoning_content from every call this turn.
@@ -105,19 +106,14 @@ func (p *XiaomiProvider) recordRetry(ctx context.Context, model, reason string) 
 }
 
 func NewXiaomiAdapter(provider *XiaomiProvider, params openai.ChatCompletionNewParams, functionTools []openai.ChatCompletionToolUnionParam, disabledTools map[string]bool) *XiaomiAdapter {
-	for _, t := range functionTools {
-		if t.OfFunction != nil && disabledTools[t.OfFunction.Function.Name] {
-			continue
-		}
-		params.Tools = append(params.Tools, t)
-	}
+	tools := chatCompletionScopedTools(&params, functionTools, disabledTools)
 	// MiMo reasons by default and bills reasoning against the same cap as the answer,
 	// with no budget knob — give it the raised reasoning-model cap. Only the generic
 	// default (or no cap) is raised; a caller that chose some other cap keeps it.
 	if limit := params.MaxCompletionTokens; !limit.Valid() || limit.Value == DefaultMaxContentLength {
 		params.MaxCompletionTokens = openai.Int(ReasoningMaxOutputTokens)
 	}
-	return &XiaomiAdapter{provider: provider, params: params}
+	return &XiaomiAdapter{provider: provider, params: params, tools: tools}
 }
 
 func (a *XiaomiAdapter) Call(ctx context.Context) (*GenerateResponse, []ToolUse, error) {
@@ -207,4 +203,9 @@ func (a *XiaomiAdapter) toGenerateResponse(resp *openai.ChatCompletion) *Generat
 		StopReason:   chatCompletionFinishReason(resp),
 		Reasoning:    a.reasoning.String(),
 	}
+}
+
+// ScopeTools implements ToolScoper.
+func (a *XiaomiAdapter) ScopeTools(hidden func(name string) bool) {
+	a.params.Tools = a.tools.scope(hidden)
 }

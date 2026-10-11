@@ -26,6 +26,7 @@ type DeepSeekProvider struct {
 type DeepSeekAdapter struct {
 	provider         *DeepSeekProvider
 	params           openai.ChatCompletionNewParams
+	tools            scopedToolList[openai.ChatCompletionToolUnionParam]
 	textDeltaHandler func(delta string)
 }
 
@@ -58,13 +59,8 @@ func (p *DeepSeekProvider) CallStreaming(ctx context.Context, params openai.Chat
 }
 
 func NewDeepSeekAdapter(provider *DeepSeekProvider, params openai.ChatCompletionNewParams, functionTools []openai.ChatCompletionToolUnionParam, disabledTools map[string]bool) *DeepSeekAdapter {
-	for _, t := range functionTools {
-		if t.OfFunction != nil && disabledTools[t.OfFunction.Function.Name] {
-			continue
-		}
-		params.Tools = append(params.Tools, t)
-	}
-	return &DeepSeekAdapter{provider: provider, params: params}
+	tools := chatCompletionScopedTools(&params, functionTools, disabledTools)
+	return &DeepSeekAdapter{provider: provider, params: params, tools: tools}
 }
 
 func (a *DeepSeekAdapter) Call(ctx context.Context) (*GenerateResponse, []ToolUse, error) {
@@ -122,4 +118,9 @@ func (a *DeepSeekAdapter) toGenerateResponse(resp *openai.ChatCompletion) *Gener
 		InputTokens:  inputTokens,
 		OutputTokens: outputTokens,
 	}
+}
+
+// ScopeTools implements ToolScoper.
+func (a *DeepSeekAdapter) ScopeTools(hidden func(name string) bool) {
+	a.params.Tools = a.tools.scope(hidden)
 }

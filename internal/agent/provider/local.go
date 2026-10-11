@@ -31,6 +31,7 @@ type LocalProvider struct {
 type LocalAdapter struct {
 	provider         *LocalProvider
 	params           openai.ChatCompletionNewParams
+	tools            scopedToolList[openai.ChatCompletionToolUnionParam]
 	textDeltaHandler func(delta string)
 }
 
@@ -58,13 +59,8 @@ func (p *LocalProvider) Call(ctx context.Context, params openai.ChatCompletionNe
 }
 
 func NewLocalAdapter(provider *LocalProvider, params openai.ChatCompletionNewParams, functionTools []openai.ChatCompletionToolUnionParam, disabledTools map[string]bool) *LocalAdapter {
-	for _, t := range functionTools {
-		if t.OfFunction != nil && disabledTools[t.OfFunction.Function.Name] {
-			continue
-		}
-		params.Tools = append(params.Tools, t)
-	}
-	return &LocalAdapter{provider: provider, params: params}
+	tools := chatCompletionScopedTools(&params, functionTools, disabledTools)
+	return &LocalAdapter{provider: provider, params: params, tools: tools}
 }
 
 func (a *LocalAdapter) Call(ctx context.Context) (*GenerateResponse, []ToolUse, error) {
@@ -114,4 +110,9 @@ func (a *LocalAdapter) toGenerateResponse(resp *openai.ChatCompletion) *Generate
 		InputTokens:  inputTokens,
 		OutputTokens: outputTokens,
 	}
+}
+
+// ScopeTools implements ToolScoper.
+func (a *LocalAdapter) ScopeTools(hidden func(name string) bool) {
+	a.params.Tools = a.tools.scope(hidden)
 }

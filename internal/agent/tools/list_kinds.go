@@ -335,7 +335,7 @@ func (t *ListTool) listMCPServers(ctx context.Context, chat *models.Chat, scope 
 		Kind:  listKindMCPServers,
 		Count: len(items),
 		Items: items,
-		Note:  "MCP servers available to the current conversation (attached to it or linked to an active skill). Use load_mcp_tools before calling MCP tools.",
+		Note:  "MCP servers available to the current conversation (attached to it or linked to an active skill). Use load_tools before calling MCP tools.",
 	}
 	if len(items) > 0 && failedDiscovery == len(items) {
 		result.Error = "MCP discovery failed for all connected servers. MCP tools are currently unavailable; review connector auth/settings and retry."

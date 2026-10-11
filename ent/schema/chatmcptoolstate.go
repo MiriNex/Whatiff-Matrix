@@ -7,7 +7,9 @@ import (
 	"github.com/google/uuid"
 )
 
-// ChatMCPToolState stores the loaded MCP tool subset for one chat+connector.
+// ChatMCPToolState stores the loaded MCP tool subset for one chat+connector. The row whose
+// mcp_server_id is the nil UUID holds the chat's loaded built-in tools instead (the catalog's
+// Loadable tools).
 type ChatMCPToolState struct {
 	ent.Schema
 }
