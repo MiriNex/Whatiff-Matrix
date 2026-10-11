@@ -2,20 +2,28 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { FileAttachment, isImageAttachment } from '../models/file-attachment.model';
+import { FileAttachment } from '../models/file-attachment.model';
 import { PaginatedResponse } from '../models/common.model';
-import { FileAttachmentService } from './file-attachment.service';
 import { GalleryFolder } from '../../features/gallery/helpers/gallery-folder.helpers';
 
 /** Which gallery files to list: images (the server's default), every other file, or both. */
 export type GalleryKind = 'images' | 'files' | 'all';
+
+/** The most ids one move or bulk delete request takes (the server's cap); send more in chunks. */
+export const GALLERY_BATCH_LIMIT = 500;
+
+/** What POST /image-gallery/delete did with each id. */
+export interface GalleryDeleteResult {
+  deleted: string[];
+  /** Ids not deleted, with a reason safe to show ("not found", "could not delete the stored image", …). */
+  failed: { id: string; error: string }[];
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ImageGalleryService {
   private http = inject(HttpClient);
-  private fileAttachments = inject(FileAttachmentService);
   private apiUrl = `${environment.apiUrl}`;
 
   listImages(
@@ -57,13 +65,12 @@ export class ImageGalleryService {
   }
 
   /**
-   * Deletes any gallery file. Images go through the gallery route (which also drops the stored
-   * thumbnail); other files through file-attachment (which also removes the provider's copy).
+   * Deletes up to {@link GALLERY_BATCH_LIMIT} gallery files of any kind, each with its own route's
+   * cleanup. Resolves with which went and which did not (and why); ids that are not the caller's
+   * come back as failed, "not found".
    */
-  deleteFile(file: Pick<FileAttachment, 'id' | 'file_type'>): Observable<void> {
-    return isImageAttachment(file)
-      ? this.deleteImage(file.id)
-      : this.fileAttachments.deleteFileAttachment(file.id).pipe(map(() => undefined));
+  deleteFiles(ids: readonly string[]): Observable<GalleryDeleteResult> {
+    return this.http.post<GalleryDeleteResult>(`${this.apiUrl}/image-gallery/delete`, { ids });
   }
 
   importImage(file: File, metadata?: { title?: string; description?: string; folder?: string }): Observable<FileAttachment> {

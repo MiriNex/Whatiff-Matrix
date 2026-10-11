@@ -26,7 +26,7 @@ describe('GalleryFolderToolsComponent', () => {
   let fixture: ComponentFixture<GalleryFolderToolsComponent>;
   let component: GalleryFolderToolsComponent;
   let view: GalleryViewService;
-  let api: MockedObject<Pick<ImageGalleryService, 'listImages' | 'listFolders' | 'moveImages' | 'moveFolder' | 'deleteFile'>>;
+  let api: MockedObject<Pick<ImageGalleryService, 'listImages' | 'listFolders' | 'moveImages' | 'moveFolder' | 'deleteFiles'>>;
   let confirmation: { confirm: ReturnType<typeof vi.fn> };
 
   const el = () => fixture.nativeElement as HTMLElement;
@@ -45,7 +45,7 @@ describe('GalleryFolderToolsComponent', () => {
       ),
       moveImages: vi.fn().mockReturnValue(of(2)),
       moveFolder: vi.fn().mockReturnValue(of(3)),
-      deleteFile: vi.fn().mockReturnValue(of(undefined)),
+      deleteFiles: vi.fn((ids: readonly string[]) => of({ deleted: [...ids], failed: [] })),
     } as unknown as typeof api;
     confirmation = { confirm: vi.fn().mockResolvedValue(true) };
     localStorage.removeItem(GALLERY_LAYOUT_KEY);
@@ -470,7 +470,7 @@ describe('GalleryFolderToolsComponent', () => {
       expect(confirmation.confirm).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'Delete 2 items?', confirmText: 'Delete', type: 'danger' }),
       );
-      expect(api.deleteFile.mock.calls.map(([file]) => file.id)).toEqual(['a', 'b']);
+      expect(api.deleteFiles).toHaveBeenCalledWith(['a', 'b']);
       expect(view.images()).toEqual([]);
       expect(view.selectedCount()).toBe(0);
       expect(el().querySelector('[role="status"].folder-tools__bulk-result')?.textContent).toContain('Deleted 2 items.');
@@ -481,12 +481,12 @@ describe('GalleryFolderToolsComponent', () => {
 
       await component.deleteSelection();
 
-      expect(api.deleteFile).not.toHaveBeenCalled();
+      expect(api.deleteFiles).not.toHaveBeenCalled();
       expect(view.selectedCount()).toBe(2);
     });
 
     it('reports a partial failure and keeps what failed selected for a retry', async () => {
-      api.deleteFile.mockImplementation(file => (file.id === 'b' ? throwError(() => new Error('boom')) : of(undefined)));
+      api.deleteFiles.mockReturnValue(of({ deleted: ['a'], failed: [{ id: 'b', error: 'could not delete the file' }] }));
 
       await component.deleteSelection();
       await flush(fixture);
@@ -504,7 +504,7 @@ describe('GalleryFolderToolsComponent', () => {
       await flush(fixture);
 
       expect(confirmation.confirm).toHaveBeenCalled();
-      expect(api.deleteFile).toHaveBeenCalledTimes(2);
+      expect(api.deleteFiles).toHaveBeenCalledWith(['a', 'b']);
     });
   });
 });

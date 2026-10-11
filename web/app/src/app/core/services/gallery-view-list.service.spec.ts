@@ -1,11 +1,11 @@
 import type { MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { Observable, of, Subject, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { FileAttachment } from '../models/file-attachment.model';
 import { PaginatedResponse } from '../models/common.model';
-import { ImageGalleryService } from './image-gallery.service';
+import { GALLERY_BATCH_LIMIT, ImageGalleryService } from './image-gallery.service';
 import { GalleryViewService } from './gallery-view.service';
 import { GALLERY_LAYOUT_KEY } from '../../features/gallery/helpers/gallery-list.helpers';
 
@@ -19,7 +19,7 @@ function page(rows: FileAttachment[], total = rows.length): PaginatedResponse<Fi
 
 describe('GalleryViewService list view and bulk actions', () => {
   let service: GalleryViewService;
-  let api: MockedObject<Pick<ImageGalleryService, 'listImages' | 'listFolders' | 'deleteFile'>>;
+  let api: MockedObject<Pick<ImageGalleryService, 'listImages' | 'listFolders' | 'deleteFiles' | 'moveImages'>>;
 
   const create = () => {
     TestBed.configureTestingModule({
@@ -34,7 +34,9 @@ describe('GalleryViewService list view and bulk actions', () => {
     api = {
       listImages: vi.fn().mockReturnValue(of(page([file('a'), file('b'), file('c')], 5))),
       listFolders: vi.fn().mockReturnValue(of([])),
-      deleteFile: vi.fn().mockReturnValue(of(undefined)),
+      // The server deletes everything it is sent unless a test says otherwise.
+      deleteFiles: vi.fn((ids: readonly string[]) => of({ deleted: [...ids], failed: [] })),
+      moveImages: vi.fn((ids: readonly string[]) => of(ids.length)),
     } as unknown as typeof api;
   });
 
@@ -118,13 +120,14 @@ describe('GalleryViewService list view and bulk actions', () => {
   describe('deleteFiles', () => {
     beforeEach(() => create());
 
-    it('deletes each file through the gallery, removes it, and reports the count', async () => {
+    it('deletes through the bulk route, removes what went, and reports the count', async () => {
       service.selectAllShown();
 
       const deleted = await service.deleteFiles(['a', 'b']);
 
       expect(deleted).toBe(2);
-      expect(api.deleteFile.mock.calls.map(([row]) => row.id)).toEqual(['a', 'b']);
+      expect(api.deleteFiles).toHaveBeenCalledTimes(1);
+      expect(api.deleteFiles).toHaveBeenCalledWith(['a', 'b']);
       expect(service.images().map(row => row.id)).toEqual(['c']);
       expect(service.totalCount()).toBe(3);
       expect([...service.selectedIds()]).toEqual(['c']);
@@ -132,8 +135,8 @@ describe('GalleryViewService list view and bulk actions', () => {
       expect(api.listFolders).toHaveBeenCalled();
     });
 
-    it('keeps going after a failure, leaving the failed file shown and selected', async () => {
-      api.deleteFile.mockImplementation(row => (row.id === 'b' ? throwError(() => new Error('nope')) : of(undefined)));
+    it('keeps what the server could not delete shown and selected, naming it', async () => {
+      api.deleteFiles.mockReturnValue(of({ deleted: ['a', 'c'], failed: [{ id: 'b', error: 'could not delete the stored image' }] }));
       service.selectAllShown();
 
       const deleted = await service.deleteFiles(['a', 'b', 'c']);
@@ -145,35 +148,68 @@ describe('GalleryViewService list view and bulk actions', () => {
       expect(service.bulkResult()?.text).toContain('Could not delete “b.png”');
     });
 
-    it('never has more than a few deletes in flight', async () => {
-      const rows = Array.from({ length: 10 }, (_, i) => file(`f${i}`));
+    it('sends more than the server cap in chunks, and a failed chunk fails only its own files', async () => {
+      const rows = Array.from({ length: GALLERY_BATCH_LIMIT + 20 }, (_, i) => file(`f${i}`));
       api.listImages.mockReturnValue(of(page(rows)));
       service.refresh();
-      const pending: Subject<void>[] = [];
-      api.deleteFile.mockImplementation(() => {
-        const done = new Subject<void>();
-        pending.push(done);
-        return done as Observable<void>;
-      });
+      api.deleteFiles.mockImplementation(ids =>
+        ids.length === 20 ? throwError(() => new Error('offline')) : of({ deleted: [...ids], failed: [] }),
+      );
+      service.selectAllShown();
 
-      const settle = () => new Promise(resolve => setTimeout(resolve, 0));
-      const run = service.deleteFiles(rows.map(row => row.id));
-      await settle();
-      expect(pending).toHaveLength(4);
+      const deleted = await service.deleteFiles(rows.map(row => row.id));
 
-      for (let finished = 0; finished < 10; finished++) {
-        expect(pending.length - finished).toBeLessThanOrEqual(4);
-        pending[finished].next();
-        pending[finished].complete();
-        await settle();
-      }
-      expect(await run).toBe(10);
+      expect(api.deleteFiles.mock.calls.map(([ids]) => ids.length)).toEqual([GALLERY_BATCH_LIMIT, 20]);
+      expect(deleted).toBe(GALLERY_BATCH_LIMIT);
+      expect(service.images()).toHaveLength(20);
+      expect(service.selectedCount()).toBe(20);
+      expect(service.bulkResult()?.text).toContain(`Deleted ${GALLERY_BATCH_LIMIT} of ${GALLERY_BATCH_LIMIT + 20} items`);
     });
 
     it('ignores ids that are not loaded (never deletes what is not on screen)', async () => {
       const deleted = await service.deleteFiles(['zzz']);
       expect(deleted).toBe(0);
-      expect(api.deleteFile).not.toHaveBeenCalled();
+      expect(api.deleteFiles).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('moveImages', () => {
+    beforeEach(() => create());
+
+    it('sends more than the server cap in chunks', async () => {
+      const rows = Array.from({ length: GALLERY_BATCH_LIMIT * 2 + 1 }, (_, i) => file(`m${i}`));
+      api.listImages.mockReturnValue(of(page(rows)));
+      service.refresh();
+      service.selectAllShown();
+
+      const ok = await service.moveImages(rows.map(row => row.id), 'archive');
+
+      expect(ok).toBe(true);
+      expect(api.moveImages.mock.calls.map(([ids, folder]) => [ids.length, folder])).toEqual([
+        [GALLERY_BATCH_LIMIT, 'archive'],
+        [GALLERY_BATCH_LIMIT, 'archive'],
+        [1, 'archive'],
+      ]);
+      expect(service.images()).toEqual([]);
+      expect(service.selectedCount()).toBe(0);
+    });
+
+    it('stops at a failed chunk, keeping what already moved and the rest still selected', async () => {
+      const rows = Array.from({ length: GALLERY_BATCH_LIMIT + 3 }, (_, i) => file(`m${i}`));
+      api.listImages.mockReturnValue(of(page(rows)));
+      service.refresh();
+      service.selectAllShown();
+      api.moveImages.mockImplementation(ids =>
+        ids.length === 3 ? throwError(() => ({ error: { error: 'Too many files in one move' } })) : of(ids.length),
+      );
+
+      const ok = await service.moveImages(rows.map(row => row.id), 'archive');
+
+      expect(ok).toBe(false);
+      expect(service.images().map(row => row.id)).toEqual(['m500', 'm501', 'm502']);
+      expect([...service.selectedIds()]).toEqual(['m500', 'm501', 'm502']);
+      expect(service.folderError()).toBe('Too many files in one move');
+      expect(service.lastMove()?.ids.size).toBe(GALLERY_BATCH_LIMIT);
     });
   });
 });

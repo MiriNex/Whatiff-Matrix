@@ -3,7 +3,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 import { FileAttachment } from '../models/file-attachment.model';
-import { GalleryKind, ImageGalleryService } from './image-gallery.service';
+import { GALLERY_BATCH_LIMIT, GalleryKind, ImageGalleryService } from './image-gallery.service';
 import {
   applyGalleryFilters,
   DEFAULT_GALLERY_FILTERS,
@@ -27,13 +27,10 @@ import {
   writeGalleryLayout,
 } from '../../features/gallery/helpers/gallery-list.helpers';
 import { SelectionModel } from '../../shared/ui/helpers/selection-model';
-import { settleWithLimit } from '../utils/bounded-concurrency.helpers';
+import { chunk } from '../utils/chunk.helpers';
 
 export type GalleryAssociationFilterMode = 'all' | 'global' | 'personality';
 export type GalleryMode = 'gallery' | 'expressions';
-
-/** How many deletes a bulk delete keeps in flight; there is no bulk delete route (images and files delete differently). */
-const BULK_DELETE_CONCURRENCY = 4;
 
 @Injectable({ providedIn: 'root' })
 export class GalleryViewService {
@@ -311,8 +308,10 @@ export class GalleryViewService {
   }
 
   /**
-   * Deletes the given files (images and other files alike), a few at a time. One that fails does
-   * not stop the rest; it stays selected and the result names it. Resolves with how many went.
+   * Deletes the given files (images and other files alike) through the bulk delete route, in
+   * requests of at most {@link GALLERY_BATCH_LIMIT}. One that fails (or a whole request that fails)
+   * does not stop the rest; what failed stays selected and the result names it. Only loaded files
+   * are deleted. Resolves with how many went.
    */
   async deleteFiles(ids: readonly string[]): Promise<number> {
     const byId = new Map(this.images().map(row => [row.id, row] as const));
@@ -321,21 +320,29 @@ export class GalleryViewService {
     if (rows.length === 0) {
       return 0;
     }
-    const { succeeded, failed } = await settleWithLimit(rows, BULK_DELETE_CONCURRENCY, row =>
-      firstValueFrom(this.galleryService.deleteFile(row)),
-    );
+    const deleted: string[] = [];
+    const failed: string[] = [];
+    for (const part of chunk(rows.map(row => row.id), GALLERY_BATCH_LIMIT)) {
+      try {
+        const result = await firstValueFrom(this.galleryService.deleteFiles(part));
+        deleted.push(...result.deleted);
+        failed.push(...result.failed.map(failure => failure.id));
+      } catch {
+        failed.push(...part);
+      }
+    }
     // removeImage also unpicks it, so only the failures stay selected.
-    for (const row of succeeded) {
-      this.removeImage(row.id);
+    for (const id of deleted) {
+      this.removeImage(id);
     }
     this.bulkResult.set({
-      text: describeBulkDelete(succeeded.length, failed.map(({ item }) => item.name)),
+      text: describeBulkDelete(deleted.length, failed.map(id => byId.get(id)?.name ?? id)),
       failed: failed.length > 0,
     });
-    if (succeeded.length > 0) {
+    if (deleted.length > 0) {
       this.loadFolders();
     }
-    return succeeded.length;
+    return deleted.length;
   }
 
   removeImage(id: string): void {
@@ -430,13 +437,34 @@ export class GalleryViewService {
       return false;
     }
     this.folderError.set(null);
-    try {
-      await firstValueFrom(this.galleryService.moveImages(ids, folder));
-    } catch (error) {
-      this.folderError.set(describeFolderError(error, 'Could not move the images.'));
+    // The route takes GALLERY_BATCH_LIMIT ids at a time; a failed request stops there, keeping what already moved.
+    const moved = new Set<string>();
+    let failed = false;
+    let failure: unknown;
+    for (const part of chunk(ids, GALLERY_BATCH_LIMIT)) {
+      try {
+        await firstValueFrom(this.galleryService.moveImages(part, folder));
+        part.forEach(id => moved.add(id));
+      } catch (error) {
+        failed = true;
+        failure = error;
+        break;
+      }
+    }
+    if (moved.size > 0) {
+      this.applyMove(moved, folder);
+    }
+    if (failed) {
+      this.selection.setAll([...moved], false);
+      this.folderError.set(describeFolderError(failure, 'Could not move the images.'));
       return false;
     }
-    const moved = new Set(ids);
+    this.clearSelection();
+    return true;
+  }
+
+  /** Shows a move that went through: the files leave (or relabel in) the grid, and folder counts reload. */
+  private applyMove(moved: ReadonlySet<string>, folder: string): void {
     this.lastMove.set({ ids: moved, folder });
     if (this.browsingFolders()) {
       // The moved images leave this folder's grid, unless they were moved into it.
@@ -448,9 +476,7 @@ export class GalleryViewService {
     } else {
       this.images.update(rows => rows.map(row => (moved.has(row.id) ? { ...row, folder: folder || undefined } : row)));
     }
-    this.clearSelection();
     this.loadFolders();
-    return true;
   }
 
   /** Renames a folder, carrying everything beneath it. Resolves true when it went through. */
