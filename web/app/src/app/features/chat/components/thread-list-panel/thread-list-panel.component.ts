@@ -10,6 +10,8 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
 import { apiErrorMessage } from '../../../../core/utils/api-error.helpers';
 import { ModalComponent } from '../../../../shared/ui/modal/modal.component';
 import { HelpHintComponent } from '../../../../shared/ui/help-hint/help-hint.component';
+import { BulkAction, BulkActionBarComponent } from '../../../../shared/ui/bulk-action-bar/bulk-action-bar.component';
+import { DataTableComponent } from '../../../../shared/ui/data-table/data-table.component';
 import { ThreadRowComponent } from './thread-row.component';
 
 const MAX_THREAD_TAGS = 10;
@@ -20,7 +22,7 @@ type ThreadListTab = ThreadListScope;
 @Component({
   selector: 'app-thread-list-panel',
   standalone: true,
-  imports: [HelpHintComponent, ModalComponent, ThreadRowComponent, TooltipDirective],
+  imports: [BulkActionBarComponent, DataTableComponent, HelpHintComponent, ModalComponent, ThreadRowComponent, TooltipDirective],
   template: `
     <aside class="panel" aria-label="Threads">
       <header class="panel__header">
@@ -157,35 +159,12 @@ type ThreadListTab = ThreadListScope;
       }
 
       @if (threads.selectedCount() > 0) {
-        <div class="panel__bulk-bar" role="region" aria-label="Bulk actions">
-          <span class="panel__bulk-count" aria-live="polite">{{ threads.selectedCount() }} selected</span>
-          <div class="panel__bulk-action" (focusout)="closeBulkMenuSoon()" (keydown.escape)="bulkActionMenuOpen.set(false)">
-            <button
-              type="button"
-              class="panel__bulk-action-btn"
-              aria-haspopup="listbox"
-              [attr.aria-expanded]="bulkActionMenuOpen()"
-              (click)="bulkActionMenuOpen.set(!bulkActionMenuOpen())"
-            >
-              Choose action <span aria-hidden="true">▾</span>
-            </button>
-            @if (bulkActionMenuOpen()) {
-              <div class="panel__bulk-action-menu" role="listbox" aria-label="Bulk actions">
-                @if (threadListTab() !== 'archived') {
-                  <button type="button" role="option" (mousedown)="runBulkArchive()">Archive</button>
-                }
-                @if (threadListTab() !== 'active') {
-                  <button type="button" role="option" (mousedown)="runBulkRestore()">Restore</button>
-                }
-                <button type="button" role="option" (mousedown)="openBulkPersonalityPicker()">Assign to personality…</button>
-                <button type="button" role="option" class="panel__bulk-action-menu-item--danger" (mousedown)="runBulkDelete()">Delete</button>
-              </div>
-            }
-          </div>
-          <button type="button" class="panel__bulk-clear" (click)="threads.clearSelection()" aria-label="Clear selection">
-            Clear <span aria-hidden="true">×</span>
-          </button>
-        </div>
+        <ui-bulk-action-bar
+          [count]="threads.selectedCount()"
+          [actions]="bulkActions()"
+          (action)="onBulkAction($event)"
+          (clear)="threads.clearSelection()"
+        />
       }
 
       <section
@@ -195,101 +174,86 @@ type ThreadListTab = ThreadListScope;
         aria-label="Thread manager table"
         (keydown)="onListboxKeydown($event)"
       >
-        <div class="panel__table-shell">
-          @if (threads.error(); as error) {
-            <p class="panel__empty panel__error" role="alert">{{ error }}</p>
-          } @else if (threads.loading()) {
-            <p class="panel__empty">Loading threads…</p>
-          } @else if (visibleThreads().length === 0) {
-            <p class="panel__empty">{{ emptyMessage() }}</p>
-          } @else {
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col" class="panel__select-col">
-                    <input
-                      type="checkbox"
-                      class="panel__select-all"
-                      [checked]="selectAllState() === 'all'"
-                      [indeterminate]="selectAllState() === 'some'"
-                      (change)="onSelectAllChange()"
-                      aria-label="Select all threads"
-                      uiTooltip="Select all threads for bulk actions"
-                    />
-                  </th>
-                  <th scope="col">
-                    <button
-                      type="button"
-                      [attr.aria-pressed]="threads.pinnedOnly()"
-                      [uiTooltip]="threads.pinnedOnly() ? 'Show all threads' : 'Show starred threads only'"
-                      (click)="threads.pinnedOnly.set(!threads.pinnedOnly())"
-                    >
-                      STARRED? <span aria-hidden="true">⬍</span>
-                    </button>
-                  </th>
-                  <th scope="col">
-                    <label>
-                      PERSONALITY
-                      <select
-                        [value]="threads.selectedPersonalityId() ?? ''"
-                        (change)="threads.selectedPersonalityId.set($any($event.target).value || null)"
-                        aria-label="Filter by personality"
-                      >
-                        <option value="">All</option>
-                        @for (personality of threads.personalities(); track personality.id) {
-                          <option [value]="personality.id">{{ personality.label }}</option>
-                        }
-                      </select>
-                    </label>
-                  </th>
-                  <th scope="col">
-                    <button type="button" uiTooltip="Sort by title, A to Z" (click)="threads.sort.set('alphabetical')">
-                      TITLE <span aria-hidden="true">⬍</span>
-                    </button>
-                  </th>
-                  @if (threadListTab() === 'jobs') {
-                    <th scope="col" class="panel__job-col">JOB</th>
+        <ui-data-table
+          class="panel__table"
+          [message]="tableMessage()"
+          [messageTone]="threads.error() ? 'error' : 'muted'"
+          [selectAllState]="selectAllState()"
+          selectAllLabel="Select all threads"
+          selectAllTooltip="Select all threads for bulk actions"
+          bodyRole="listbox"
+          bodyLabel="Thread list"
+          (selectAllChange)="onSelectAllChange()"
+        >
+          <ng-container ngProjectAs="[uiTableHead]">
+            <th scope="col">
+              <button
+                type="button"
+                [attr.aria-pressed]="threads.pinnedOnly()"
+                [uiTooltip]="threads.pinnedOnly() ? 'Show all threads' : 'Show starred threads only'"
+                (click)="threads.pinnedOnly.set(!threads.pinnedOnly())"
+              >
+                STARRED? <span aria-hidden="true">⬍</span>
+              </button>
+            </th>
+            <th scope="col">
+              <label>
+                PERSONALITY
+                <select
+                  [value]="threads.selectedPersonalityId() ?? ''"
+                  (change)="threads.selectedPersonalityId.set($any($event.target).value || null)"
+                  aria-label="Filter by personality"
+                >
+                  <option value="">All</option>
+                  @for (personality of threads.personalities(); track personality.id) {
+                    <option [value]="personality.id">{{ personality.label }}</option>
                   }
-                  <th scope="col" class="panel__created-col">
-                    <button type="button" uiTooltip="Sort by creation date, newest first" (click)="threads.sort.set('newest')">
-                      CREATED <span aria-hidden="true">⬍</span>
-                    </button>
-                  </th>
-                  <th scope="col">
-                    <button type="button" uiTooltip="Sort by last activity, most recent first" (click)="threads.sort.set('recent')">
-                      UPDATED <span aria-hidden="true">▼</span>
-                    </button>
-                  </th>
-                  <th scope="col" class="panel__tags-col">TAGS</th>
-                  <th scope="col">{{ archiveColumnLabel() }}</th>
-                  <th scope="col" class="panel__delete-col"><span class="panel__sr-only">Delete</span></th>
-                </tr>
-              </thead>
-              <tbody role="listbox" aria-label="Thread list">
-                @for (thread of visibleThreads(); track thread.id) {
-                  <app-thread-row
-                    [thread]="thread"
-                    [active]="activeThreadId() === thread.id"
-                    [personality]="personalityForThread(thread)"
-                    [isArchivedView]="threadListTab() === 'archived' || (threadListTab() === 'jobs' && !!thread.archived)"
-                    [showJobColumn]="threadListTab() === 'jobs'"
-                    [jobs]="threads.jobsByChatId().get(thread.id) ?? null"
-                    [automations]="threads.automationsByChatId().get(thread.id) ?? null"
-                    [checked]="threads.selectedIds().has(thread.id)"
-                    (select)="selectThread.emit($event)"
-                    (toggleSelect)="threads.toggleSelected($event)"
-                    (rename)="rename($event.thread, $event.name)"
-                    (togglePin)="togglePin($event)"
-                    (editTags)="editTags($event)"
-                    (deleteThread)="deleteThread($event)"
-                    (archiveThread)="archiveThread($event)"
-                    (restoreThread)="restoreThread($event)"
-                  />
-                }
-              </tbody>
-            </table>
+                </select>
+              </label>
+            </th>
+            <th scope="col">
+              <button type="button" uiTooltip="Sort by title, A to Z" (click)="threads.sort.set('alphabetical')">
+                TITLE <span aria-hidden="true">⬍</span>
+              </button>
+            </th>
+            @if (threadListTab() === 'jobs') {
+              <th scope="col" class="panel__job-col">JOB</th>
+            }
+            <th scope="col" class="panel__created-col">
+              <button type="button" uiTooltip="Sort by creation date, newest first" (click)="threads.sort.set('newest')">
+                CREATED <span aria-hidden="true">⬍</span>
+              </button>
+            </th>
+            <th scope="col">
+              <button type="button" uiTooltip="Sort by last activity, most recent first" (click)="threads.sort.set('recent')">
+                UPDATED <span aria-hidden="true">▼</span>
+              </button>
+            </th>
+            <th scope="col" class="panel__tags-col">TAGS</th>
+            <th scope="col">{{ archiveColumnLabel() }}</th>
+            <th scope="col" class="panel__delete-col"><span class="panel__sr-only">Delete</span></th>
+          </ng-container>
+          @for (thread of visibleThreads(); track thread.id) {
+            <app-thread-row
+              [thread]="thread"
+              [active]="activeThreadId() === thread.id"
+              [personality]="personalityForThread(thread)"
+              [isArchivedView]="threadListTab() === 'archived' || (threadListTab() === 'jobs' && !!thread.archived)"
+              [showJobColumn]="threadListTab() === 'jobs'"
+              [jobs]="threads.jobsByChatId().get(thread.id) ?? null"
+              [automations]="threads.automationsByChatId().get(thread.id) ?? null"
+              [checked]="threads.selectedIds().has(thread.id)"
+              (select)="selectThread.emit($event)"
+              (toggleSelect)="threads.toggleSelected($event)"
+              (rename)="rename($event.thread, $event.name)"
+              (togglePin)="togglePin($event)"
+              (editTags)="editTags($event)"
+              (deleteThread)="deleteThread($event)"
+              (archiveThread)="archiveThread($event)"
+              (restoreThread)="restoreThread($event)"
+            />
           }
-        </div>
+        </ui-data-table>
       </section>
     </aside>
 
@@ -489,93 +453,6 @@ type ThreadListTab = ThreadListScope;
       min-width: 11rem;
     }
 
-    .panel__select-col {
-      text-align: center;
-      width: 2.5rem;
-    }
-
-    .panel__bulk-bar {
-      align-items: center;
-      background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-      border-bottom: 1px solid var(--color-border-base);
-      display: flex;
-      gap: 0.75rem;
-      padding: 0.5rem 1.25rem;
-    }
-
-    .panel__bulk-count {
-      color: var(--color-accent);
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .panel__bulk-action {
-      position: relative;
-    }
-
-    .panel__bulk-action-btn {
-      align-items: center;
-      background: var(--color-surface-base);
-      border: 1px solid var(--color-accent);
-      border-radius: 0.375rem;
-      color: var(--color-accent);
-      cursor: pointer;
-      display: inline-flex;
-      font-size: 0.75rem;
-      font-weight: 600;
-      gap: 0.25rem;
-      padding: 0.35rem 0.75rem;
-    }
-
-    .panel__bulk-action-menu {
-      background: var(--color-surface-elevated);
-      border: 1px solid var(--color-border-base);
-      border-radius: 0.5rem;
-      box-shadow: 0 0.5rem 1.5rem color-mix(in srgb, black 18%, transparent);
-      left: 0;
-      min-width: 12rem;
-      overflow: hidden;
-      position: absolute;
-      top: calc(100% + 0.25rem);
-      z-index: 10;
-    }
-
-    .panel__bulk-action-menu button {
-      background: transparent;
-      border: 0;
-      color: var(--color-text-primary);
-      cursor: pointer;
-      display: flex;
-      font-size: 0.75rem;
-      padding: 0.5rem 0.75rem;
-      text-align: left;
-      width: 100%;
-    }
-
-    .panel__bulk-action-menu button:hover,
-    .panel__bulk-action-menu button:focus-visible {
-      background: var(--color-surface-muted);
-    }
-
-    .panel__bulk-action-menu-item--danger {
-      color: var(--danger);
-    }
-
-    .panel__bulk-clear {
-      background: transparent;
-      border: 0;
-      color: var(--color-text-muted);
-      cursor: pointer;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin-left: auto;
-      padding: 0.35rem 0.5rem;
-    }
-
-    .panel__bulk-clear:hover {
-      color: var(--color-text-primary);
-    }
-
     .bulk-personality-picker {
       list-style: none;
       margin: 0;
@@ -741,53 +618,8 @@ type ThreadListTab = ThreadListScope;
       padding: 1.25rem;
     }
 
-    .panel__table-shell {
-      border: 1px solid var(--color-border-base);
-      border-radius: 0.5rem;
-      min-width: 52rem;
-      overflow: hidden;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-
-    th {
-      background: var(--color-surface-muted);
-      color: var(--color-text-muted);
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      padding: 0.5rem 0.75rem;
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    th button,
-    th label {
-      align-items: center;
-      background: transparent;
-      border: 0;
-      color: inherit;
-      display: inline-flex;
-      font: inherit;
-      gap: 0.25rem;
-      letter-spacing: inherit;
-      padding: 0;
-    }
-
-    th button {
-      cursor: pointer;
-    }
-
-    th select {
-      background: transparent;
-      border: 0;
-      color: inherit;
-      font: inherit;
-      max-width: 1.25rem;
-      outline: 0;
+    .panel__table {
+      --ui-data-table-min-width: 52rem;
     }
 
     .panel__delete-col {
@@ -807,25 +639,9 @@ type ThreadListTab = ThreadListScope;
       width: 1px;
     }
 
-    .panel__empty,
-    .panel__error {
-      color: var(--color-text-muted);
-      margin: 0;
-      padding: 2.5rem;
-      text-align: center;
-    }
-
-    .panel__error {
-      color: var(--color-danger);
-    }
-
     @media (max-width: 1023px) {
       .panel__body {
         padding: 0.875rem;
-      }
-
-      .panel__table-shell {
-        min-width: 0;
       }
 
       .panel__toolbar {
@@ -841,10 +657,6 @@ type ThreadListTab = ThreadListScope;
       .panel__search input {
         font-size: 1rem;
       }
-
-      th select {
-        max-width: 5.5rem;
-      }
     }
 
     @media (max-width: 767px) {
@@ -854,10 +666,6 @@ type ThreadListTab = ThreadListScope;
 
       .panel__body {
         padding: 0.75rem;
-      }
-
-      .panel__table-shell {
-        overflow-x: auto;
       }
 
       /* Matches the cells thread-row hides at this width. */
@@ -1045,7 +853,23 @@ export class ThreadListPanelComponent implements OnInit {
         return 'ARCHIVE?';
     }
   });
-  readonly bulkActionMenuOpen = signal(false);
+  /** The bulk bar's menu: archive or restore as the tab allows, then personality and delete. */
+  readonly bulkActions = computed<BulkAction[]>(() => {
+    const tab = this.threadListTab();
+    return [
+      ...(tab !== 'archived' ? [{ id: 'archive', label: 'Archive' }] : []),
+      ...(tab !== 'active' ? [{ id: 'restore', label: 'Restore' }] : []),
+      { id: 'personality', label: 'Assign to personality…' },
+      { id: 'delete', label: 'Delete', danger: true },
+    ];
+  });
+  /** What the table shows instead of rows: the error, a loading note, or why it is empty. */
+  readonly tableMessage = computed(() => {
+    const error = this.threads.error();
+    if (error) return error;
+    if (this.threads.loading()) return 'Loading threads…';
+    return this.visibleThreads().length === 0 ? this.emptyMessage() : null;
+  });
   readonly bulkPersonalityPickerOpen = signal(false);
   readonly bulkPersonalityTitleId = `thread-bulk-personality-${Math.random().toString(36).slice(2, 10)}`;
   readonly selectAllState = computed(() =>
@@ -1182,22 +1006,32 @@ export class ThreadListPanelComponent implements OnInit {
     this.threads.setAllSelected(ids, this.selectAllState() !== 'all');
   }
 
-  closeBulkMenuSoon(): void {
-    setTimeout(() => this.bulkActionMenuOpen.set(false), 150);
+  onBulkAction(id: string): void {
+    switch (id) {
+      case 'archive':
+        void this.runBulkArchive();
+        return;
+      case 'restore':
+        void this.runBulkRestore();
+        return;
+      case 'personality':
+        this.openBulkPersonalityPicker();
+        return;
+      case 'delete':
+        void this.runBulkDelete();
+        return;
+    }
   }
 
   async runBulkArchive(): Promise<void> {
-    this.bulkActionMenuOpen.set(false);
     await this.threads.bulkSetArchived([...this.threads.selectedIds()], true);
   }
 
   async runBulkRestore(): Promise<void> {
-    this.bulkActionMenuOpen.set(false);
     await this.threads.bulkSetArchived([...this.threads.selectedIds()], false);
   }
 
   async runBulkDelete(): Promise<void> {
-    this.bulkActionMenuOpen.set(false);
     const count = this.threads.selectedCount();
     const confirmed = await this.confirmation.confirm({
       title: 'Delete threads?',
@@ -1211,7 +1045,6 @@ export class ThreadListPanelComponent implements OnInit {
   }
 
   openBulkPersonalityPicker(): void {
-    this.bulkActionMenuOpen.set(false);
     this.bulkPersonalityPickerOpen.set(true);
   }
 

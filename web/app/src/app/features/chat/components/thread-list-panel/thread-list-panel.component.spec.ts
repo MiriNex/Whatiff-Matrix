@@ -245,25 +245,25 @@ describe('ThreadListPanelComponent', () => {
 
     describe('bulk selection', () => {
         it('shows the bulk bar with a running count once rows are checked, and hides it when cleared', () => {
-            expect(fixture.nativeElement.querySelector('.panel__bulk-bar')).toBeNull();
+            expect(fixture.nativeElement.querySelector('ui-bulk-action-bar')).toBeNull();
 
             const checkboxes = fixture.nativeElement.querySelectorAll('.thread-row__select') as NodeListOf<HTMLInputElement>;
             checkboxes[0].click();
             fixture.detectChanges();
 
-            const bar = fixture.nativeElement.querySelector('.panel__bulk-bar') as HTMLElement;
+            const bar = fixture.nativeElement.querySelector('ui-bulk-action-bar') as HTMLElement;
             expect(bar, 'bulk bar').toBeTruthy();
             expect(bar.textContent).toContain('1 selected');
 
-            const clearButton = fixture.nativeElement.querySelector('.panel__bulk-clear') as HTMLButtonElement;
+            const clearButton = fixture.nativeElement.querySelector('.ui-bulk-bar__clear') as HTMLButtonElement;
             clearButton.click();
             fixture.detectChanges();
 
-            expect(fixture.nativeElement.querySelector('.panel__bulk-bar')).toBeNull();
+            expect(fixture.nativeElement.querySelector('ui-bulk-action-bar')).toBeNull();
         });
 
         it('select-all header checkbox selects all visible rows and reflects indeterminate/all state', () => {
-            const selectAll = fixture.nativeElement.querySelector('.panel__select-all') as HTMLInputElement;
+            const selectAll = fixture.nativeElement.querySelector('.ui-data-table__select-all') as HTMLInputElement;
             const rowCheckboxes = () => fixture.nativeElement.querySelectorAll('.thread-row__select') as NodeListOf<HTMLInputElement>;
 
             expect(selectAll.checked).toBe(false);
@@ -292,12 +292,12 @@ describe('ThreadListPanelComponent', () => {
             checkboxes[0].click();
             fixture.detectChanges();
 
-            (fixture.nativeElement.querySelector('.panel__bulk-action-btn') as HTMLButtonElement).click();
+            (fixture.nativeElement.querySelector('.ui-bulk-bar__action-btn') as HTMLButtonElement).click();
             fixture.detectChanges();
 
-            const archiveOption = Array.from(fixture.nativeElement.querySelectorAll('.panel__bulk-action-menu [role="option"]')).find(el => (el as HTMLElement).textContent?.trim() === 'Archive') as HTMLButtonElement;
+            const archiveOption = Array.from(fixture.nativeElement.querySelectorAll('.ui-bulk-bar__menu [role="option"]')).find(el => (el as HTMLElement).textContent?.trim() === 'Archive') as HTMLButtonElement;
             expect(archiveOption, 'Archive option').toBeTruthy();
-            archiveOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            archiveOption.click();
             await fixture.whenStable();
 
             expect(service.bulkSetArchived).toHaveBeenCalledWith(['phantom'], true);
@@ -311,11 +311,11 @@ describe('ThreadListPanelComponent', () => {
             checkboxes[1].click();
             fixture.detectChanges();
 
-            (fixture.nativeElement.querySelector('.panel__bulk-action-btn') as HTMLButtonElement).click();
+            (fixture.nativeElement.querySelector('.ui-bulk-bar__action-btn') as HTMLButtonElement).click();
             fixture.detectChanges();
 
-            const deleteOption = Array.from(fixture.nativeElement.querySelectorAll('.panel__bulk-action-menu [role="option"]')).find(el => (el as HTMLElement).textContent?.trim() === 'Delete') as HTMLButtonElement;
-            deleteOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            const deleteOption = Array.from(fixture.nativeElement.querySelectorAll('.ui-bulk-bar__menu [role="option"]')).find(el => (el as HTMLElement).textContent?.trim() === 'Delete') as HTMLButtonElement;
+            deleteOption.click();
             await fixture.whenStable();
 
             expect(confirmationSpy.confirm).toHaveBeenCalledWith(expect.objectContaining({
@@ -334,11 +334,11 @@ describe('ThreadListPanelComponent', () => {
             checkboxes[0].click();
             fixture.detectChanges();
 
-            (fixture.nativeElement.querySelector('.panel__bulk-action-btn') as HTMLButtonElement).click();
+            (fixture.nativeElement.querySelector('.ui-bulk-bar__action-btn') as HTMLButtonElement).click();
             fixture.detectChanges();
 
-            const deleteOption = Array.from(fixture.nativeElement.querySelectorAll('.panel__bulk-action-menu [role="option"]')).find(el => (el as HTMLElement).textContent?.trim() === 'Delete') as HTMLButtonElement;
-            deleteOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            const deleteOption = Array.from(fixture.nativeElement.querySelectorAll('.ui-bulk-bar__menu [role="option"]')).find(el => (el as HTMLElement).textContent?.trim() === 'Delete') as HTMLButtonElement;
+            deleteOption.click();
             await fixture.whenStable();
 
             expect(service.bulkDelete).not.toHaveBeenCalled();
@@ -356,11 +356,11 @@ describe('ThreadListPanelComponent', () => {
             checkboxes[0].click();
             fixture.detectChanges();
 
-            (fixture.nativeElement.querySelector('.panel__bulk-action-btn') as HTMLButtonElement).click();
+            (fixture.nativeElement.querySelector('.ui-bulk-bar__action-btn') as HTMLButtonElement).click();
             fixture.detectChanges();
 
-            const assignOption = Array.from(fixture.nativeElement.querySelectorAll('.panel__bulk-action-menu [role="option"]')).find(el => (el as HTMLElement).textContent?.trim() === 'Assign to personality…') as HTMLButtonElement;
-            assignOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            const assignOption = Array.from(fixture.nativeElement.querySelectorAll('.ui-bulk-bar__menu [role="option"]')).find(el => (el as HTMLElement).textContent?.trim() === 'Assign to personality…') as HTMLButtonElement;
+            assignOption.click();
             fixture.detectChanges();
 
             expect(component.bulkPersonalityPickerOpen()).toBe(true);
@@ -550,7 +550,7 @@ describe('ThreadListPanelComponent', () => {
 
             await openJobsTab();
 
-            expect(fixture.nativeElement.querySelector('.panel__error')?.textContent).toContain('Jobs unavailable');
+            expect(fixture.nativeElement.querySelector('.ui-data-table__message--error')?.textContent).toContain('Jobs unavailable');
         });
 
         it('leaves the Active tab unchanged after visiting Jobs', async () => {

@@ -1,0 +1,95 @@
+/*
+ * Header cells are projected from the caller's template, so they carry the caller's style scope:
+ * the rules for them reach through with ::ng-deep, kept under :host so they stay in this table.
+ * Body cells belong to the caller's row component, which styles its own <td>s.
+ */
+:host {
+  display: block;
+}
+
+.ui-data-table {
+  border: 1px solid var(--color-border-base);
+  border-radius: 0.5rem;
+  /* Wide tables (the Thread Manager) set this on the host so columns do not crush on desktop. */
+  min-width: var(--ui-data-table-min-width, 0);
+  overflow: hidden;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+:host ::ng-deep th {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+:host ::ng-deep th button,
+:host ::ng-deep th label {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  display: inline-flex;
+  font: inherit;
+  gap: 0.25rem;
+  letter-spacing: inherit;
+  padding: 0;
+}
+
+:host ::ng-deep th button {
+  cursor: pointer;
+}
+
+:host ::ng-deep th select {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  max-width: 1.25rem;
+  outline: 0;
+}
+
+.ui-data-table__select-col {
+  text-align: center;
+  width: 2.5rem;
+}
+
+.ui-data-table__select-all {
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.ui-data-table__message {
+  color: var(--color-text-muted);
+  margin: 0;
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.ui-data-table__message--error {
+  color: var(--color-danger);
+}
+
+@media (max-width: 1023px) {
+  .ui-data-table {
+    min-width: 0;
+  }
+
+  :host ::ng-deep th select {
+    max-width: 5.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .ui-data-table {
+    overflow-x: auto;
+  }
+}

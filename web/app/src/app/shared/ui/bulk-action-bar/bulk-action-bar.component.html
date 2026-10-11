@@ -1,0 +1,44 @@
+<div class="ui-bulk-bar" role="region" [attr.aria-label]="label()">
+  <ng-content select="[uiBulkLead]" />
+  <span class="ui-bulk-bar__count" role="status" aria-live="polite">{{ count() }} selected</span>
+  <ng-content />
+  <div #menuRoot class="ui-bulk-bar__action" (focusout)="onFocusOut($event)" (keydown.escape)="closeMenu()">
+    <button
+      #toggleButton
+      type="button"
+      class="ui-bulk-bar__action-btn"
+      aria-haspopup="listbox"
+      [attr.aria-expanded]="menuOpen()"
+      [attr.aria-label]="'Choose action for ' + count() + ' selected'"
+      [disabled]="count() === 0"
+      (click)="toggleMenu()"
+    >
+      Choose action <span aria-hidden="true">▾</span>
+    </button>
+    @if (menuOpen()) {
+      <!-- mousedown keeps focus on the button, so a mouse pick is not lost to focusout; Enter/Space click. -->
+      <div class="ui-bulk-bar__menu" role="listbox" [attr.aria-label]="label()" (mousedown)="$event.preventDefault()">
+        @for (item of actions(); track item.id) {
+          <button
+            type="button"
+            role="option"
+            class="ui-bulk-bar__menu-item"
+            [class.ui-bulk-bar__menu-item--danger]="item.danger"
+            [attr.aria-label]="item.ariaLabel ?? null"
+            (click)="run(item)"
+          >{{ item.label }}</button>
+        }
+      </div>
+    }
+  </div>
+  <button
+    type="button"
+    class="ui-bulk-bar__clear"
+    [disabled]="count() === 0"
+    (click)="clear.emit()"
+    aria-label="Clear selection"
+  >
+    Clear <span aria-hidden="true">×</span>
+  </button>
+  <ng-content select="[uiBulkTrail]" />
+</div>

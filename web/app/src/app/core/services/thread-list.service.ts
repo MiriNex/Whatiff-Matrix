@@ -21,6 +21,7 @@ import {
   uniqueTags,
 } from '../../features/chat/helpers/thread-list.helpers';
 import { ThreadJobSummary, loadThreadsWithJobs } from '../../features/chat/helpers/thread-jobs.helpers';
+import { SelectionModel, SelectionState } from '../../shared/ui/helpers/selection-model';
 
 /** Which threads {@link ThreadListService.refresh} loads (Thread Manager tabs). */
 export type ThreadListScope = 'active' | 'archived' | 'jobs';
@@ -76,8 +77,9 @@ export class ThreadListService implements OnDestroy {
   /** Non-job automations per thread id (see ThreadAutomationSource); populated only while {@link scope} is `jobs`. */
   readonly automationsByChatId = signal<ReadonlyMap<string, readonly ThreadAutomation[]>>(new Map());
   /** Thread Manager bulk-selection: ids checked in the table. */
-  readonly selectedIds = signal<ReadonlySet<string>>(new Set());
-  readonly selectedCount = computed(() => this.selectedIds().size);
+  private readonly selection = new SelectionModel<string>();
+  readonly selectedIds = this.selection.selectedIds;
+  readonly selectedCount = this.selection.count;
 
   private queryTimer: ReturnType<typeof setTimeout> | null = null;
   /** Monotonically increases so a slow prior list request cannot overwrite a newer filter result. */
@@ -157,40 +159,20 @@ export class ThreadListService implements OnDestroy {
   }
 
   toggleSelected(id: string): void {
-    const next = new Set(this.selectedIds());
-    if (next.has(id)) {
-      next.delete(id);
-    } else {
-      next.add(id);
-    }
-    this.selectedIds.set(next);
+    this.selection.toggle(id);
   }
 
   setAllSelected(ids: readonly string[], selected: boolean): void {
-    const next = new Set(this.selectedIds());
-    for (const id of ids) {
-      if (selected) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
-    }
-    this.selectedIds.set(next);
+    this.selection.setAll(ids, selected);
   }
 
   clearSelection(): void {
-    if (this.selectedIds().size > 0) {
-      this.selectedIds.set(new Set());
-    }
+    this.selection.clear();
   }
 
   /** Selection state of the given (visible) ids, for the header select-all checkbox. */
-  selectionState(ids: readonly string[]): 'none' | 'some' | 'all' {
-    if (ids.length === 0) return 'none';
-    const selected = this.selectedIds();
-    const selectedCount = ids.reduce((count, id) => count + (selected.has(id) ? 1 : 0), 0);
-    if (selectedCount === 0) return 'none';
-    return selectedCount === ids.length ? 'all' : 'some';
+  selectionState(ids: readonly string[]): SelectionState {
+    return this.selection.stateOf(ids);
   }
 
   /**

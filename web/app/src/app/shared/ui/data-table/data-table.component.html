@@ -1,0 +1,31 @@
+<div class="ui-data-table">
+  @if (message(); as text) {
+    <p
+      class="ui-data-table__message"
+      [class.ui-data-table__message--error]="messageTone() === 'error'"
+      [attr.role]="messageTone() === 'error' ? 'alert' : null"
+    >{{ text }}</p>
+  }
+  <!-- Hidden rather than removed so the projected rows are never re-projected. -->
+  <table [hidden]="!!message()">
+    <thead>
+      <tr>
+        <th scope="col" class="ui-data-table__select-col">
+          <input
+            type="checkbox"
+            class="ui-data-table__select-all"
+            [checked]="selectAllState() === 'all'"
+            [indeterminate]="selectAllState() === 'some'"
+            (change)="selectAllChange.emit()"
+            [attr.aria-label]="selectAllLabel()"
+            [uiTooltip]="selectAllTooltip()"
+          />
+        </th>
+        <ng-content select="[uiTableHead]" />
+      </tr>
+    </thead>
+    <tbody [attr.role]="bodyRole()" [attr.aria-label]="bodyLabel()">
+      <ng-content />
+    </tbody>
+  </table>
+</div>
