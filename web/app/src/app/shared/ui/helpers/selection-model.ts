@@ -55,9 +55,12 @@ export class SelectionModel<K = string> {
   retain(ids: Iterable<K>): void {
     const keep = new Set(ids);
     const current = this.ids();
-    const next = [...current].filter(id => keep.has(id));
-    if (next.length !== current.size) {
-      this.ids.set(new Set(next));
+    const next = new Set<K>();
+    for (const id of current) {
+      if (keep.has(id)) next.add(id);
+    }
+    if (next.size !== current.size) {
+      this.ids.set(next);
     }
   }
 

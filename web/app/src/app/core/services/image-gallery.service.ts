@@ -2,8 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { FileAttachment } from '../models/file-attachment.model';
+import { FileAttachment, isImageAttachment } from '../models/file-attachment.model';
 import { PaginatedResponse } from '../models/common.model';
+import { FileAttachmentService } from './file-attachment.service';
 import { GalleryFolder } from '../../features/gallery/helpers/gallery-folder.helpers';
 
 /** Which gallery files to list: images (the server's default), every other file, or both. */
@@ -14,6 +15,7 @@ export type GalleryKind = 'images' | 'files' | 'all';
 })
 export class ImageGalleryService {
   private http = inject(HttpClient);
+  private fileAttachments = inject(FileAttachmentService);
   private apiUrl = `${environment.apiUrl}`;
 
   listImages(
@@ -52,6 +54,16 @@ export class ImageGalleryService {
 
   deleteImage(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/image-gallery/${id}`);
+  }
+
+  /**
+   * Deletes any gallery file. Images go through the gallery route (which also drops the stored
+   * thumbnail); other files through file-attachment (which also removes the provider's copy).
+   */
+  deleteFile(file: Pick<FileAttachment, 'id' | 'file_type'>): Observable<void> {
+    return isImageAttachment(file)
+      ? this.deleteImage(file.id)
+      : this.fileAttachments.deleteFileAttachment(file.id).pipe(map(() => undefined));
   }
 
   importImage(file: File, metadata?: { title?: string; description?: string; folder?: string }): Observable<FileAttachment> {

@@ -122,37 +122,70 @@
         </div>
 
         <span class="gallery-page__results-summary" role="status">{{ tiles().length }} of {{ sourceCounts().all }} shown</span>
+
+        <div class="gallery-page__segmented" role="group" aria-label="Gallery layout">
+          @for (option of layoutOptions; track option.layout) {
+            <button
+              type="button"
+              [attr.aria-pressed]="view.layout() === option.layout"
+              [class.gallery-page__segmented-button--active]="view.layout() === option.layout"
+              [uiTooltip]="option.tooltip"
+              (click)="view.setLayout(option.layout)"
+            >{{ option.label }}</button>
+          }
+        </div>
       </div>
     </div>
 
     <app-gallery-folder-tools [barHidden]="viewerOpen()" />
 
-    <app-gallery-grid
-      [class.gallery-page__browse--hidden]="viewerOpen()"
-      [tiles]="tiles()"
-      [folderTiles]="view.folderTiles()"
-      [selectable]="view.selectionMode()"
-      [selectedIds]="view.selectedIds()"
-      [showFolders]="!view.browsingFolders()"
-      [emptyMessage]="emptyMessage()"
-      [drag]="view.drag()"
-      (dragImage)="view.beginImageDrag($event)"
-      (dragFolder)="view.beginFolderDrag($event)"
-      (dragEnd)="view.endDrag()"
-      (dropOnFolder)="onDropOnFolder($event)"
-      (openFolder)="view.openFolder($event)"
-      (editFolder)="view.startEditingFolder($event)"
-      (toggleSelect)="view.toggleSelected($event)"
-      [loading]="view.isLoading()"
-      [loadingMore]="view.isLoadingMore()"
-      [hasMore]="view.hasMore()"
-      [error]="view.error()"
-      [assignmentEnabled]="assignmentEnabled"
-      (openImage)="onOpenImage($event)"
-      (deleteImage)="onDelete($event)"
-      (assignImage)="onRequestAssign($event)"
-      (retry)="view.refresh()"
-      (loadMore)="view.loadNextPage()" />
+    @if (view.layout() === 'list') {
+      <app-gallery-list
+        [class.gallery-page__browse--hidden]="viewerOpen()"
+        [tiles]="tiles()"
+        [folderTiles]="view.folderTiles()"
+        [selectedIds]="view.selectedIds()"
+        [selectionState]="view.selectionState()"
+        [emptyMessage]="emptyMessage()"
+        [loading]="view.isLoading()"
+        [loadingMore]="view.isLoadingMore()"
+        [hasMore]="view.hasMore()"
+        [error]="view.error()"
+        (toggleSelect)="view.toggleSelected($event)"
+        (toggleSelectAll)="view.toggleSelectAll()"
+        (openImage)="onOpenImage($event)"
+        (openFolder)="view.openFolder($event)"
+        (deleteImage)="onDelete($event)"
+        (retry)="view.refresh()"
+        (loadMore)="view.loadNextPage()" />
+    } @else {
+      <app-gallery-grid
+        [class.gallery-page__browse--hidden]="viewerOpen()"
+        [tiles]="tiles()"
+        [folderTiles]="view.folderTiles()"
+        [selectable]="view.selectionMode()"
+        [selectedIds]="view.selectedIds()"
+        [showFolders]="!view.browsingFolders()"
+        [emptyMessage]="emptyMessage()"
+        [drag]="view.drag()"
+        (dragImage)="view.beginImageDrag($event)"
+        (dragFolder)="view.beginFolderDrag($event)"
+        (dragEnd)="view.endDrag()"
+        (dropOnFolder)="onDropOnFolder($event)"
+        (openFolder)="view.openFolder($event)"
+        (editFolder)="view.startEditingFolder($event)"
+        (toggleSelect)="view.toggleSelected($event)"
+        [loading]="view.isLoading()"
+        [loadingMore]="view.isLoadingMore()"
+        [hasMore]="view.hasMore()"
+        [error]="view.error()"
+        [assignmentEnabled]="assignmentEnabled"
+        (openImage)="onOpenImage($event)"
+        (deleteImage)="onDelete($event)"
+        (assignImage)="onRequestAssign($event)"
+        (retry)="view.refresh()"
+        (loadMore)="view.loadNextPage()" />
+    }
   } @else {
     <section class="gallery-page__expressions-shell">
       @if (personalities().length === 0) {

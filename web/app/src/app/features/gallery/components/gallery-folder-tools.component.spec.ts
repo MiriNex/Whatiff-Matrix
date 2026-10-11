@@ -4,7 +4,9 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { of, throwError } from 'rxjs';
 
 import { FileAttachment } from '../../../core/models/file-attachment.model';
+import { ConfirmationService } from '../../../core/services/confirmation.service';
 import { GalleryViewService } from '../../../core/services/gallery-view.service';
+import { GALLERY_LAYOUT_KEY } from '../helpers/gallery-list.helpers';
 import { ImageGalleryService } from '../../../core/services/image-gallery.service';
 import { GalleryFolderToolsComponent } from './gallery-folder-tools.component';
 
@@ -24,7 +26,8 @@ describe('GalleryFolderToolsComponent', () => {
   let fixture: ComponentFixture<GalleryFolderToolsComponent>;
   let component: GalleryFolderToolsComponent;
   let view: GalleryViewService;
-  let api: MockedObject<Pick<ImageGalleryService, 'listImages' | 'listFolders' | 'moveImages' | 'moveFolder'>>;
+  let api: MockedObject<Pick<ImageGalleryService, 'listImages' | 'listFolders' | 'moveImages' | 'moveFolder' | 'deleteFile'>>;
+  let confirmation: { confirm: ReturnType<typeof vi.fn> };
 
   const el = () => fixture.nativeElement as HTMLElement;
   const buttons = () => Array.from(el().querySelectorAll('button')).map(b => b.textContent?.trim());
@@ -42,10 +45,17 @@ describe('GalleryFolderToolsComponent', () => {
       ),
       moveImages: vi.fn().mockReturnValue(of(2)),
       moveFolder: vi.fn().mockReturnValue(of(3)),
+      deleteFile: vi.fn().mockReturnValue(of(undefined)),
     } as unknown as typeof api;
+    confirmation = { confirm: vi.fn().mockResolvedValue(true) };
+    localStorage.removeItem(GALLERY_LAYOUT_KEY);
     await TestBed.configureTestingModule({
       imports: [GalleryFolderToolsComponent],
-      providers: [provideZonelessChangeDetection(), { provide: ImageGalleryService, useValue: api }],
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: ImageGalleryService, useValue: api },
+        { provide: ConfirmationService, useValue: confirmation },
+      ],
     }).compileComponents();
     view = TestBed.inject(GalleryViewService);
     view.loadInitial();
@@ -150,6 +160,8 @@ describe('GalleryFolderToolsComponent', () => {
     const selectAll = () => el().querySelector('.folder-tools__select-all-box') as HTMLInputElement;
     const selectAllLabel = () => el().querySelector('.folder-tools__select-all')?.textContent?.trim();
     const actionButton = () => button('Choose action ▾');
+    const option = (label: string) =>
+      Array.from(el().querySelectorAll('[role="option"]')).find(o => o.textContent?.trim() === label) as HTMLButtonElement;
 
     it('shows the bar only in select mode, and cannot choose an action with nothing selected', () => {
       expect(bar()).toBeNull();
@@ -226,28 +238,23 @@ describe('GalleryFolderToolsComponent', () => {
       fixture.detectChanges();
       expect(actionButton().getAttribute('aria-expanded')).toBe('true');
 
-      el()
-        .querySelector('[role="option"]')
-        ?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      option('Move to folder…').click();
       fixture.detectChanges();
 
       expect(component.movingImages()).toBe(true);
-      expect(component.actionMenuOpen()).toBe(false);
       expect(el().querySelector('[role="listbox"][aria-label="Bulk actions"]')).toBeNull();
     });
 
-    it('closes the action menu on Escape', () => {
+    it('names the count in the bulk actions, for screen readers', () => {
       view.setSelectionMode(true);
-      view.selectAllShown();
+      view.toggleSelected('a');
       fixture.detectChanges();
       actionButton().click();
       fixture.detectChanges();
 
-      el()
-        .querySelector('.folder-tools__bulk-action')
-        ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-
-      expect(component.actionMenuOpen()).toBe(false);
+      expect(actionButton().getAttribute('aria-label')).toBe('Choose action for 1 selected');
+      expect(option('Move to folder…').getAttribute('aria-label')).toBe('Move 1 selected item to a folder');
+      expect(option('Delete…').getAttribute('aria-label')).toBe('Delete 1 selected item');
     });
 
     it('moves the selected images to the chosen folder, then closes the dialog and leaves select mode alone', async () => {
@@ -415,6 +422,89 @@ describe('GalleryFolderToolsComponent', () => {
 
       expect(view.folderEditing()).toBe('charts');
       expect(view.folderError()).toBe('nope');
+    });
+  });
+
+  describe('in the list view', () => {
+    const bar = () => el().querySelector('ui-bulk-action-bar') as HTMLElement | null;
+
+    beforeEach(() => {
+      view.setLayout('list');
+      fixture.detectChanges();
+    });
+
+    afterEach(() => localStorage.removeItem(GALLERY_LAYOUT_KEY));
+
+    it('has no Select mode, and shows the bar (without its own select-all or Done) once something is ticked', () => {
+      expect(buttons()).not.toContain('Select');
+      expect(bar()).toBeNull();
+
+      view.toggleSelected('a');
+      fixture.detectChanges();
+
+      expect(bar()?.textContent).toContain('1 selected');
+      expect(el().querySelector('.folder-tools__select-all')).toBeNull();
+      expect(buttons()).not.toContain('Done');
+    });
+
+    it('says when picks only cover the loaded part of a longer list', () => {
+      view.totalCount.set(90);
+      view.toggleSelected('a');
+      fixture.detectChanges();
+
+      expect(bar()?.textContent).toContain('Picked from the 2 loaded; 88 more not loaded yet');
+    });
+  });
+
+  describe('deleting the selection', () => {
+    beforeEach(() => {
+      view.setSelectionMode(true);
+      view.selectAllShown();
+      fixture.detectChanges();
+    });
+
+    it('asks first, with the count, then deletes every selected file', async () => {
+      await component.deleteSelection();
+      await flush(fixture);
+
+      expect(confirmation.confirm).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Delete 2 items?', confirmText: 'Delete', type: 'danger' }),
+      );
+      expect(api.deleteFile.mock.calls.map(([file]) => file.id)).toEqual(['a', 'b']);
+      expect(view.images()).toEqual([]);
+      expect(view.selectedCount()).toBe(0);
+      expect(el().querySelector('[role="status"].folder-tools__bulk-result')?.textContent).toContain('Deleted 2 items.');
+    });
+
+    it('deletes nothing when the confirmation is dismissed', async () => {
+      confirmation.confirm.mockResolvedValue(false);
+
+      await component.deleteSelection();
+
+      expect(api.deleteFile).not.toHaveBeenCalled();
+      expect(view.selectedCount()).toBe(2);
+    });
+
+    it('reports a partial failure and keeps what failed selected for a retry', async () => {
+      api.deleteFile.mockImplementation(file => (file.id === 'b' ? throwError(() => new Error('boom')) : of(undefined)));
+
+      await component.deleteSelection();
+      await flush(fixture);
+
+      expect(view.images().map(row => row.id)).toEqual(['b']);
+      expect([...view.selectedIds()]).toEqual(['b']);
+      const alert = el().querySelector('[role="alert"].folder-tools__bulk-result');
+      expect(alert?.textContent).toContain('Deleted 1 of 2 items. Could not delete “b”');
+    });
+
+    it('runs from the Choose action menu', async () => {
+      button('Choose action ▾').click();
+      fixture.detectChanges();
+      (Array.from(el().querySelectorAll('[role="option"]')).find(o => o.textContent?.trim() === 'Delete…') as HTMLElement).click();
+      await flush(fixture);
+
+      expect(confirmation.confirm).toHaveBeenCalled();
+      expect(api.deleteFile).toHaveBeenCalledTimes(2);
     });
   });
 });

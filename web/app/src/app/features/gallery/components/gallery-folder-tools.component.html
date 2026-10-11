@@ -32,15 +32,18 @@
         @if (view.browsingFolders()) {
           <button type="button" class="folder-tools__button" (click)="startCreating()">New folder</button>
         }
-        <button
-          type="button"
-          class="folder-tools__button"
-          [attr.aria-pressed]="view.selectionMode()"
-          [class.folder-tools__button--active]="view.selectionMode()"
-          (click)="toggleSelectionMode()"
-        >
-          Select
-        </button>
+        @if (view.layout() === "grid") {
+          <!-- The list always has checkboxes, so select mode is a grid thing. -->
+          <button
+            type="button"
+            class="folder-tools__button"
+            [attr.aria-pressed]="view.selectionMode()"
+            [class.folder-tools__button--active]="view.selectionMode()"
+            (click)="toggleSelectionMode()"
+          >
+            Select
+          </button>
+        }
         <button
           type="button"
           class="folder-tools__button"
@@ -78,50 +81,48 @@
       </form>
     }
 
-    @if (view.selectionMode()) {
-      <div class="folder-tools__bulk-bar" role="region" aria-label="Bulk actions">
-        <label class="folder-tools__select-all">
-          <input
-            type="checkbox"
-            class="folder-tools__select-all-box"
-            [checked]="view.selectionState() === 'all'"
-            [indeterminate]="view.selectionState() === 'some'"
-            (change)="view.toggleSelectAll()"
-          />
-          {{ view.selectionState() === "all" ? "Unselect all" : "Select all" }}
-        </label>
-        <span class="folder-tools__bulk-count" role="status" aria-live="polite">{{ view.selectedCount() }} selected</span>
+    @if (showBulkBar()) {
+      <ui-bulk-action-bar
+        variant="card"
+        [count]="view.selectedCount()"
+        [actions]="bulkActions()"
+        (action)="onBulkAction($event)"
+        (clear)="view.clearSelection()"
+      >
+        @if (view.layout() === 'grid') {
+          <label uiBulkLead class="folder-tools__select-all">
+            <input
+              type="checkbox"
+              class="folder-tools__select-all-box"
+              [checked]="view.selectionState() === 'all'"
+              [indeterminate]="view.selectionState() === 'some'"
+              (change)="view.toggleSelectAll()"
+            />
+            {{ view.selectionState() === "all" ? "Unselect all" : "Select all" }}
+          </label>
+        }
         @if (view.selectedCount() === 0) {
           <span class="folder-tools__bulk-hint">Select mode: click an image or file to pick it</span>
+        } @else if (notLoadedCount() > 0) {
+          <span class="folder-tools__bulk-hint">
+            Picked from the {{ view.images().length }} loaded; {{ notLoadedCount() }} more not loaded yet
+          </span>
         }
-        <div class="folder-tools__bulk-action" (focusout)="closeActionMenuSoon()" (keydown.escape)="actionMenuOpen.set(false)">
-          <button
-            type="button"
-            class="folder-tools__bulk-action-btn"
-            aria-haspopup="listbox"
-            [attr.aria-expanded]="actionMenuOpen()"
-            [disabled]="view.selectedCount() === 0"
-            (click)="actionMenuOpen.set(!actionMenuOpen())"
-          >
-            Choose action <span aria-hidden="true">▾</span>
-          </button>
-          @if (actionMenuOpen()) {
-            <div class="folder-tools__bulk-menu" role="listbox" aria-label="Bulk actions">
-              <button type="button" role="option" (mousedown)="moveSelectionFromMenu()">Move to folder…</button>
-            </div>
-          }
-        </div>
-        <button
-          type="button"
-          class="folder-tools__bulk-clear"
-          [disabled]="view.selectedCount() === 0"
-          (click)="view.clearSelection()"
-          aria-label="Clear selection"
-        >
-          Clear <span aria-hidden="true">×</span>
-        </button>
-        <button type="button" class="folder-tools__bulk-done" (click)="view.setSelectionMode(false)">Done</button>
-      </div>
+        @if (deleting()) {
+          <span class="folder-tools__bulk-hint" role="status">Deleting…</span>
+        }
+        @if (view.layout() === 'grid') {
+          <button uiBulkTrail type="button" class="folder-tools__bulk-done" (click)="view.setSelectionMode(false)">Done</button>
+        }
+      </ui-bulk-action-bar>
+    }
+
+    @if (view.bulkResult(); as result) {
+      <p
+        class="folder-tools__bulk-result"
+        [class.folder-tools__error]="result.failed"
+        [attr.role]="result.failed ? 'alert' : 'status'"
+      >{{ result.text }}</p>
     }
 
     @if (view.folderError(); as message) {

@@ -1,0 +1,52 @@
+:host {
+  display: block;
+}
+
+.gallery-list__delete-col {
+  padding-inline: 0.375rem;
+  width: 2.75rem;
+}
+
+.gallery-list__sr-only {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.gallery-list__footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.25rem;
+}
+
+.gallery-list__button {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-base);
+  border-radius: 0.75rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+}
+
+.gallery-list__button:hover:not(:disabled) {
+  border-color: var(--color-accent);
+}
+
+.gallery-list__button:disabled {
+  opacity: 0.5;
+}
+
+/* Matches the cells gallery-list-row hides at this width. */
+@media (max-width: 767px) {
+  .gallery-list__folder-col,
+  .gallery-list__personality-col {
+    display: none;
+  }
+}

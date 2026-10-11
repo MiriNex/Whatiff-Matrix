@@ -1,0 +1,43 @@
+<ui-data-table
+  [message]="message()"
+  [messageTone]="error() ? 'error' : 'muted'"
+  [selectAllState]="selectionState()"
+  [selectAllLabel]="selectionState() === 'all' ? 'Unselect all loaded files' : 'Select all loaded files'"
+  selectAllTooltip="Select every loaded file for bulk actions"
+  bodyLabel="Gallery files"
+  (selectAllChange)="toggleSelectAll.emit()"
+>
+  <ng-container ngProjectAs="[uiTableHead]">
+    <th scope="col">NAME</th>
+    <th scope="col">TYPE</th>
+    <th scope="col" class="gallery-list__folder-col">FOLDER</th>
+    <th scope="col" class="gallery-list__personality-col">PERSONALITY</th>
+    <th scope="col">SOURCE</th>
+    <th scope="col">CREATED</th>
+    <th scope="col" class="gallery-list__delete-col"><span class="gallery-list__sr-only">Delete</span></th>
+  </ng-container>
+  @for (folder of folderTiles(); track folder.path) {
+    <app-gallery-list-row [folder]="folder" (openFolder)="openFolder.emit($event)" />
+  }
+  @for (tile of tiles(); track tile.id) {
+    <app-gallery-list-row
+      [tile]="tile"
+      [checked]="selectedIds().has(tile.id)"
+      (toggleSelect)="toggleSelect.emit($event)"
+      (open)="openImage.emit($event)"
+      (delete)="deleteImage.emit($event)"
+    />
+  }
+</ui-data-table>
+
+@if (error()) {
+  <div class="gallery-list__footer">
+    <button type="button" class="gallery-list__button" (click)="retry.emit()">Try again</button>
+  </div>
+} @else if (hasMore()) {
+  <div class="gallery-list__footer">
+    <button type="button" class="gallery-list__button" [disabled]="loadingMore()" (click)="loadMore.emit()">
+      {{ loadingMore() ? 'Loading…' : 'Load more' }}
+    </button>
+  </div>
+}

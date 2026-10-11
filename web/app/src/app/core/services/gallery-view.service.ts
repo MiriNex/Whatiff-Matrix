@@ -20,9 +20,20 @@ import {
   folderPathError,
 } from '../../features/gallery/helpers/gallery-folder.helpers';
 import { canDropOn, folderPathAfterDrop, GalleryDrag } from '../../features/gallery/helpers/gallery-dnd.helpers';
+import {
+  describeBulkDelete,
+  GalleryLayout,
+  readGalleryLayout,
+  writeGalleryLayout,
+} from '../../features/gallery/helpers/gallery-list.helpers';
+import { SelectionModel } from '../../shared/ui/helpers/selection-model';
+import { settleWithLimit } from '../utils/bounded-concurrency.helpers';
 
 export type GalleryAssociationFilterMode = 'all' | 'global' | 'personality';
 export type GalleryMode = 'gallery' | 'expressions';
+
+/** How many deletes a bulk delete keeps in flight; there is no bulk delete route (images and files delete differently). */
+const BULK_DELETE_CONCURRENCY = 4;
 
 @Injectable({ providedIn: 'root' })
 export class GalleryViewService {
@@ -52,8 +63,14 @@ export class GalleryViewService {
   readonly pendingFolders = signal<string[]>([]);
   /** Flat view of every image regardless of folder (the pre-folders gallery). */
   readonly showAll = signal(false);
+  /** Thumbnails, or a table with checkboxes and bulk actions. Remembered in this browser. */
+  readonly layout = signal<GalleryLayout>(readGalleryLayout());
+  /** Grid select mode: a click picks an image instead of opening it. The list is always selectable. */
   readonly selectionMode = signal(false);
-  readonly selectedIds = signal<ReadonlySet<string>>(new Set());
+  private readonly selection = new SelectionModel<string>();
+  readonly selectedIds = this.selection.selectedIds;
+  /** The outcome of the last bulk delete, until the next bulk action or a change of what is shown. */
+  readonly bulkResult = signal<{ text: string; failed: boolean } | null>(null);
   /** A failed move or rename, shown without replacing the grid. */
   readonly folderError = signal<string | null>(null);
   /** The folder whose rename / move dialog is open, if any. */
@@ -103,17 +120,9 @@ export class GalleryViewService {
     this.browsingFolders() ? childFolderTiles(this.folders(), this.currentFolder(), this.pendingFolders()) : [],
   );
   readonly breadcrumbs = computed(() => breadcrumbsFor(this.currentFolder()));
-  readonly selectedCount = computed(() => this.selectedIds().size);
+  readonly selectedCount = this.selection.count;
   /** Whether none, some or all of the images shown are selected (drives the select-all checkbox). */
-  readonly selectionState = computed<'none' | 'some' | 'all'>(() => {
-    const shown = this.filteredImages();
-    const selected = this.selectedIds();
-    const picked = shown.filter(image => selected.has(image.id)).length;
-    if (picked === 0) {
-      return 'none';
-    }
-    return picked === shown.length ? 'all' : 'some';
-  });
+  readonly selectionState = computed(() => this.selection.stateOf(this.filteredImages().map(image => image.id)));
   readonly selectedImage = computed(() => this.filteredImages().find(i => i.id === this.selectedImageId()) ?? null);
   readonly hasMore = computed(() => this.images().length < this.totalCount());
   readonly availableSources = computed<GallerySourceFilter[]>(() => {
@@ -146,6 +155,8 @@ export class GalleryViewService {
         next: response => {
           this.images.set(response.results ?? []);
           this.totalCount.set(response.total_count ?? 0);
+          // Never act on something no longer on screen: a reload keeps only picks it still shows.
+          this.selection.retain(this.images().map(image => image.id));
         },
         error: () => {
           this.images.set([]);
@@ -190,6 +201,10 @@ export class GalleryViewService {
     const previous = this.filters();
     const next = { ...previous, ...partial };
     this.filters.set(next);
+    if (!sameFilters(previous, next)) {
+      // A different filter shows different rows; a selection made under the old one is not carried over.
+      this.clearSelection();
+    }
     // source and dateRange are applied client-side by filteredImages over the rows
     // already loaded; refetching for them only threw away loaded pages, so a
     // toggle and toggle-back showed a different set than before.
@@ -199,18 +214,21 @@ export class GalleryViewService {
   }
 
   setSelectedPersonalityIds(ids: readonly string[]): void {
+    this.clearSelection();
     this.selectedPersonalityIds.set([...ids]);
     this.associationFilterMode.set(ids.length > 0 ? 'personality' : 'all');
     this.loadInitial();
   }
 
   selectAllAssociations(): void {
+    this.clearSelection();
     this.selectedPersonalityIds.set([]);
     this.associationFilterMode.set('all');
     this.loadInitial();
   }
 
   selectGlobalAssociations(): void {
+    this.clearSelection();
     this.selectedPersonalityIds.set([]);
     this.associationFilterMode.set('global');
     this.loadInitial();
@@ -279,9 +297,51 @@ export class GalleryViewService {
     }
   }
 
+  /**
+   * Switches between the grid and the list. The selection and grid select mode start fresh, since
+   * the grid only shows a selection while in select mode.
+   */
+  setLayout(layout: GalleryLayout): void {
+    if (layout === this.layout()) {
+      return;
+    }
+    this.layout.set(layout);
+    writeGalleryLayout(layout);
+    this.setSelectionMode(false);
+  }
+
+  /**
+   * Deletes the given files (images and other files alike), a few at a time. One that fails does
+   * not stop the rest; it stays selected and the result names it. Resolves with how many went.
+   */
+  async deleteFiles(ids: readonly string[]): Promise<number> {
+    const byId = new Map(this.images().map(row => [row.id, row] as const));
+    const rows = ids.map(id => byId.get(id)).filter((row): row is FileAttachment => !!row);
+    this.bulkResult.set(null);
+    if (rows.length === 0) {
+      return 0;
+    }
+    const { succeeded, failed } = await settleWithLimit(rows, BULK_DELETE_CONCURRENCY, row =>
+      firstValueFrom(this.galleryService.deleteFile(row)),
+    );
+    for (const row of succeeded) {
+      this.removeImage(row.id);
+    }
+    this.selection.setAll(succeeded.map(row => row.id), false);
+    this.bulkResult.set({
+      text: describeBulkDelete(succeeded.length, failed.map(({ item }) => item.name)),
+      failed: failed.length > 0,
+    });
+    if (succeeded.length > 0) {
+      this.loadFolders();
+    }
+    return succeeded.length;
+  }
+
   removeImage(id: string): void {
     this.images.update(existing => existing.filter(row => row.id !== id));
     this.totalCount.update(total => Math.max(0, total - 1));
+    this.selection.setAll([id], false);
     if (this.selectedImageId() === id) {
       this.selectedImageId.set(null);
     }
@@ -462,22 +522,16 @@ export class GalleryViewService {
   setSelectionMode(on: boolean): void {
     this.selectionMode.set(on);
     if (!on) {
-      this.selectedIds.set(new Set());
+      this.clearSelection();
     }
   }
 
   toggleSelected(id: string): void {
-    this.selectedIds.update(current => {
-      const next = new Set(current);
-      if (!next.delete(id)) {
-        next.add(id);
-      }
-      return next;
-    });
+    this.selection.toggle(id);
   }
 
   selectAllShown(): void {
-    this.selectedIds.set(new Set(this.filteredImages().map(image => image.id)));
+    this.selection.replace(this.filteredImages().map(image => image.id));
   }
 
   /** Select every image shown, or clear the selection when they all already are. */
@@ -490,7 +544,8 @@ export class GalleryViewService {
   }
 
   clearSelection(): void {
-    this.selectedIds.set(new Set());
+    this.selection.clear();
+    this.bulkResult.set(null);
   }
 
   private cancelInflight(): void {
@@ -509,6 +564,10 @@ export class GalleryViewService {
       return clone;
     });
   }
+}
+
+function sameFilters(a: GalleryFilters, b: GalleryFilters): boolean {
+  return a.query === b.query && a.personalityId === b.personalityId && a.source === b.source && a.dateRange === b.dateRange;
 }
 
 function hasPersonalityAssociation(image: FileAttachment): boolean {

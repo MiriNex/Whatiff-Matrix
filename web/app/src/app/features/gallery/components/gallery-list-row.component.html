@@ -1,0 +1,71 @@
+@if (folder(); as folder) {
+  <tr class="list-row list-row--folder">
+    <td class="list-row__select-cell"></td>
+    <td class="list-row__name-cell">
+      <button
+        type="button"
+        class="list-row__open"
+        [attr.aria-label]="'Open folder ' + folder.name + ', ' + countLabel(folder.count)"
+        (click)="openFolder.emit(folder.path)"
+      >
+        <span class="list-row__thumb list-row__thumb--folder" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          </svg>
+        </span>
+        <span class="list-row__name">{{ folder.name }}</span>
+      </button>
+    </td>
+    <td class="list-row__muted">Folder</td>
+    <td class="list-row__muted list-row__folder-cell">{{ countLabel(folder.count) }}</td>
+    <td class="list-row__muted list-row__personality-cell"></td>
+    <td class="list-row__muted"></td>
+    <td class="list-row__muted"></td>
+    <td class="list-row__delete-cell"></td>
+  </tr>
+} @else if (tile(); as tile) {
+  <tr class="list-row" [class.list-row--selected]="checked()">
+    <td class="list-row__select-cell">
+      <input
+        type="checkbox"
+        class="list-row__select"
+        [checked]="checked()"
+        (change)="toggleSelect.emit(tile.id)"
+        [attr.aria-label]="'Select ' + noun() + ' ' + tile.name"
+      />
+    </td>
+    <td class="list-row__name-cell">
+      <button
+        type="button"
+        class="list-row__open"
+        [attr.aria-label]="'Open ' + noun() + ' ' + tile.name"
+        (click)="open.emit(tile.id)"
+      >
+        <span class="list-row__thumb" aria-hidden="true">
+          @if (tile.isFile) {
+            <span class="list-row__badge">{{ tile.badge }}</span>
+          } @else if (tile.thumbnailUrl | authImage | async; as src) {
+            <img [src]="src" alt="" loading="lazy" draggable="false" />
+          }
+        </span>
+        <span class="list-row__name" [uiTooltip]="tile.name" truncatedOnly>{{ tile.name }}</span>
+      </button>
+    </td>
+    <td class="list-row__muted">{{ typeLabel() }}</td>
+    <td class="list-row__muted list-row__folder-cell">{{ tile.folder || 'Top level' }}</td>
+    <td class="list-row__muted list-row__personality-cell">{{ tile.personalityNames.join(', ') || '—' }}</td>
+    <td class="list-row__muted">{{ tile.sourceLabel }}</td>
+    <td class="list-row__muted">{{ tile.createdAt | date: 'mediumDate' }}</td>
+    <td class="list-row__delete-cell">
+      <button
+        type="button"
+        class="list-row__delete"
+        [attr.aria-label]="'Delete ' + noun() + ' ' + tile.name"
+        [uiTooltip]="'Delete this ' + noun()"
+        (click)="delete.emit(tile.id)"
+      >
+        <ui-trash-icon [size]="14" />
+      </button>
+    </td>
+  </tr>
+}

@@ -35,6 +35,8 @@ import {
 import { GalleryPersonalityOption } from './components/gallery-filter-bar.component';
 import { GalleryFolderToolsComponent } from './components/gallery-folder-tools.component';
 import { GalleryGridComponent } from './components/gallery-grid.component';
+import { GalleryListComponent } from './components/gallery-list.component';
+import { GalleryLayout } from './helpers/gallery-list.helpers';
 import { ImageDetailModalComponent } from './components/image-detail-modal.component';
 import { FileViewerComponent } from './components/file-viewer.component';
 import { PersonalityExpressionsManagerComponent } from '../personality/detail/personality-expressions-manager.component';
@@ -58,6 +60,7 @@ type GallerySort = 'created';
   standalone: true,
   imports: [
     GalleryGridComponent,
+    GalleryListComponent,
     GalleryFolderToolsComponent,
     ImageDetailModalComponent,
     FileViewerComponent,
@@ -90,6 +93,11 @@ export class GalleryPageComponent implements OnInit {
     { kind: 'all', label: 'All', tooltip: 'Images and files together' },
     { kind: 'images', label: 'Images', tooltip: 'Only images' },
     { kind: 'files', label: 'Files', tooltip: 'Documents, code and data from your threads and personalities' },
+  ];
+
+  readonly layoutOptions: readonly { layout: GalleryLayout; label: string; tooltip: string }[] = [
+    { layout: 'grid', label: 'Grid', tooltip: 'Thumbnails' },
+    { layout: 'list', label: 'List', tooltip: 'A table with checkboxes to move or delete many at once' },
   ];
 
   /** The file open in the viewer (the `file` query parameter), if any. */
@@ -135,7 +143,9 @@ export class GalleryPageComponent implements OnInit {
   /** What an empty grid says: a new folder is a prompt to fill it, not a failed search. */
   readonly emptyMessage = computed(() => {
     if (this.view.browsingFolders() && this.view.currentFolder() !== '') {
-      return 'This folder is empty. Use Select to pick images or files, then Move to folder to file them here.';
+      return this.view.layout() === 'list'
+        ? 'This folder is empty. Tick images or files elsewhere, then Move to folder to file them here.'
+        : 'This folder is empty. Use Select to pick images or files, then Move to folder to file them here.';
     }
     switch (this.view.kind()) {
       case 'images':
