@@ -640,7 +640,10 @@ func extractSSEJSONPayload(body []byte) ([]byte, error) {
 	lines := strings.Split(string(body), "\n")
 	var currentData []string
 	var lastData string
+	var fallback []byte // first valid event that isn't a server-initiated message
 
+	// flush closes the current event. It returns the event's payload when that is the JSON-RPC
+	// response we are after; other valid events are remembered as a fallback.
 	flush := func() ([]byte, bool) {
 		if len(currentData) == 0 {
 			return nil, false
@@ -651,8 +654,20 @@ func extractSSEJSONPayload(body []byte) ([]byte, error) {
 			return nil, false
 		}
 		lastData = candidate
-		if json.Valid([]byte(candidate)) {
+		if !json.Valid([]byte(candidate)) {
+			return nil, false
+		}
+		switch classifyRPCMessage([]byte(candidate)) {
+		case rpcResponseMessage:
 			return []byte(candidate), true
+		case rpcServerInitiatedMessage:
+			// A notification (notifications/message log lines, progress, ...) or a request from the
+			// server. A streamable-HTTP reply may carry any number of these ahead of the response
+			// (servers that log over MCP do); they are not the answer, so keep looking.
+			return nil, false
+		}
+		if fallback == nil {
+			fallback = []byte(candidate)
 		}
 		return nil, false
 	}
@@ -672,10 +687,43 @@ func extractSSEJSONPayload(body []byte) ([]byte, error) {
 	if payload, ok := flush(); ok {
 		return payload, nil
 	}
+	if fallback != nil {
+		return fallback, nil
+	}
 	if lastData != "" {
+		if json.Valid([]byte(lastData)) {
+			// Valid JSON, but only server-initiated messages: the reply never carried a response.
+			return nil, fmt.Errorf("mcp sse reply carried only server notifications and no response: %s", truncateForError(lastData, 512))
+		}
 		return nil, fmt.Errorf("mcp sse data was not valid json: %s", truncateForError(lastData, 512))
 	}
 	return nil, fmt.Errorf("mcp sse response did not contain a data payload")
+}
+
+type rpcMessageKind int
+
+const (
+	rpcOtherMessage           rpcMessageKind = iota // valid JSON that is not recognisably JSON-RPC
+	rpcResponseMessage                              // has "result" or "error"
+	rpcServerInitiatedMessage                       // has "method" and no result or error
+)
+
+// classifyRPCMessage sorts one JSON payload from an SSE event.
+func classifyRPCMessage(payload []byte) rpcMessageKind {
+	var keys map[string]json.RawMessage
+	if err := json.Unmarshal(payload, &keys); err != nil {
+		return rpcOtherMessage
+	}
+	if _, ok := keys["result"]; ok {
+		return rpcResponseMessage
+	}
+	if _, ok := keys["error"]; ok {
+		return rpcResponseMessage
+	}
+	if _, ok := keys["method"]; ok {
+		return rpcServerInitiatedMessage
+	}
+	return rpcOtherMessage
 }
 
 func truncateForError(s string, max int) string {
