@@ -184,8 +184,11 @@ Built by the team behind <a href="https://whatiff.chat">WhatIff</a> · <a href="
 
 This is a fork of upstream [what-iff](https://github.com/theimaginaryfoundation/what-iff) - the open-source core behind [whatiff.chat](https://whatiff.chat). It keeps everything from upstream and adds:
 
+Fork maintained by **@MiriNex** and **@NocturneEXE**.
+
 ### Tuned for GLM and Gemini
 The upstream expression was through the OpenAI provider and failed silently when the key was missing or broken - mood portraits never appeared, with no error anywhere. This fork adds a fallback that classifies through GLM 5.3 via the Z.AI provider, so mood expressions work out of the box on GLM and Gemini setups without an OpenAI key.
+- Personality generation (onboarding wizard) also falls back to GLM 5.3 via Z.AI when the OpenAI call fails.
 
 ### Character expressions by mood
 - Direct image upload per expression slot (UPLOAD button in the expressions manager - no more gallery round-trips)
