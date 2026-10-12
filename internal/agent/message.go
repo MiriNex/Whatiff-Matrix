@@ -67,7 +67,6 @@ const (
 	// cannot force a checkpoint every turn. Scheduled turn-count checkpointing is
 	// unaffected.
 	checkpointMinTurnsBetweenCheckpoints = 5
-	summaryMemoryBackfillBatchSize       = 50
 
 	MAX_PERSONALITY_FILES       = 40
 	maxToolCallRounds           = 10
@@ -3043,81 +3042,6 @@ func checkpointWindowStartAfter(userSentAt, replySentAt time.Time, firstOther *t
 		return userSentAt.Add(-time.Microsecond)
 	}
 	return afterReply
-}
-
-type SummaryMemoryBackfillStats struct {
-	Processed int
-	Skipped   int
-	Failed    int
-}
-
-// StartSummaryMemoryBackfill copies legacy chat checkpoint summaries into
-// singleton Summary memories in the background.
-func (a *Agent) StartSummaryMemoryBackfill(ctx context.Context) {
-	go func() {
-		stats := a.BackfillSummaryMemories(ctx, summaryMemoryBackfillBatchSize)
-		a.logger.Info("summary memory backfill finished",
-			zap.Int("processed", stats.Processed),
-			zap.Int("skipped", stats.Skipped),
-			zap.Int("failed", stats.Failed))
-	}()
-}
-
-func (a *Agent) BackfillSummaryMemories(ctx context.Context, batchSize int) SummaryMemoryBackfillStats {
-	if batchSize <= 0 {
-		batchSize = summaryMemoryBackfillBatchSize
-	}
-
-	stats := SummaryMemoryBackfillStats{}
-	if a.memoryTool == nil {
-		a.logger.Warn("summary memory backfill skipped because memory tool is unavailable")
-		stats.Skipped++
-		return stats
-	}
-
-	for {
-		candidates, err := a.ds.ListChatsMissingSummaryMemory(ctx, batchSize)
-		if err != nil {
-			a.logger.Error("failed to list summary memory backfill candidates", zap.Error(err))
-			stats.Failed++
-			return stats
-		}
-		if len(candidates) == 0 {
-			return stats
-		}
-
-		successesThisBatch := 0
-		for _, candidate := range candidates {
-			if strings.TrimSpace(candidate.Summary) == "" {
-				stats.Skipped++
-				continue
-			}
-
-			embeddingVector, err := a.memoryTool.CreateEmbedding(ctx, candidate.Summary)
-			if err != nil {
-				a.logger.Error("failed to create embedding for summary memory backfill",
-					zap.String("chat_id", candidate.ChatID.String()),
-					zap.Error(err))
-				stats.Failed++
-				continue
-			}
-
-			if err := a.ds.UpsertChatSummaryMemory(ctx, candidate.UserID, candidate.ChatID, candidate.Summary, embeddingVector); err != nil {
-				a.logger.Error("failed to upsert summary memory during backfill",
-					zap.String("chat_id", candidate.ChatID.String()),
-					zap.Error(err))
-				stats.Failed++
-				continue
-			}
-
-			stats.Processed++
-			successesThisBatch++
-		}
-
-		if len(candidates) < batchSize || successesThisBatch == 0 {
-			return stats
-		}
-	}
 }
 
 // setJobStatusFailedWithPartial preserves already-streamed text before marking a chat turn

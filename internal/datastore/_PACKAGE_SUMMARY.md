@@ -78,7 +78,6 @@ Application **repository layer** over Ent: CRUD, ownership checks, pagination, v
 - **DB metric semantics:** one sample per logical ent call as the caller sees it (scanning included).
   Eager-loaded edges are folded into their parent query, and a `CreateBulk` is one `create` sample: ent re-enters every builder's hooks with the caller's own context, so nested creates on the same context are skipped (two concurrent creates sharing one context can fold into one sample, a deliberate undercount).
   ent NotFound from `First`/`Only` is produced after the query returns, so an empty result is a successful `query`; NotFound from `UpdateOne`/`DeleteOne` is `error.type=not_found`, and constraint violations are `client_error`.
-  The startup-only `RepairImportedMessageOrder` SQL is not timed: a one-shot statement would add permanently exported series for no dashboard value.
 - **Job metrics:** `CreateJob` counts `whatiff.jobs.enqueued` by `job_type`.
   Status writers (`UpdateJob`, `UpdateJobStatus`, `SetJobResult`, the partial-response finalizers and `MarkChatJobCancelled`) record `whatiff.job.age_at_status` (time since creation) by `job_type` and `status`, only when the status actually changes, so a repeated write of the same status never counts twice.
   To tell, the writers read the prior status in place of the old existence check (no extra round trip); `MarkChatJobCancelled` does one extra `created_at` read only when it cancelled something.

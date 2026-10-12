@@ -265,7 +265,6 @@ func (s *Server) setupRoutes() {
 	}
 	agent := agent.NewAgent(dataStore, s.logger, s.telemetry, s.config.OpenAIKey, fileStore, s.config.AnthropicKey, agentCfg)
 	s.chatAgent = agent
-	agent.StartSummaryMemoryBackfill(context.Background())
 	agent.StartMemoryEmbeddingBackfill(s.lifecycleCtx, memoryEmbeddingBackfillCfg)
 	if s.config.EnableAgentJobsScheduler {
 		instanceID := "unknown"

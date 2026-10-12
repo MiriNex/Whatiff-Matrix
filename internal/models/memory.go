@@ -200,14 +200,6 @@ type MemoryPatch struct {
 	Provenance *MemoryProvenance `json:"provenance,omitempty"`
 }
 
-// ChatSummaryBackfillCandidate identifies a legacy checkpoint summary that has
-// not yet been copied into its singleton Summary memory.
-type ChatSummaryBackfillCandidate struct {
-	UserID  uuid.UUID
-	ChatID  uuid.UUID
-	Summary string
-}
-
 // MemoryEmbeddingCandidate identifies a memory that has no Embedding row and
 // the content to embed for it. CreatedAt doubles as the keyset cursor when
 // paging through backfill candidates.

@@ -36,9 +36,6 @@ func EnsureSeedData(ctx context.Context, client *ent.Client, logger *zap.Logger)
 	if err := ensureAllModels(ctx, client, logger); err != nil {
 		return err
 	}
-	if err := backfillModelVisionSupport(ctx, client, logger); err != nil {
-		return err
-	}
 
 	// Get the default model for migration purposes
 	defaultModelName := envOrDefault("DEFAULT_MODEL_NAME", appmodels.DefaultModelName)
