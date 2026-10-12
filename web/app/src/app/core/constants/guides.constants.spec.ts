@@ -6,7 +6,7 @@ describe('guideUrl', () => {
   it('resolves guide pages next to the docs index', () => {
     expect(guideUrl('docs', docs)).toBe('https://whatiff.chat/docs.html');
     expect(guideUrl('gettingStarted', docs)).toBe('https://whatiff.chat/guides/getting-started.html');
-    expect(guideUrl('continuity', docs)).toBe('https://whatiff.chat/guides/building-continuity.html');
+    expect(guideUrl('continuity', docs)).toBe('https://whatiff.chat/guides/memory-and-context.html');
     expect(guideUrl('webhooks', docs)).toBe('https://whatiff.chat/guides/webhooks.html');
     expect(guideUrl('connectors', docs)).toBe('https://whatiff.chat/guides/mcp-connectors.html');
   });

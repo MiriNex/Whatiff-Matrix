@@ -10,7 +10,7 @@ export type GuideKey = 'docs' | 'gettingStarted' | 'context' | 'continuity' | 'e
 const GUIDE_PATHS: Record<Exclude<GuideKey, 'docs'>, string> = {
   gettingStarted: 'guides/getting-started.html',
   context: 'guides/how-context-works.html',
-  continuity: 'guides/building-continuity.html',
+  continuity: 'guides/memory-and-context.html',
   expressions: 'guides/expressions.html',
   advanced: 'guides/advanced-features.html',
   webhooks: 'guides/webhooks.html',
