@@ -1,6 +1,6 @@
-<div align="center">
+﻿<div align="center">
 
-<img width="1024" height="1024" alt="image" src="https://github.com/user-attachments/assets/3b2845f1-218f-4e92-936f-8e65db8db583" />
+<img width="160" height="160" alt="Whatiff-Matrix" src="https://github.com/user-attachments/assets/3b2845f1-218f-4e92-936f-8e65db8db583" />
 
 
 # WhatIff
