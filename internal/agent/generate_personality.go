@@ -17,6 +17,8 @@ import (
 
 const generatePersonalityModel = "gpt-5.1"
 
+const generatePersonalityZAIModel = "glm-5.3"
+
 const generatePersonalityPrompt = `You are designing a single, coherent system prompt for a custom AI companion ("personality") for this user.
 
 Your job is to create prompts that feel deep, specific, and alive, not flat or generic. Avoid vague descriptions like “you are a helpful, friendly assistant.” Instead, anchor each personality in a place, a role, and a set of values and boundaries.
@@ -113,8 +115,15 @@ func (a *Agent) GeneratePersonality(ctx context.Context, answers map[string]stri
 
 	resp, err := a.OpenAIProvider.CallWithRetry(telemetry.WithCallPath(ctx, telemetry.CallPathGeneratePersonality), params)
 	if err != nil {
-		a.logger.Error("failed to generate personality", zap.Error(err))
-		return nil, fmt.Errorf("OpenAI call failed: %w", err)
+		// OpenAI failed (e.g. missing/invalid key); fall back to GLM via z.ai
+		// so personality generation works on GLM/Gemini setups without OpenAI.
+		a.logger.Warn("generate personality OpenAI failed; trying z.ai GLM fallback", zap.Error(err))
+		fallbackResult, fbErr := a.generatePersonalityViaZAI(ctx, sb.String())
+		if fbErr != nil {
+			a.logger.Error("failed to generate personality", zap.Error(err))
+			return nil, fmt.Errorf("OpenAI call failed: %w", err)
+		}
+		return fallbackResult, nil
 	}
 
 	raw := strings.TrimSpace(resp.OutputText())
@@ -133,5 +142,40 @@ func (a *Agent) GeneratePersonality(ctx context.Context, answers map[string]stri
 		return nil, fmt.Errorf("AI returned an empty system_prompt")
 	}
 
+	return &result, nil
+}
+
+// generatePersonalityViaZAI is the GLM (z.ai Anthropic Messages API) fallback for
+// personality generation when the OpenAI Responses call fails (e.g. missing key).
+func (a *Agent) generatePersonalityViaZAI(ctx context.Context, userMessage string) (*GeneratePersonalityResult, error) {
+	if a.ZAIProvider == nil {
+		return nil, fmt.Errorf("z.ai provider not configured")
+	}
+	mc := &provider.ModelContext{}
+	mc.Append(provider.SegmentKindSystemPrompt, provider.RoleDeveloper, generatePersonalityPrompt+`
+
+OUTPUT CONTRACT: Respond with ONLY a single JSON object (no markdown fences, no extra text) with exactly these fields:
+{"system_prompt": "<the full system prompt, second person, as specified>", "about_me": "<3-4 sentences>", "names": ["eight name candidates, 1-2 words each"]}
+`, true)
+	mc.AppendUserMessage(provider.RoleUser, userMessage, nil, false)
+
+	params := mc.BuildClaudeParamsWithMaxTokens(generatePersonalityZAIModel, 8192)
+	msg, err := a.ZAIProvider.Call(telemetry.WithCallPath(ctx, telemetry.CallPathGeneratePersonality), params)
+	if err != nil {
+		a.logger.Warn("generate personality z.ai GLM fallback failed", zap.Error(err))
+		return nil, err
+	}
+	if msg == nil {
+		return nil, fmt.Errorf("empty response from z.ai")
+	}
+
+	raw := stripMarkdownJSONFence(provider.ExtractClaudeText(msg))
+	var result GeneratePersonalityResult
+	if err := json.Unmarshal([]byte(raw), &result); err != nil {
+		return nil, fmt.Errorf("failed to parse z.ai generate-personality response: %w", err)
+	}
+	if result.SystemPrompt == "" {
+		return nil, fmt.Errorf("z.ai returned an empty system_prompt")
+	}
 	return &result, nil
 }
