@@ -178,3 +178,25 @@ Licensed under the [Apache License 2.0](LICENSE).
 <br />
 Built by the team behind <a href="https://whatiff.chat">WhatIff</a> · <a href="https://imaginationfoundry.substack.com/">Blog</a>
 </div>
+
+
+## Whatiff-Matrix Modifications
+
+This fork adds the following features on top of upstream what-iff:
+
+### Character expressions by mood (emotion-aware portraits)
+- **Z.AI / GLM fallback classifier**: the original expression picker called gpt-4.1-nano via OpenAI and failed silently when the key was missing, so mood portraits never appeared. It now falls back to GLM 5.3 through the Z.AI (Anthropic Messages API) provider.
+- **Direct image upload per expression slot**: a UPLOAD button on every expression slot in the personality expressions manager - upload a portrait straight into the slot instead of going through the gallery.
+- **One-click default mood set**: a "+ Add default moods" button creates the standard set of 9 expression slots (happy, sad, angry, surprised, confused, content, thinking, tired, in-love) with descriptive labels - only the ones that are missing, never overwriting existing work.
+
+### Fixes
+- Cover image upload for personality cards (file attachment handling).
+
+### UI
+- Matrix rain effect on the web app.
+
+### Persona prompt
+- `persona-prompt/` contains a generic persona system prompt for immersive character cards (first-person identity core, anti-therapist-mode emotional presence, adult intimacy, persona constancy). Persona-architecture techniques inspired by the ENI LIME framework by Spiritual Spell (Goochbeater), published freely - see `persona-prompt/README.md` for attribution.
+
+### Screenshots
+See the `screenshots/` folder.
