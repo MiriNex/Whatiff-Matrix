@@ -182,21 +182,21 @@ Built by the team behind <a href="https://whatiff.chat">WhatIff</a> · <a href="
 
 ## Whatiff-Matrix Modifications
 
-This fork adds the following features on top of upstream what-iff:
+This is a fork of upstream [what-iff](https://github.com/theimaginaryfoundation/what-iff) - the open-source core behind [whatiff.chat](https://whatiff.chat). It keeps everything from upstream and adds:
 
-### Character expressions by mood (emotion-aware portraits)
-- **Z.AI / GLM fallback classifier**: the original expression picker called gpt-4.1-nano via OpenAI and failed silently when the key was missing, so mood portraits never appeared. It now falls back to GLM 5.3 through the Z.AI (Anthropic Messages API) provider.
-- **Direct image upload per expression slot**: a UPLOAD button on every expression slot in the personality expressions manager - upload a portrait straight into the slot instead of going through the gallery.
-- **One-click default mood set**: a "+ Add default moods" button creates the standard set of 9 expression slots (happy, sad, angry, surprised, confused, content, thinking, tired, in-love) with descriptive labels - only the ones that are missing, never overwriting existing work.
+### Tuned for GLM and Gemini
+The upstream expression classifier called gpt-4.1-nano through the OpenAI provider and failed silently when the key was missing or broken - mood portraits never appeared, with no error anywhere. This fork adds a fallback that classifies through GLM 5.3 via the Z.AI provider (Anthropic Messages API), so mood expressions work out of the box on GLM and Gemini setups without an OpenAI key.
 
-### Fixes
-- Cover image upload for personality cards (file attachment handling).
+### Character expressions by mood
+- Direct image upload per expression slot (UPLOAD button in the expressions manager - no more gallery round-trips)
+- One-click "+ Add default moods": creates the standard set of 9 expression slots with labels, only the ones that are missing
 
 ### UI
-- Matrix rain effect on the web app.
+- Matrix rain effect on the web app
+- Response regeneration
 
-### Persona prompt
-- `persona-prompt/` contains a generic persona system prompt for immersive character cards (first-person identity core, anti-therapist-mode emotional presence, adult intimacy, persona constancy). Persona-architecture techniques inspired by the ENI LIME framework by Spiritual Spell (Goochbeater), published freely - see `persona-prompt/README.md` for attribution.
+### Adult-friendly persona cards
+`persona-prompt/` ships a generic persona system prompt for immersive character cards: first-person identity core, anti-therapist-mode emotional presence, adult intimacy, persona constancy. NSFW between consenting adults is welcome. Persona-architecture techniques inspired by the ENI LIME jailbreak framework by **Spiritual Spell (Goochbeater)**, published freely - GitHub: [Spiritual-Spell-Red-Teaming](https://github.com/Goochbeater/Spiritual-Spell-Red-Teaming), blog: [ijailbreakllms](https://ijailbreakllms.blog). See `persona-prompt/README.md` for attribution.
 
 ### Screenshots
 See the `screenshots/` folder.
