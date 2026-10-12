@@ -169,9 +169,6 @@ func init() {
 		logger.Fatal("Failed to connect to database", zap.Error(err))
 	}
 
-	// Best-effort patch so models.subscription_tier accepts "ultra" (Ent does not widen CHECKs on its own).
-	database.MigrateModelSubscriptionTierUltra(context.Background(), sqlDB, logger)
-
 	// Run migrations if AUTO_MIGRATE is set
 	autoMigrate, autoMigrateSet := envBool("AUTO_MIGRATE")
 	destructiveMigration, destructiveMigrationSet := envBool("DESTRUCTIVE_MIGRATION")

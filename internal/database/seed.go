@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/theimaginaryfoundation/what-iff/ent"
-	"github.com/theimaginaryfoundation/what-iff/ent/chat"
 	"github.com/theimaginaryfoundation/what-iff/ent/model"
 	entrole "github.com/theimaginaryfoundation/what-iff/ent/role"
 	"github.com/theimaginaryfoundation/what-iff/ent/user"
@@ -16,13 +15,8 @@ import (
 	"github.com/theimaginaryfoundation/what-iff/internal/auth"
 	appmodels "github.com/theimaginaryfoundation/what-iff/internal/models"
 
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
-
-var legacyModelNames = []string{
-	appmodels.LegacyFineTunedModelName,
-}
 
 // EnsureSeedData makes sure critical reference data exists before serving requests.
 func EnsureSeedData(ctx context.Context, client *ent.Client, logger *zap.Logger) error {
@@ -37,21 +31,15 @@ func EnsureSeedData(ctx context.Context, client *ent.Client, logger *zap.Logger)
 		return err
 	}
 
-	// Get the default model for migration purposes
+	// Fail fast if DEFAULT_MODEL_NAME does not name an active model
 	defaultModelName := envOrDefault("DEFAULT_MODEL_NAME", appmodels.DefaultModelName)
-	defaultModel, err := client.Model.Query().
+	if _, err := client.Model.Query().
 		Where(
 			model.Name(defaultModelName),
 			model.Deleted(false),
 		).
-		Only(ctx)
-	if err != nil {
+		Only(ctx); err != nil {
 		return errors.New("default model not found after seeding: " + defaultModelName)
-	}
-
-	// Migrate any legacy models to the default
-	if err := migrateLegacyModels(ctx, client, logger, defaultModel); err != nil {
-		return err
 	}
 
 	// Store default role IDs for later use (can be accessed via GetDefaultRole)
@@ -104,57 +92,6 @@ func ensureAllModels(ctx context.Context, client *ent.Client, logger *zap.Logger
 		logger.Info("Seeded model", zap.String("name", modelConfig.Name))
 	}
 
-	return nil
-}
-
-func migrateLegacyModels(ctx context.Context, client *ent.Client, logger *zap.Logger, defaultModel *ent.Model) error {
-	if defaultModel == nil {
-		return nil
-	}
-
-	legacyModels, err := client.Model.Query().
-		Where(
-			model.NameIn(legacyModelNames...),
-			model.Deleted(false),
-		).
-		All(ctx)
-	if err != nil {
-		return err
-	}
-
-	if len(legacyModels) == 0 {
-		return nil
-	}
-
-	legacyIDs := make([]uuid.UUID, 0, len(legacyModels))
-	legacyNames := make([]string, 0, len(legacyModels))
-	for _, m := range legacyModels {
-		legacyIDs = append(legacyIDs, m.ID)
-		legacyNames = append(legacyNames, m.Name)
-	}
-
-	if _, err := client.UserPreference.Update().
-		Where(userpreference.DefaultModelIn(legacyIDs...)).
-		SetDefaultModel(defaultModel.ID).
-		Save(ctx); err != nil {
-		return err
-	}
-
-	if _, err := client.Chat.Update().
-		Where(chat.HasModelWith(model.IDIn(legacyIDs...))).
-		SetModelID(defaultModel.ID).
-		Save(ctx); err != nil {
-		return err
-	}
-
-	if _, err := client.Model.Update().
-		Where(model.IDIn(legacyIDs...)).
-		SetDeleted(true).
-		Save(ctx); err != nil {
-		return err
-	}
-
-	logger.Info("Migrated legacy models to default", zap.Strings("legacy_names", legacyNames), zap.String("default", defaultModel.Name))
 	return nil
 }
 
