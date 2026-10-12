@@ -43,5 +43,11 @@ func (Embedding) Indexes() []ent.Index {
 				entsql.IndexType("hnsw"),
 				entsql.OpClass("vector_l2_ops"),
 			),
+		// Postgres does not index a foreign key on its own, and this one has no other index, so every
+		// lookup by memory scanned the whole embeddings table (rows carry a vector(1536)): the
+		// missing-embedding NOT EXISTS checks and backfill pages, replacing or deleting a memory's
+		// embedding, and the FK check when a memory is deleted (ON DELETE NO ACTION). Not unique:
+		// writers delete-then-insert, and rows from other paths may briefly coexist (#266).
+		index.Edges("memory"),
 	}
 }
