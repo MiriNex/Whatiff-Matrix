@@ -191,12 +191,9 @@ The upstream expression was through the OpenAI provider and failed silently when
 - Direct image upload per expression slot (UPLOAD button in the expressions manager - no more gallery round-trips)
 - One-click "+ Add default moods": creates the standard set of 9 expression slots with labels.
 
-### Reload the output
-- An option to reload the model output was added.
-
 ### UI
 - Matrix rain effect on the web app
-- Response regeneration
+- An option to reload the model output was added.
 
 ### Adult-friendly persona cards
 `persona-prompt/` ships a generic persona system prompt for immersive character cards: first-person identity core, anti-therapist-mode emotional presence, adult intimacy, persona constancy. NSFW between consenting adults is welcome. Persona-architecture techniques inspired by the ENI LIME jailbreak framework by **Spiritual Spell (Goochbeater)**, published freely - GitHub: [Spiritual-Spell-Red-Teaming](https://github.com/Goochbeater/Spiritual-Spell-Red-Teaming), blog: [ijailbreakllms](https://ijailbreakllms.blog). See `persona-prompt/README.md` for attribution.
