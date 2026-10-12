@@ -185,18 +185,25 @@ Built by the team behind <a href="https://whatiff.chat">WhatIff</a> · <a href="
 This is a fork of upstream [what-iff](https://github.com/theimaginaryfoundation/what-iff) - the open-source core behind [whatiff.chat](https://whatiff.chat). It keeps everything from upstream and adds:
 
 ### Tuned for GLM and Gemini
-The upstream expression classifier called gpt-4.1-nano through the OpenAI provider and failed silently when the key was missing or broken - mood portraits never appeared, with no error anywhere. This fork adds a fallback that classifies through GLM 5.3 via the Z.AI provider (Anthropic Messages API), so mood expressions work out of the box on GLM and Gemini setups without an OpenAI key.
+The upstream expression was through the OpenAI provider and failed silently when the key was missing or broken - mood portraits never appeared, with no error anywhere. This fork adds a fallback that classifies through GLM 5.3 via the Z.AI provider, so mood expressions work out of the box on GLM and Gemini setups without an OpenAI key.
 
 ### Character expressions by mood
 - Direct image upload per expression slot (UPLOAD button in the expressions manager - no more gallery round-trips)
-- One-click "+ Add default moods": creates the standard set of 9 expression slots with labels, only the ones that are missing
+- One-click "+ Add default moods": creates the standard set of 9 expression slots with labels.
 
 ### UI
 - Matrix rain effect on the web app
-- Response regeneration
+- An option to reload the model output was added.
 
 ### Adult-friendly persona cards
 `persona-prompt/` ships a generic persona system prompt for immersive character cards: first-person identity core, anti-therapist-mode emotional presence, adult intimacy, persona constancy. NSFW between consenting adults is welcome. Persona-architecture techniques inspired by the ENI LIME jailbreak framework by **Spiritual Spell (Goochbeater)**, published freely - GitHub: [Spiritual-Spell-Red-Teaming](https://github.com/Goochbeater/Spiritual-Spell-Red-Teaming), blog: [ijailbreakllms](https://ijailbreakllms.blog). See `persona-prompt/README.md` for attribution.
 
 ### Screenshots
-See the `screenshots/` folder.
+<img width="1912" height="911" alt="image" src="https://github.com/user-attachments/assets/a8507f4c-85a4-4965-869b-a4cd4bb8efb1" />
+<img width="1898" height="805" alt="image" src="https://github.com/user-attachments/assets/fb724ac6-28a7-4339-9e2c-15342ec9fd59" />
+<img width="1892" height="425" alt="image" src="https://github.com/user-attachments/assets/656bb7d9-f636-45c2-a581-1b430a5274c8" />
+<img width="1904" height="518" alt="image" src="https://github.com/user-attachments/assets/2a185dcf-3b1e-4c40-aae6-277f61e263b2" />
+<img width="1359" height="215" alt="image" src="https://github.com/user-attachments/assets/c5aa90b1-d253-4064-b3a9-65841feb3d87" />
+
+
+
