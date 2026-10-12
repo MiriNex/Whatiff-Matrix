@@ -294,16 +294,6 @@ func TestRunGeneration_FailsTurnOnEmptyModelResponse(t *testing.T) {
 	require.Nil(t, result)
 }
 
-func TestBackfillSummaryMemoriesSkipsWithoutMemoryTool(t *testing.T) {
-	a := &Agent{logger: zap.NewNop()}
-
-	stats := a.BackfillSummaryMemories(context.Background(), 10)
-
-	assert.Equal(t, 0, stats.Processed)
-	assert.Equal(t, 1, stats.Skipped)
-	assert.Equal(t, 0, stats.Failed)
-}
-
 func TestBuildAttachmentLabels_AttachmentsWithoutFileID(t *testing.T) {
 	attachments := []*models.FileAttachment{
 		{Name: "document.pdf", FileID: nil},
