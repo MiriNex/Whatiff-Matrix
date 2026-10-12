@@ -204,7 +204,7 @@ The upstream expression was through the OpenAI provider and failed silently when
 
 ### Screenshots
 <img width="1913" height="899" alt="image" src="https://github.com/user-attachments/assets/2988c43d-82d8-443f-bafd-cf48cf209d17" />
-<img width="1898" height="805" alt="image" src="https://github.com/user-attachments/assets/fb724ac6-28a7-4339-9e2c-15342ec9fd59" />
+<img width="1570" height="562" alt="image" src="https://github.com/user-attachments/assets/7e3ae49d-ca98-4876-b249-6b717ef2db77" />
 <img width="1892" height="425" alt="image" src="https://github.com/user-attachments/assets/656bb7d9-f636-45c2-a581-1b430a5274c8" />
 <img width="1904" height="518" alt="image" src="https://github.com/user-attachments/assets/2a185dcf-3b1e-4c40-aae6-277f61e263b2" />
 <img width="1359" height="215" alt="image" src="https://github.com/user-attachments/assets/c5aa90b1-d253-4064-b3a9-65841feb3d87" />
