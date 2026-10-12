@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  ElementRef,
   inject,
   input,
   OnInit,
@@ -11,6 +12,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize, take } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -28,6 +32,7 @@ import {
   slotsFromPersistedExpressions,
 } from '../helpers/expressions.helpers';
 import { ImageGalleryService } from '../../../core/services/image-gallery.service';
+import { FileAttachmentService } from '../../../core/services/file-attachment.service';
 import { PersonalityService } from '../../../core/services/personality.service';
 import { PersonalityMediaJobService } from '../../../core/services/personality-media-job.service';
 import { JobService } from '../../../core/services/job.service';
@@ -38,6 +43,19 @@ import { AuthImagePipe } from '../../../core/pipes/auth-image.pipe';
 import { AsyncPipe } from '@angular/common';
 import { ExpressionGenerateModalComponent } from './expression-generate-modal.component';
 import { HelpHintComponent } from '../../../shared/ui/help-hint/help-hint.component';
+
+/** Standard expression set offered one-click so new personalities only need images. */
+const DEFAULT_EXPRESSION_SET: ReadonlyArray<{ key: string; label: string }> = [
+  { key: 'happy', label: 'Smiling, joyful, delighted' },
+  { key: 'sad', label: 'Down, melancholic, hurt' },
+  { key: 'angry', label: 'Furious, irritated, scowling' },
+  { key: 'surprised', label: 'Astonished, wide-eyed, startled' },
+  { key: 'confused', label: 'Puzzled, uncertain, lost' },
+  { key: 'content', label: 'Calm, satisfied, at ease' },
+  { key: 'thinking', label: 'Pensive, focused, pondering' },
+  { key: 'tired', label: 'Exhausted, drained, weary' },
+  { key: 'in-love', label: 'Affectionate, loving, smitten' },
+];
 import { TooltipDirective } from '../../../shared/ui/tooltip/tooltip.directive';
 import { ExpandIconComponent } from '../../../shared/ui/icons';
 
@@ -71,6 +89,13 @@ import { ExpandIconComponent } from '../../../shared/ui/icons';
       [style.--expressions-accent]="accent()"
       aria-label="Personality expressions"
     >
+      <input
+        #expressionFileInput
+        type="file"
+        accept="image/*"
+        class="hidden"
+        (change)="onExpressionFileSelected($event)"
+      />
       <header class="flex flex-wrap items-center justify-between gap-2">
         <div class="min-w-0">
           @if (personalityName()?.trim()) {
@@ -105,6 +130,14 @@ import { ExpandIconComponent } from '../../../shared/ui/icons';
             uiTooltip="Add your own expression key, then give it an image"
             (click)="onCreateCustomKey()"
           >+ Add expression</button>
+<button
+  type="button"
+  class="inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-semibold"
+  style="background: color-mix(in srgb, var(--expressions-accent) 16%, transparent); color: var(--expressions-accent);"
+  [disabled]="defaultSetBusy()"
+  uiTooltip="Create the standard mood set (happy, sad, angry, surprised, confused, content, thinking, tired, in-love) so you only upload images"
+  (click)="onAddDefaultSet()"
+>{{ defaultSetBusy() ? 'Adding…' : '+ Add default moods' }}</button>
 
           <span class="h-5 w-px bg-(--color-border-base)" aria-hidden="true"></span>
 
@@ -180,6 +213,13 @@ import { ExpandIconComponent } from '../../../shared/ui/icons';
                   </div>
                 }
                 <div class="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/55 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                  <button
+                    type="button"
+                    class="rounded-md border border-border-base bg-(--color-surface-base) px-2 py-1 text-[0.6875rem] font-semibold tracking-wide text-(--color-text-primary) disabled:opacity-60"
+                    uiTooltip="Upload an image from your device for this expression"
+                    [disabled]="uploadingKey() === slot.expressionKey"
+                    (click)="onUploadForSlot(slot)"
+                  >{{ uploadingKey() === slot.expressionKey ? 'UPLOADING…' : 'UPLOAD' }}</button>
                   <button
                     type="button"
                     class="rounded-md border border-border-base bg-(--color-surface-base) px-2 py-1 text-[0.6875rem] font-semibold tracking-wide text-(--color-text-primary)"
@@ -435,6 +475,11 @@ export class PersonalityExpressionsManagerComponent implements OnInit {
   private readonly mediaJobs = inject(PersonalityMediaJobService);
   private readonly jobs = inject(JobService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly fileAttachmentService = inject(FileAttachmentService);
+  private readonly expressionFileInput = viewChild<ElementRef<HTMLInputElement>>('expressionFileInput');
+  private readonly uploadSlotKey = signal<string | null>(null);
+  readonly uploadingKey = signal<string | null>(null);
+  readonly defaultSetBusy = signal(false);
 
   readonly customKeyLabelId = `expressions-add-key-${randomId()}`;
   readonly galleryLabelId = `expressions-pick-image-${randomId()}`;
@@ -589,6 +634,83 @@ export class PersonalityExpressionsManagerComponent implements OnInit {
   onAssign(slot: MergedExpression): void {
     this.activeKey.set(slot.expressionKey);
     this.openGallery();
+  }
+
+  onUploadForSlot(slot: MergedExpression): void {
+    if (this.uploadingKey()) return;
+    this.uploadSlotKey.set(slot.expressionKey);
+    this.expressionFileInput()?.nativeElement.click();
+  }
+
+  onExpressionFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    const key = this.uploadSlotKey();
+    if (!file || !key) {
+      this.uploadSlotKey.set(null);
+      input.value = '';
+      return;
+    }
+    this.uploadingKey.set(key);
+    this.fileAttachmentService
+      .uploadPersonalityFileAttachment(this.personalityId(), file)
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.uploadingKey.set(null);
+          this.uploadSlotKey.set(null);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: attachment => {
+          input.value = '';
+          const fullUrl = this.imageGallery.getImageUrl(attachment.id, 'full');
+          const ctx = this.optimisticContext(key, { image_id: attachment.id });
+          this.assignment.assignFromGallery(this.personalityId(), key, attachment.id, fullUrl, ctx).subscribe({
+            error: err => this.flashError(err?.message ?? 'Failed to assign image.'),
+          });
+        },
+        error: () => {
+          input.value = '';
+          this.flashError('Failed to upload photo. Please try again.');
+        },
+      });
+  }
+
+  onAddDefaultSet(): void {
+    if (this.defaultSetBusy()) return;
+    const existing = new Set(this.expressions().map(e => e.expression_key));
+    const missing = DEFAULT_EXPRESSION_SET.filter(d => !existing.has(d.key));
+    if (missing.length === 0) {
+      this.flashError('All default moods already exist.');
+      return;
+    }
+    this.defaultSetBusy.set(true);
+    const pid = this.personalityId();
+    forkJoin(
+      missing.map(d =>
+        this.assignment.setLabel(pid, d.key, d.label).pipe(
+          catchError(() => of(null)),
+        ),
+      ),
+    )
+      .pipe(
+        take(1),
+        finalize(() => this.defaultSetBusy.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.personalityApi
+            .listExpressions(pid)
+            .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: rows => this.expressionsChanged.emit(rows),
+              error: err => this.flashError(err?.message ?? 'Failed to reload expressions.'),
+            });
+        },
+      });
   }
 
   onClear(slot: MergedExpression): void {

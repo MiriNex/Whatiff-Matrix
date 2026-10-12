@@ -368,7 +368,7 @@ type ThreadListTab = ThreadListScope;
   `,
   styles: [`
     .panel {
-      background: var(--color-surface-base);
+      background: color-mix(in srgb, var(--color-surface-base) 30%, transparent);
       display: flex;
       flex-direction: column;
       height: 100%;

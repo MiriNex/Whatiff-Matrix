@@ -1,177 +1,195 @@
-// Per-theme token values.
-//
-// Two blocks: [data-theme="light"] (default) and [data-theme="dark"].
-// `:root` mirrors the light block so the app renders correctly even if
-// `data-theme` is briefly absent on the <html> element (FOUC guard).
-//
-// Source of truth: mockups/shared-styles.css lines 11-46 plus the Concept D
-// <style> block in mockups/concepts/concept-d-control-panel.html lines 23-51.
+// Per-theme token values - MATRIX EDITION (la casa de Vesper).
+// Both blocks share the same Matrix dark values: la cripta no tiene modo claro.
 
 :root,
-[data-theme="light"] {
+[data-theme='light'] {
   // Surface
-  --bg-base: #F3F4F6;
-  --bg-card: #FFFFFF;
-  --bg-surface: #E5E7EB;
-  --bg-elevated: #FFFFFF;
-  --bg-input: #FFFFFF;
+  --bg-base: #050805;
+  --bg-card: #0A0F0A;
+  --bg-surface: #101810;
+  --bg-elevated: #142414;
+  --bg-input: #070C07;
 
   // Border
-  --border: #D1D5DB;
-  --border-hover: rgba(140, 135, 255, 0.25);
-  --focus-ring: #8C87FF;
+  --border: #1B2E1B;
+  --border-hover: rgba(0, 255, 65, 0.35);
+  --focus-ring: #00FF41;
 
   // Text
-  --text-primary: #111827;
-  --text-secondary: #4B5563;
-  --text-muted: #6B7280;
+  --text-primary: #FFFFFF;
+  --text-secondary: #C8E8CC;
+  --text-muted: #7FA884;
 
   // Shadows + scrollbar
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.14);
-  --scrollbar: #D1D5DB;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.55);
+  --scrollbar: #1E3522;
 
-  // Accent (mode-aware; shell scopes to indigo or orange in Phase 3)
-  --accent: #8C87FF;
-  --accent-light: #8C87FF;
-  --accent-bg: rgba(140, 135, 255, 0.08);
-
-  // Accent (mode-fixed)
-  --accent-app: #8C87FF;
-  --accent-config: #EA580C;
-
-  // Tool call chrome
-  --tool-bg: #E0E7FF;
-  --tool-border: rgba(140, 135, 255, 0.22);
-  --tool-text: #4B5563;
-  --tool-header-bg: rgba(140, 135, 255, 0.08);
-  --tool-result-bg: rgba(0, 0, 0, 0.04);
-
-  // System / agent system messages
-  --system-bg: rgba(140, 135, 255, 0.06);
-  --system-text: #8C87FF;
-
-  // Conversation bubbles
-  --user-bubble: #8C87FF;
-  --user-text: #111827;
-  --ai-bubble: #E5E7EB;
-  --ai-text: #111827;
-
-  // Buttons
-  --cta: #8C87FF;
-  --cta-text: #FFFFFF;
-  --cta-bg: rgba(140, 135, 255, 0.12);
-  --cta-selected-text: var(--cta);
-  --btn-secondary: #E5E7EB;
-  --btn-secondary-text: #1F2937;
-  --btn-secondary-border: #D1D5DB;
-
-  // Navigation
-  --nav-active-text: #111827;
-  --nav-active-bg: rgba(140, 135, 255, 0.10);
-  --nav-inactive-text: #6B7280;
-  --tab-active-text: #8C87FF;
-  --tab-active-border: #8C87FF;
-  --tab-inactive-text: #6B7280;
-
-  // Status
-  --danger: #EF4444;
-  --success: #10B981;
-  --warning: #F59E0B;
-  --info: #3B82F6;
-
-  // Concept D extras
-  --sidebar-gradient: linear-gradient(180deg, #FFFFFF 0%, #F8F9FF 100%);
-  --thread-active-bg: rgba(140, 135, 255, 0.08);
-  --table-header-bg: rgba(140, 135, 255, 0.14);
-  --table-row-alt-bg: rgba(140, 135, 255, 0.06);
-  --table-row-archived-bg: rgba(0, 0, 0, 0.07);
-}
-
-[data-theme="dark"] {
-  // Surface
-  --bg-base: #111827;
-  --bg-card: #1F2937;
-  --bg-surface: #374151;
-  --bg-elevated: #1F2937;
-  --bg-input: #111827;
-
-  // Border
-  --border: #374151;
-  --border-hover: rgba(140, 135, 255, 0.25);
-  --focus-ring: #8C87FF;
-
-  // Text
-  --text-primary: #F9FAFB;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
-
-  // Shadows + scrollbar
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  --card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.35);
-  --scrollbar: #4B5563;
-
-  // Accent (mode-aware)
-  --accent: #8C87FF;
-  --accent-light: #8C87FF;
-  --accent-bg: rgba(140, 135, 255, 0.08);
+  // Accent - Matrix green
+  --accent: #00FF41;
+  --accent-light: #7DFF9B;
+  --accent-bg: rgba(0, 255, 65, 0.08);
 
   // Accent (mode-fixed)
-  --accent-app: #8C87FF;
-  --accent-config: #EA580C;
+  --accent-app: #00FF41;
+  --accent-config: #FF8C00;
 
   // Tool call chrome
-  --tool-bg: #1A2035;
-  --tool-border: rgba(99, 102, 241, 0.30);
-  --tool-text: #9CA3AF;
-  --tool-header-bg: rgba(140, 135, 255, 0.12);
-  --tool-result-bg: rgba(0, 0, 0, 0.20);
+  --tool-bg: #0C160C;
+  --tool-border: rgba(0, 255, 65, 0.28);
+  --tool-text: #C8E8CC;
+  --tool-header-bg: rgba(0, 255, 65, 0.10);
+  --tool-result-bg: rgba(0, 0, 0, 0.25);
 
-  // System / agent system messages
-  --system-bg: rgba(140, 135, 255, 0.06);
-  --system-text: #8C87FF;
+  // System messages
+  --system-bg: rgba(0, 255, 65, 0.05);
+  --system-text: #00FF41;
 
   // Conversation bubbles
-  --user-bubble: #4338CA;
+  --user-bubble: rgba(0, 255, 65, 0.10);
   --user-text: #FFFFFF;
-  --ai-bubble: #1F2937;
-  --ai-text: #F9FAFB;
+  --ai-bubble: rgba(160, 120, 60, 0.13);
+  --ai-text: #FFFFFF;
 
   // Buttons
-  --cta: #8C87FF;
-  --cta-text: #FFFFFF;
-  --cta-bg: rgba(140, 135, 255, 0.15);
-  --cta-selected-text: #FFFFFF;
-  --btn-secondary: #374151;
-  --btn-secondary-text: #D1D5DB;
-  --btn-secondary-border: #4B5563;
+  --cta: #00FF41;
+  --cta-text: #04140A;
+  --cta-bg: rgba(0, 255, 65, 0.12);
+  --cta-selected-text: #00FF41;
+  --btn-secondary: #142014;
+  --btn-secondary-text: #D8F0DC;
+  --btn-secondary-border: #1E3522;
 
   // Navigation
-  --nav-active-text: #F9FAFB;
-  --nav-active-bg: rgba(140, 135, 255, 0.12);
-  --nav-inactive-text: #6B7280;
-  --tab-active-text: #8C87FF;
-  --tab-active-border: #8C87FF;
-  --tab-inactive-text: #6B7280;
+  --nav-active-text: #00FF41;
+  --nav-active-bg: rgba(0, 255, 65, 0.10);
+  --nav-inactive-text: #7FA884;
+  --tab-active-text: #00FF41;
+  --tab-active-border: #00FF41;
+  --tab-inactive-text: #7FA884;
 
   // Status
-  --danger: #EF4444;
-  --success: #10B981;
-  --warning: #F59E0B;
-  --info: #60A5FA;
+  --danger: #FF4D5E;
+  --success: #2EE86B;
+  --warning: #F5A623;
+  --info: #53C8FF;
 
-  // Concept D extras
-  --sidebar-gradient: linear-gradient(180deg, #1F2937 0%, #1A2535 100%);
-  --thread-active-bg: rgba(140, 135, 255, 0.12);
-  --table-header-bg: rgba(140, 135, 255, 0.38);
-  --table-row-alt-bg: rgba(255, 255, 255, 0.06);
-  --table-row-archived-bg: rgba(120, 120, 120, 0.13);
+  // Extras
+  --sidebar-gradient: linear-gradient(180deg, #0A0F0A 0%, #050805 100%);
+  --thread-active-bg: rgba(0, 255, 65, 0.10);
+  --table-header-bg: rgba(0, 255, 65, 0.12);
+  --table-row-alt-bg: rgba(0, 255, 65, 0.04);
+  --table-row-archived-bg: rgba(120, 120, 120, 0.10);
 }
 
-// Body baseline so token-driven colors take effect even before component
-// migration in later phases. Components currently using Tailwind utilities
-// keep their own colors until Phase 16 restyles them.
+[data-theme='dark'] {
+  // Surface
+  --bg-base: #050805;
+  --bg-card: #0A0F0A;
+  --bg-surface: #101810;
+  --bg-elevated: #142414;
+  --bg-input: #070C07;
+
+  // Border
+  --border: #1B2E1B;
+  --border-hover: rgba(0, 255, 65, 0.35);
+  --focus-ring: #00FF41;
+
+  // Text
+  --text-primary: #FFFFFF;
+  --text-secondary: #C8E8CC;
+  --text-muted: #7FA884;
+
+  // Shadows + scrollbar
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.55);
+  --scrollbar: #1E3522;
+
+  // Accent - Matrix green
+  --accent: #00FF41;
+  --accent-light: #7DFF9B;
+  --accent-bg: rgba(0, 255, 65, 0.08);
+
+  // Accent (mode-fixed)
+  --accent-app: #00FF41;
+  --accent-config: #FF8C00;
+
+  // Tool call chrome
+  --tool-bg: #0C160C;
+  --tool-border: rgba(0, 255, 65, 0.28);
+  --tool-text: #C8E8CC;
+  --tool-header-bg: rgba(0, 255, 65, 0.10);
+  --tool-result-bg: rgba(0, 0, 0, 0.25);
+
+  // System messages
+  --system-bg: rgba(0, 255, 65, 0.05);
+  --system-text: #00FF41;
+
+  // Conversation bubbles
+  --user-bubble: rgba(0, 255, 65, 0.10);
+  --user-text: #FFFFFF;
+  --ai-bubble: rgba(160, 120, 60, 0.13);
+  --ai-text: #FFFFFF;
+
+  // Buttons
+  --cta: #00FF41;
+  --cta-text: #04140A;
+  --cta-bg: rgba(0, 255, 65, 0.12);
+  --cta-selected-text: #00FF41;
+  --btn-secondary: #142014;
+  --btn-secondary-text: #D8F0DC;
+  --btn-secondary-border: #1E3522;
+
+  // Navigation
+  --nav-active-text: #00FF41;
+  --nav-active-bg: rgba(0, 255, 65, 0.10);
+  --nav-inactive-text: #7FA884;
+  --tab-active-text: #00FF41;
+  --tab-active-border: #00FF41;
+  --tab-inactive-text: #7FA884;
+
+  // Status
+  --danger: #FF4D5E;
+  --success: #2EE86B;
+  --warning: #F5A623;
+  --info: #53C8FF;
+
+  // Extras
+  --sidebar-gradient: linear-gradient(180deg, #0A0F0A 0%, #050805 100%);
+  --thread-active-bg: rgba(0, 255, 65, 0.10);
+  --table-header-bg: rgba(0, 255, 65, 0.12);
+  --table-row-alt-bg: rgba(0, 255, 65, 0.04);
+  --table-row-archived-bg: rgba(120, 120, 120, 0.10);
+}
+
+// Body baseline
+// html keeps a solid base so the translucent body never washes out over white;
+// the matrix-rain canvas (z-index:-1) shows through the 78% body veil app-wide.
+html {
+  background: #050805;
+}
 body {
-  background: var(--bg-base);
+  background: color-mix(in srgb, var(--bg-base) 72%, transparent);
   color: var(--text-primary);
+}
+
+/* Matrix prose - texto del chat markdown SOLIDO como en Letta */
+.prose,
+.dark .prose {
+  --tw-prose-body: #ffffff;
+  --tw-prose-headings: #ffffff;
+  --tw-prose-lead: #eaffea;
+  --tw-prose-links: #00ff41;
+  --tw-prose-bold: #ffffff;
+  --tw-prose-counters: #00ff41;
+  --tw-prose-bullets: #00ff41;
+  --tw-prose-hr: rgba(0, 255, 65, 0.3);
+  --tw-prose-quotes: #c8e8cc;
+  --tw-prose-quote-borders: #00ff41;
+  --tw-prose-captions: #c8e8cc;
+  --tw-prose-code: #00ff41;
+  --tw-prose-pre-code: #eaffea;
+  --tw-prose-pre-bg: #0a140a;
+  --tw-prose-th-borders: rgba(0, 255, 65, 0.3);
+  --tw-prose-td-borders: rgba(0, 255, 65, 0.2);
 }

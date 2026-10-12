@@ -291,15 +291,19 @@ func ProcessUpload(ctx context.Context, a FileAttachmentUploader, userID uuid.UU
 	}
 	defer uploadReader.Close()
 
-	fileId, err := a.UploadFileAttachment(ctx, userID, attrs, uploadReader, fileName, fileTypeInfo)
-	if err != nil {
-		_ = os.Remove(tempFilePath)
-		return models.FileAttachment{}, "", uploadErr(http.StatusInternalServerError, "Error uploading file", err)
+	// Provider upload is best-effort: the DB record plus the local file store are the
+	// source of truth for serving attachments (gallery, covers, raw-byte vision).
+	// When the provider rejects the file (e.g. no valid provider key), keep the
+	// upload alive with a nil FileID instead of failing the whole request — every
+	// downstream consumer already handles a nil/empty FileID.
+	var fileIDPtr *string
+	if fileId, err := a.UploadFileAttachment(ctx, userID, attrs, uploadReader, fileName, fileTypeInfo); err == nil {
+		fileIDPtr = &fileId
 	}
 
 	return models.FileAttachment{
 		UserID:   userID,
-		FileID:   &fileId,
+		FileID:   fileIDPtr,
 		Name:     fileName,
 		FileType: fileTypeInfo.ContentType,
 	}, tempFilePath, nil

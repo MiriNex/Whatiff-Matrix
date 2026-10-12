@@ -18,6 +18,10 @@ import (
 
 const expressionPickModel = chatNameModel
 
+// expressionZAIModel is the z.ai GLM model used as fallback classifier when the
+// OpenAI expression picker is unavailable (missing/invalid key or provider error).
+const expressionZAIModel = "glm-5.3"
+
 // expressionPickStructuredOut is the OpenAI structured-output shape for the portrait classifier.
 type expressionPickStructuredOut struct {
 	ExpressionKey string `json:"expression_key"`
@@ -135,12 +139,16 @@ Assistant reply to evaluate:
 	}
 
 	resp, err := a.OpenAIProvider.CallWithRetry(telemetry.WithCallPath(ctx, telemetry.CallPathExpressionPick), params)
+	raw := ""
 	if err != nil {
-		a.logger.Warn("expression picker model call failed", zap.Error(err))
-		return nil, "", nil
+		a.logger.Warn("expression picker model call failed; trying z.ai GLM fallback", zap.Error(err))
+	} else {
+		raw = strings.TrimSpace(provider.ProcessResponseOutput(resp))
 	}
 
-	raw := strings.TrimSpace(provider.ProcessResponseOutput(resp))
+	if raw == "" {
+		raw = a.pickExpressionTextViaZAI(ctx, inferenceModelCtx, userTurn, assistantReply, catalog)
+	}
 	if raw == "" {
 		return nil, "", nil
 	}
@@ -159,6 +167,41 @@ Assistant reply to evaluate:
 	a.logger.Debug("expression picker returned unknown key",
 		zap.String("expression_key", key))
 	return nil, "", nil
+}
+
+// pickExpressionTextViaZAI asks the configured z.ai GLM provider (Anthropic Messages API)
+// to classify the assistant reply when the OpenAI expression picker is unavailable
+// (missing/invalid key, provider error, or empty output). Returns "" on any failure;
+// callers treat that as "no portrait" exactly like a failed OpenAI pick.
+func (a *Agent) pickExpressionTextViaZAI(ctx context.Context, inferenceModelCtx *provider.ModelContext, userTurn, assistantReply, catalog string) string {
+	if a.ZAIProvider == nil {
+		return ""
+	}
+	var fork *provider.ModelContext
+	if inferenceModelCtx != nil {
+		fork = inferenceModelCtx.Clone()
+		// Structured JSON classification rejects multimodal input_image on the
+		// same request; continuity may attach expression portrait thumbnails.
+		fork.StripUserMessageImages()
+	} else {
+		fork = &provider.ModelContext{}
+	}
+	if reply := strings.TrimSpace(assistantReply); reply != "" {
+		fork.Append(provider.SegmentKindHistoryTurn, provider.RoleAssistant, reply, false)
+	}
+	fork.AppendUserMessage(provider.RoleUser, buildExpressionPickUserMessageBody(catalog)+
+		"\n\nRespond with ONLY a JSON object on a single line: {\"expression_key\": \"<chosen key>\", \"reasoning\": \"<one or two sentences>\"}. No markdown fences, no extra text.", nil, false)
+
+	params := fork.BuildClaudeParamsWithMaxTokens(expressionZAIModel, 384)
+	msg, err := a.ZAIProvider.Call(telemetry.WithCallPath(ctx, telemetry.CallPathExpressionPick), params)
+	if err != nil {
+		a.logger.Warn("expression picker z.ai GLM fallback failed", zap.Error(err))
+		return ""
+	}
+	if msg == nil {
+		return ""
+	}
+	return strings.TrimSpace(provider.ExtractClaudeText(msg))
 }
 
 // buildExpressionPickCatalog formats one line per expression: always "- key" or "- key — label" when a label exists.
