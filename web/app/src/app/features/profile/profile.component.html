@@ -2,7 +2,7 @@
   <div class="max-w-2xl mx-auto">
     <!-- Header -->
     <div class="text-center mb-8 mt-4">
-      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-text-primary">
         Profile Settings
       </h2>
       <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
@@ -22,7 +22,7 @@
 
     <!-- Form -->
     @if (!isLoading() || profileForm.dirty) {
-      <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+      <div class="bg-surface-card shadow-sm rounded-lg p-6">
         <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-6">
           <!-- Success Alert -->
           @if (successMessage()) {
@@ -54,7 +54,7 @@
                   <span class="text-white text-xl font-bold">{{ getUserInitials() }}</span>
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ getDisplayName() }}</h3>
+                  <h3 class="text-lg font-semibold text-text-primary">{{ getDisplayName() }}</h3>
                   <p class="text-sm text-gray-600 dark:text-gray-400">@{{ currentUser()?.username }}</p>
                   <p class="text-xs text-gray-500 dark:text-gray-500">Member since {{ $safeNavigationMigration(currentUser()?.created_at) | date:'mediumDate' }}</p>
                 </div>
@@ -64,14 +64,14 @@
           <!-- Form Fields -->
           <div class="space-y-4">
             <div>
-              <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              <label for="email" class="block mb-2 text-sm font-medium text-text-primary">
                 Email Address *
               </label>
               <input
                 type="email"
                 id="email"
                 formControlName="email"
-                class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 [class.border-red-500]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched"
                 placeholder="Enter your email address"
                 required>
@@ -92,14 +92,14 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label for="firstName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label for="firstName" class="block mb-2 text-sm font-medium text-text-primary">
                   First Name
                 </label>
                 <input
                   type="text"
                   id="firstName"
                   formControlName="first_name"
-                  class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   [class.border-red-500]="profileForm.get('first_name')?.invalid && profileForm.get('first_name')?.touched"
                   placeholder="Enter your first name">
                 @if (profileForm.get('first_name')?.invalid && profileForm.get('first_name')?.touched) {
@@ -112,14 +112,14 @@
                 }
               </div>
               <div>
-                <label for="lastName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label for="lastName" class="block mb-2 text-sm font-medium text-text-primary">
                   Last Name
                 </label>
                 <input
                   type="text"
                   id="lastName"
                   formControlName="last_name"
-                  class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   [class.border-red-500]="profileForm.get('last_name')?.invalid && profileForm.get('last_name')?.touched"
                   placeholder="Enter your last name">
                 @if (profileForm.get('last_name')?.invalid && profileForm.get('last_name')?.touched) {
@@ -133,7 +133,7 @@
               </div>
             </div>
             <div #timezoneCombobox class="relative">
-              <label for="timezone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              <label for="timezone" class="block mb-2 text-sm font-medium text-text-primary">
                 Timezone
               </label>
               <div class="relative">
@@ -151,7 +151,7 @@
                   (focus)="openTimezoneCombobox()"
                   (keydown)="onTimezoneInputKeydown($event)"
                   placeholder="Search or select timezone..."
-                  class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10"
+                  class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10"
                   [class.border-red-500]="profileForm.get('timezone')?.invalid && profileForm.get('timezone')?.touched">
                 <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500">
                   <svg class="h-4 w-4 transition-transform" [class.rotate-180]="timezoneComboboxOpen()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
@@ -163,7 +163,7 @@
                 <ul
                   id="timezone-listbox"
                   role="listbox"
-                  class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 py-1 shadow-lg focus:outline-none">
+                  class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 dark:border-gray-600 bg-surface-card py-1 shadow-lg focus:outline-none">
                   @for (tz of filteredTimezones(); track tz; let i = $index) {
                     <li
                       role="option"
@@ -172,7 +172,7 @@
                       (click)="selectTimezone(tz)"
                       [class.bg-indigo-50]="i === timezoneHighlightedIndex()"
                       [class.dark:bg-indigo-900/30]="i === timezoneHighlightedIndex()"
-                      class="cursor-pointer px-3 py-2 text-sm text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      class="cursor-pointer px-3 py-2 text-sm text-text-primary dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">
                       {{ tz }}
                     </li>
                   }
@@ -220,7 +220,7 @@
             <button
               type="button"
               (click)="navigateToDashboard()"
-              class="flex-1 sm:flex-none px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              class="flex-1 sm:flex-none px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-surface-input border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
               Cancel
             </button>
           </div>
@@ -229,9 +229,9 @@
     }
 
     <!-- Chat Preferences Section -->
-    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 mt-6">
+    <div class="bg-surface-card shadow-sm rounded-lg p-6 mt-6">
       <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Chat Preferences</h3>
+        <h3 class="text-lg font-medium text-text-primary">Chat Preferences</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">Configure your chat settings</p>
       </div>
 
@@ -264,7 +264,7 @@
         <!-- Current Preferences Display -->
         @if (currentPreferences()) {
           <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Current Settings</h4>
+            <h4 class="text-sm font-medium text-text-primary mb-2">Current Settings</h4>
             <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
               <p><span class="font-medium">Default Model:</span> {{ getModelDisplayName($safeNavigationMigration(currentPreferences()?.default_model_id)) }}</p>
               <p><span class="font-medium">Default Personality:</span> {{ getPersonalityDisplayName($safeNavigationMigration(currentPreferences()?.default_personality_id)) }}</p>
@@ -275,13 +275,13 @@
         <!-- Preferences Form Fields -->
         <div class="space-y-4">
           <div>
-            <label for="defaultModel" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label for="defaultModel" class="block mb-2 text-sm font-medium text-text-primary">
               Default AI Model *
             </label>
             <select
               id="defaultModel"
               formControlName="default_model_id"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               [class.border-red-500]="preferencesForm.get('default_model_id')?.invalid && preferencesForm.get('default_model_id')?.touched"
               required>
               <option value="">Select a default model for new chats</option>
@@ -323,13 +323,13 @@
           </div>
 
           <div>
-            <label for="defaultPersonality" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label for="defaultPersonality" class="block mb-2 text-sm font-medium text-text-primary">
               Default AI Personality
             </label>
             <select
               id="defaultPersonality"
               formControlName="default_personality_id"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
               @for (personality of getPersonalitiesWithDefault(); track trackByPersonalityId($index, personality)) {
                 <option [value]="personality.id">
                   {{ personality.name }}
@@ -342,13 +342,13 @@
           </div>
 
           <div>
-            <label for="theme" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label for="theme" class="block mb-2 text-sm font-medium text-text-primary">
               Theme
             </label>
             <select
               id="theme"
               formControlName="theme"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
               <option value="light">Light</option>
               <option value="dark">Dark</option>
               <option value="system">System</option>
@@ -380,9 +380,9 @@
     </div>
 
     <!-- Password Change Section -->
-    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 mt-6">
+    <div class="bg-surface-card shadow-sm rounded-lg p-6 mt-6">
       <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Change Password</h3>
+        <h3 class="text-lg font-medium text-text-primary">Change Password</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">Update your password to keep your account secure</p>
       </div>
 
@@ -415,14 +415,14 @@
         <!-- Password Form Fields -->
         <div class="space-y-4">
           <div>
-            <label for="currentPassword" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label for="currentPassword" class="block mb-2 text-sm font-medium text-text-primary">
               Current Password *
             </label>
             <input
               type="password"
               id="currentPassword"
               formControlName="current_password"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               [class.border-red-500]="passwordForm.get('current_password')?.invalid && passwordForm.get('current_password')?.touched"
               placeholder="Enter your current password"
               required>
@@ -437,14 +437,14 @@
           </div>
 
           <div>
-            <label for="newPassword" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label for="newPassword" class="block mb-2 text-sm font-medium text-text-primary">
               New Password *
             </label>
             <input
               type="password"
               id="newPassword"
               formControlName="new_password"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               [class.border-red-500]="passwordForm.get('new_password')?.invalid && passwordForm.get('new_password')?.touched"
               placeholder="Enter your new password"
               required>
@@ -462,14 +462,14 @@
           </div>
 
           <div>
-            <label for="confirmPassword" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label for="confirmPassword" class="block mb-2 text-sm font-medium text-text-primary">
               Confirm New Password *
             </label>
             <input
               type="password"
               id="confirmPassword"
               formControlName="confirm_password"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               [class.border-red-500]="passwordForm.get('confirm_password')?.invalid && passwordForm.get('confirm_password')?.touched"
               placeholder="Confirm your new password"
               required>
@@ -508,9 +508,9 @@
     </div>
 
     <!-- Data Export/Import Section -->
-    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 mt-6 mb-8">
+    <div class="bg-surface-card shadow-sm rounded-lg p-6 mt-6 mb-8">
       <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Memory Portability</h3>
+        <h3 class="text-lg font-medium text-text-primary">Memory Portability</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">Export and import memories across environments</p>
       </div>
 
@@ -555,7 +555,7 @@
 
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm font-medium text-gray-900 dark:text-white">Memories</p>
+          <p class="text-sm font-medium text-text-primary">Memories</p>
           <p class="text-xs text-gray-500 dark:text-gray-400">All your chat-derived, user, and personality-pinned memories as a ZIP archive</p>
         </div>
         <div class="flex items-center gap-3">
@@ -604,7 +604,7 @@
       </div>
 
       <section class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Account</h3>
+        <h3 class="text-lg font-semibold text-text-primary mb-2">Account</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Sign out of this device. You can sign back in anytime.
         </p>

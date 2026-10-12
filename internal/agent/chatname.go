@@ -2,15 +2,14 @@ package agent
 
 import (
 	"context"
+	"errors"
 	"strings"
 
-	"github.com/openai/openai-go/v3"
-	"github.com/openai/openai-go/v3/responses"
-	"github.com/theimaginaryfoundation/what-iff/internal/agent/provider"
-	"github.com/theimaginaryfoundation/what-iff/internal/telemetry"
 	"go.uber.org/zap"
 )
-
+// chatNameModel is the legacy OpenAI Responses model name still referenced by
+// expression generation utilities (expression_pick, likeness). TODO: migrate those
+// to the utility LLM (utilityChatCompletion) alongside memory query and chat naming.
 const chatNameModel = "gpt-4.1-nano-2025-04-14"
 
 func (a *Agent) generateChatName(ctx context.Context, userMessage string) (string, error) {
@@ -18,23 +17,16 @@ func (a *Agent) generateChatName(ctx context.Context, userMessage string) (strin
 	if a.nonVendorLLM() {
 		return mockChatName(userMessage), nil
 	}
-	params := responses.ResponseNewParams{
-		Model:           chatNameModel,
-		Temperature:     openai.Float(provider.DefaultTemperature),
-		MaxOutputTokens: openai.Int(provider.DefaultMaxContentLength),
-		Instructions:    openai.String(chatNamePrompt),
-		Input: responses.ResponseNewParamsInputUnion{
-			OfString: openai.String(userMessage),
-		},
-	}
-
-	resp, err := a.OpenAIProvider.CallWithRetry(telemetry.WithCallPath(ctx, telemetry.CallPathChatName), params)
+	name, err := a.utilityChatCompletion(ctx, chatNamePrompt, userMessage)
 	if err != nil {
 		a.logger.Error("failed to generate chat name", zap.Error(err))
 		return "", err
 	}
-
-	return resp.OutputText(), nil
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return "", errors.New("utility LLM returned empty chat name")
+	}
+	return name, nil
 }
 
 // mockChatName derives a deterministic chat name from the first words of the

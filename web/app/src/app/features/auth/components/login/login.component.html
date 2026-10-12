@@ -4,7 +4,7 @@
       <div class="flex justify-center">
         <img src="dark-favicon.ico" alt="WhatIff" class="w-12 h-12 rounded-lg object-cover" />
       </div>
-      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-text-primary">
         Sign in to your account
       </h2>
       <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
@@ -12,7 +12,7 @@
       </p>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-8">
+    <div class="bg-surface-card border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-8">
       @if (errorMessage()) {
         <div class="flex items-center p-4 mb-6 text-red-800 dark:text-red-200 rounded-lg bg-red-50 dark:bg-red-900" role="alert">
           <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -27,14 +27,14 @@
       <form class="space-y-6" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div class="space-y-4">
           <div>
-            <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label for="username" class="block mb-2 text-sm font-medium text-text-primary">
               Username or Email
             </label>
             <input
               type="text"
               id="username"
               formControlName="username"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               [class.border-red-500]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
               placeholder="Enter your username or email"
               required>
@@ -48,7 +48,7 @@
           </div>
 
           <div>
-            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label for="password" class="block mb-2 text-sm font-medium text-text-primary">
               Password
             </label>
             <div class="login__password-field">
@@ -57,7 +57,7 @@
                 id="password"
                 formControlName="password"
                 autocomplete="current-password"
-                class="login__password-input bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                class="login__password-input bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 [class.border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
                 placeholder="Enter your password"
                 required>
@@ -96,7 +96,7 @@
                   formControlName="remember"
                   class="w-4 h-4 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-800 focus:ring-3 focus:ring-blue-300">
               </div>
-              <label for="remember" class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Remember me</label>
+              <label for="remember" class="ml-2 text-sm font-medium text-text-primary">Remember me</label>
             </div>
           </div>
         </div>

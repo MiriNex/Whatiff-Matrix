@@ -4,7 +4,7 @@
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Memories</h1>
+        <h1 class="text-2xl font-bold text-text-primary">Memories</h1>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
           Manage your stored memories and insights
         </p>
@@ -17,7 +17,7 @@
     </div>
 
     <!-- Search and Filters -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    <div class="bg-surface-card rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
       <form (ngSubmit)="onSearch()" class="space-y-4">
         <!-- Search Input -->
         <div class="flex flex-col sm:flex-row gap-4">
@@ -31,7 +31,7 @@
               [(ngModel)]="searchQuery"
               name="searchQuery"
               placeholder="Search in memory content..."
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
               />
           </div>
           <div class="flex gap-2 items-end">
@@ -46,7 +46,7 @@
             <button
               type="button"
               (click)="clearFilters()"
-              class="text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 font-medium rounded-lg text-sm px-4 py-2.5 border border-gray-200 dark:border-gray-600 transition-colors"
+              class="text-gray-500 dark:text-gray-400 bg-surface-input hover:bg-gray-100 dark:hover:bg-gray-600 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 font-medium rounded-lg text-sm px-4 py-2.5 border border-gray-200 dark:border-gray-600 transition-colors"
               >
               Clear
             </button>
@@ -65,7 +65,7 @@
               [(ngModel)]="selectedLevel"
               name="selectedLevel"
               (change)="onSearch()"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
               >
               <option value="">All levels</option>
               <option value="global">Global</option>
@@ -86,7 +86,7 @@
               [(ngModel)]="startDate"
               name="startDate"
               (change)="onSearch()"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
               />
           </div>
 
@@ -102,7 +102,7 @@
               name="selectedPersonalityId"
               (change)="onSearch()"
               placeholder="UUID"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
               />
           </div>
 
@@ -117,7 +117,7 @@
               [(ngModel)]="endDate"
               name="endDate"
               (change)="onSearch()"
-              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+              class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary placeholder-gray-400 dark:placeholder-gray-500 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
               />
           </div>
         </div>
@@ -151,7 +151,7 @@
         <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
         </svg>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No memories found</h3>
+        <h3 class="text-lg font-medium text-text-primary mb-2">No memories found</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">
           {{ searchQuery() ? 'Try adjusting your search criteria' : 'Start chatting to create memories' }}
         </p>
@@ -163,7 +163,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (memory of memories(); track trackByMemoryId($index, memory)) {
           <div
-            class="p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
+            class="p-6 bg-surface-card border border-gray-200 dark:border-gray-700 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
             (click)="viewMemory(memory)"
             >
             <!-- Memory Header -->
@@ -227,19 +227,19 @@
     <!-- Pagination -->
     @if (hasMemories() && !loading() && totalPages() > 1) {
       <div class="mt-8">
-        <nav class="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 rounded-lg">
+        <nav class="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-surface-card px-4 py-3 rounded-lg">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
               (click)="previousPage()"
               [disabled]="isFirstPage()"
-              class="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-surface-input px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
               Previous
             </button>
             <button
               (click)="nextPage()"
               [disabled]="isLastPage()"
-              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-surface-input px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
               Next
             </button>
@@ -276,7 +276,7 @@
                     [class.bg-indigo-600]="page === currentPage()"
                     [class.dark:bg-indigo-500]="page === currentPage()"
                     [class.text-white]="page === currentPage()"
-                    [class.text-gray-900]="page !== currentPage()"
+                    [class.text-text-primary]="page !== currentPage()"
                     [class.dark:text-white]="page !== currentPage()"
                     class="relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0"
                     >

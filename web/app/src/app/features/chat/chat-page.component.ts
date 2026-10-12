@@ -612,6 +612,10 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     void this.session.retryUserMessage(message);
   }
 
+  regenerateFromList(assistantIds: readonly string[]): void {
+    void this.session.regenerateResponse(assistantIds);
+  }
+
   onFilesSelected(files: File[]): void {
     const chat = this.session.thread();
     if (!chat || files.length === 0) return;

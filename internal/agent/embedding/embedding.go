@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/option"
 	"github.com/theimaginaryfoundation/what-iff/internal/telemetry"
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -15,6 +17,30 @@ type openAIEmbedding struct {
 	Object    string    `json:"object"`
 	Index     int       `json:"index"`
 	Embedding []float32 `json:"embedding"`
+}
+
+// embeddingClient returns the client used for the embeddings call. When
+// EMBEDDING_BASE_URL and EMBEDDING_API_KEY are both set, a dedicated client
+// is built for that provider (e.g. Gemini's OpenAI-compatible endpoint with
+// gemini-embedding-001 at 1536 dimensions); otherwise the caller's OpenAI
+// client is used unchanged.
+func embeddingClient(fallback *openai.Client) *openai.Client {
+	base := os.Getenv("EMBEDDING_BASE_URL")
+	key := os.Getenv("EMBEDDING_API_KEY")
+	if base == "" || key == "" {
+		return fallback
+	}
+	client := openai.NewClient(option.WithAPIKey(key), option.WithBaseURL(base))
+	return &client
+}
+
+// embeddingModel returns the model name used for embeddings. EMBEDDING_MODEL
+// overrides the default text-embedding-3-small.
+func embeddingModel() openai.EmbeddingModel {
+	if m := os.Getenv("EMBEDDING_MODEL"); m != "" {
+		return openai.EmbeddingModel(m)
+	}
+	return openai.EmbeddingModelTextEmbedding3Small
 }
 
 // CreateEmbedding calls the OpenAI Embeddings API to generate a vector for the given input text.
@@ -38,12 +64,12 @@ func CreateEmbeddings(ctx context.Context, oaiClient *openai.Client, inputs []st
 		Input: openai.EmbeddingNewParamsInputUnion{
 			OfArrayOfStrings: inputs,
 		},
-		Model:          openai.EmbeddingModelTextEmbedding3Small,
+		Model:          embeddingModel(),
 		Dimensions:     openai.Int(1536),
 		EncodingFormat: "float",
 	}
 	start := time.Now()
-	resp, err := oaiClient.Embeddings.New(ctx, params)
+	resp, err := embeddingClient(oaiClient).Embeddings.New(ctx, params)
 	recordEmbeddingMetrics(ctx, string(params.Model), time.Since(start), resp, err)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate embedding: %w", err)

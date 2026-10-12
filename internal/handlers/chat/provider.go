@@ -29,6 +29,7 @@ type Store interface {
 	ListChatMessages(ctx context.Context, userID, chatID uuid.UUID, pageNum, pageSize int, filters models.ChatMessageFilters) (*models.PaginatedResponse, error)
 	ListChatMessagesBefore(ctx context.Context, userID, chatID uuid.UUID, beforeSentAt time.Time, beforeID uuid.UUID, pageSize int, filters models.ChatMessageFilters) (*models.PaginatedResponse, error)
 	GetChatMessage(ctx context.Context, userID, messageID uuid.UUID) (*models.ChatMessage, error)
+	DeleteChatMessage(ctx context.Context, userID, chatID, messageID uuid.UUID) error
 	MarkChatMessagesRead(ctx context.Context, userID, chatID uuid.UUID) (int, error)
 	MarkAllChatMessagesRead(ctx context.Context, userID uuid.UUID) (int, error)
 	SetChatMessageBookmarked(ctx context.Context, userID, messageID uuid.UUID, bookmarked bool) (*models.ChatMessage, error)

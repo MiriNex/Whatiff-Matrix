@@ -49,7 +49,12 @@ func renderGeminiMessages(ctx *ModelContext) []openai.ChatCompletionMessageParam
 			)
 		case SegmentKindUserMessage, SegmentKindExpressionPortrait:
 			appendGeminiUserTurn(&messages, seg.Content, seg.UserImages)
-		case SegmentKindDeveloperContext, SegmentKindMood, SegmentKindAttachmentContext, SegmentKindToolResult:
+		case SegmentKindDeveloperContext:
+			if strings.TrimSpace(seg.Content) == "" {
+				break
+			}
+			messages = append(messages, openai.SystemMessage(seg.Content))
+		case SegmentKindMood, SegmentKindAttachmentContext, SegmentKindToolResult:
 			if strings.TrimSpace(seg.Content) == "" {
 				break
 			}

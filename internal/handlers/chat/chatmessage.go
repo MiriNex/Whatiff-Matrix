@@ -138,6 +138,35 @@ func (h *Handler) RetryChatMessage(w http.ResponseWriter, r *http.Request) {
 	handlerutils.RespondWithJSON(w, h.logger, http.StatusAccepted, resp)
 }
 
+// DeleteChatMessage deletes a single chat message (user or assistant) from a chat.
+func (h *Handler) DeleteChatMessage(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		handlerutils.RespondWithError(w, h.logger, http.StatusUnauthorized, handlerutils.CodeNotSet, "Unauthorized", nil)
+		return
+	}
+	vars := mux.Vars(r)
+	chatID, err := uuid.Parse(vars["chatId"])
+	if err != nil {
+		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Invalid chat ID", err)
+		return
+	}
+	messageID, err := uuid.Parse(vars["messageId"])
+	if err != nil {
+		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Invalid message ID", err)
+		return
+	}
+	if err := h.ds.DeleteChatMessage(r.Context(), userID, chatID, messageID); err != nil {
+		if errors.Is(err, datastore.ErrChatMessageNotFound) {
+			handlerutils.RespondWithError(w, h.logger, http.StatusNotFound, handlerutils.CodeNotSet, "Chat message not found", err)
+			return
+		}
+		handlerutils.RespondWithError(w, h.logger, http.StatusInternalServerError, handlerutils.CodeNotSet, "Failed to delete message", err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // GetActiveChatMessageJob GET /chat/{chatId}/chat-message/{messageId}/active-job — non-terminal job for resume after refresh.
 func (h *Handler) GetActiveChatMessageJob(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())

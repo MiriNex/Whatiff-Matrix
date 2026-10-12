@@ -512,6 +512,35 @@ export class ChatSessionService implements OnDestroy {
     }
   }
 
+  /** Regenerate the latest assistant reply: delete the stale assistant turns
+   *  (e.g. an unwanted refusal) and re-run generation for the last user message. */
+  async regenerateResponse(assistantIds: readonly string[]): Promise<void> {
+    const chat = this._thread();
+    if (!chat || !this.isActiveThread(chat.id) || this.isGenerating()) return;
+
+    const msgs = this.messages();
+    let lastUser: ChatMessage | null = null;
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].origin === 'User') {
+        lastUser = msgs[i];
+        break;
+      }
+    }
+    if (!lastUser) return;
+
+    this._error.set(null);
+    try {
+      for (const id of assistantIds) {
+        await firstValueFrom(this.messageService.deleteMessage(chat.id, id));
+      }
+    } catch (error) {
+      if (!this.isActiveThread(chat.id)) return;
+      this._error.set(apiErrorMessage(error, 'Regenerate failed'));
+      return;
+    }
+    await this.retryUserMessage(lastUser);
+  }
+
   startAssistantJobPolling(jobId: string, chatId: string): void {
     this.turn.startPolling(jobId, chatId);
   }

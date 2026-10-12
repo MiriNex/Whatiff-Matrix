@@ -37,5 +37,48 @@
   --color-info:    var(--info);
 
   --font-sans:    'Outfit', system-ui, sans-serif;
-  --font-display: 'Cormorant SC', serif;
+  --font-display: 'Share Tech Mono', 'Cormorant SC', monospace;
+
+  // Matrix overrides - legacy Tailwind palette remapped to theme tokens
+  --color-gray-50: var(--bg-base);
+  --color-gray-100: var(--bg-base);
+  --color-gray-200: var(--bg-surface);
+  --color-gray-300: var(--border);
+  --color-gray-400: var(--text-muted);
+  --color-gray-500: var(--text-muted);
+  --color-gray-600: var(--text-secondary);
+  --color-gray-700: var(--text-secondary);
+  --color-gray-800: var(--bg-card);
+  --color-gray-900: var(--bg-base);
+  --color-gray-950: var(--bg-base);
+  --color-indigo-50: var(--accent-bg);
+  --color-indigo-100: var(--accent-bg);
+  --color-indigo-200: var(--accent-bg);
+  --color-indigo-300: var(--accent-light);
+  --color-indigo-400: var(--accent);
+  --color-indigo-500: var(--accent);
+  --color-indigo-600: var(--accent);
+  --color-indigo-700: var(--accent);
+  --color-indigo-800: var(--accent);
+  --color-indigo-900: var(--accent-bg);
+  --color-violet-50: var(--accent-bg);
+  --color-violet-100: var(--accent-bg);
+  --color-violet-200: var(--accent-bg);
+  --color-violet-300: var(--accent-light);
+  --color-violet-400: var(--accent);
+  --color-violet-500: var(--accent);
+  --color-violet-600: var(--accent);
+  --color-violet-700: var(--accent);
+  --color-violet-800: var(--accent);
+  --color-violet-900: var(--accent-bg);
+  --color-purple-50: var(--accent-bg);
+  --color-purple-100: var(--accent-bg);
+  --color-purple-200: var(--accent-bg);
+  --color-purple-300: var(--accent-light);
+  --color-purple-400: var(--accent);
+  --color-purple-500: var(--accent);
+  --color-purple-600: var(--accent);
+  --color-purple-700: var(--accent);
+  --color-purple-800: var(--accent);
+  --color-purple-900: var(--accent-bg);
 }

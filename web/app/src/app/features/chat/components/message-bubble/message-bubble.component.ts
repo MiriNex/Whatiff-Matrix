@@ -143,6 +143,7 @@ import { MessageContentComponent } from '../message-content/message-content.comp
 
     .bubble__body {
       background: var(--ai-bubble, var(--color-surface-muted));
+      border: 1px solid rgba(205, 175, 125, 0.30);
       border-radius: 0.625rem 0.625rem 0.625rem 0.25rem;
       color: var(--ai-text, var(--color-text-primary));
       font-size: 0.8125rem;
@@ -159,6 +160,7 @@ import { MessageContentComponent } from '../message-content/message-content.comp
 
     .bubble--user .bubble__body {
       background: var(--user-bubble, color-mix(in srgb, var(--color-accent) 58%, var(--color-surface-base)));
+      border: 1px solid rgba(0, 255, 65, 0.45);
       border-radius: 0.625rem 0.625rem 0.25rem;
       color: var(--user-text, var(--color-text-primary));
     }

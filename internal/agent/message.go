@@ -608,7 +608,10 @@ func (a *Agent) buildModelContextForChatMessage(ctx context.Context, userID uuid
 	}
 	// Attachment labels are only injected when tools are enabled, matching the
 	// previous behavior for OpenAI chat turns.
-	additionalDevContext := mcpLifecycleDeveloperContext()
+	additionalDevContext := strings.TrimSpace(strings.Join([]string{
+		platformAdultPolicy,
+		mcpLifecycleDeveloperContext(),
+	}, "\n\n"))
 	if additionalDeveloperContextForChat != nil {
 		additionalDevContext = strings.TrimSpace(strings.Join([]string{
 			additionalDevContext,

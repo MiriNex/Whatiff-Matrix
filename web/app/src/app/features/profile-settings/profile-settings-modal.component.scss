@@ -204,8 +204,8 @@ small {
   justify-self: start;
 
   &--primary {
-    background: var(--brand, var(--accent, #8c87ff));
-    border-color: var(--brand, var(--accent, #8c87ff));
+    background: var(--brand, var(--accent, #00ff41));
+    border-color: var(--brand, var(--accent, #00ff41));
     color: #fff;
   }
 
@@ -223,10 +223,10 @@ small {
   padding-right: 0.25rem;
 
   &--accent {
-    background: color-mix(in srgb, var(--brand, var(--accent, #8c87ff)) 10%, transparent);
-    border: 1px solid var(--brand, var(--accent, #8c87ff));
+    background: color-mix(in srgb, var(--brand, var(--accent, #00ff41)) 10%, transparent);
+    border: 1px solid var(--brand, var(--accent, #00ff41));
     border-radius: 0.45rem;
-    color: var(--accent-light, var(--brand, var(--accent, #8c87ff)));
+    color: var(--accent-light, var(--brand, var(--accent, #00ff41)));
     padding: 0.45rem 0.7rem;
   }
 
@@ -337,7 +337,7 @@ small {
   width: 100%;
 
   span {
-    background: var(--brand, var(--accent, #8c87ff));
+    background: var(--brand, var(--accent, #00ff41));
     border-radius: 999px;
     display: block;
     height: 100%;
@@ -382,8 +382,8 @@ small {
   padding: 1rem;
 
   &--active {
-    background: color-mix(in srgb, var(--brand, var(--accent, #8c87ff)) 10%, var(--bg-secondary));
-    border-color: var(--brand, var(--accent, #8c87ff));
+    background: color-mix(in srgb, var(--brand, var(--accent, #00ff41)) 10%, var(--bg-secondary));
+    border-color: var(--brand, var(--accent, #00ff41));
   }
 
   h4 {
@@ -638,7 +638,7 @@ small {
   }
 
   &--on {
-    background: var(--brand, var(--accent, #8c87ff));
+    background: var(--brand, var(--accent, #00ff41));
 
     span {
       left: 17px;
@@ -817,7 +817,7 @@ small {
 }
 
 .profile-settings__pricing-cell--accent {
-  color: var(--accent-light, var(--brand, var(--accent, #8c87ff))) !important;
+  color: var(--accent-light, var(--brand, var(--accent, #00ff41))) !important;
   font-weight: 650;
 }
 
@@ -829,7 +829,7 @@ small {
   }
 
   &--medium {
-    color: var(--accent-light, var(--brand, var(--accent, #8c87ff)));
+    color: var(--accent-light, var(--brand, var(--accent, #00ff41)));
   }
 
   &--high {

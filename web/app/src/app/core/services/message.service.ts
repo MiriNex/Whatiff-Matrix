@@ -235,6 +235,19 @@ export class MessageService {
     this.messagesSubject.next(next);
   }
 
+  /** Delete a single chat message (user or assistant) from a chat. */
+  deleteMessage(chatId: string, messageId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${chatId}/chat-message/${messageId}`).pipe(
+      tap(() => {
+        const cur = this.messagesSubject.getValue();
+        const next = cur.filter(m => m.id !== messageId);
+        if (next.length !== cur.length) {
+          this.messagesSubject.next(next);
+        }
+      }),
+    );
+  }
+
   /** Re-run async generation for an existing user message (same turn). */
   retryUserMessage(chatId: string, messageId: string): Observable<ChatMessageResponse> {
     return this.http

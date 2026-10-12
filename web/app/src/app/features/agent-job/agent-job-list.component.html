@@ -2,7 +2,7 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Agent Jobs</h1>
+        <h1 class="text-2xl font-semibold text-text-primary">Agent Jobs</h1>
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
           Manage scheduled tasks created from your chats.
         </p>
@@ -21,7 +21,7 @@
     }
 
     <!-- Filters -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6">
+    <div class="bg-surface-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
@@ -31,7 +31,7 @@
             (keyup.enter)="onFiltersApplied()"
             type="text"
             placeholder="Title, prompt, schedule..."
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
             />
         </div>
 
@@ -40,7 +40,7 @@
           <select
             [ngModel]="statusFilter()"
             (ngModelChange)="statusFilter.set($event)"
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
             >
             <option value="">All</option>
             <option value="active">Active</option>
@@ -55,7 +55,7 @@
           <select
             [ngModel]="scheduleTypeFilter()"
             (ngModelChange)="scheduleTypeFilter.set($event)"
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
             >
             <option value="">All</option>
             <option value="at">One-off</option>
@@ -72,7 +72,7 @@
           </button>
           <button
             (click)="clearFilters()"
-            class="w-full md:w-auto px-4 py-2 text-sm font-medium text-gray-900 bg-white hover:bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+            class="w-full md:w-auto px-4 py-2 text-sm font-medium text-text-primary bg-surface-card hover:bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
             >
             Clear
           </button>
@@ -81,7 +81,7 @@
     </div>
 
     <!-- Table -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+    <div class="bg-surface-card border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
       @if (isLoading()) {
         <div class="p-6 text-sm text-gray-600 dark:text-gray-400">Loading…</div>
       }
@@ -109,7 +109,7 @@
               @for (job of jobs(); track trackByJobId($index, job)) {
                 <tr class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td class="px-4 py-3">
-                    <div class="font-medium text-gray-900 dark:text-white">{{ job.title || 'Untitled' }}</div>
+                    <div class="font-medium text-text-primary">{{ job.title || 'Untitled' }}</div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ job.schedule_input }}</div>
                   </td>
                   <td class="px-4 py-3">
@@ -117,7 +117,7 @@
                 [ngClass]="{
                   'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300': job.status === 'active',
                   'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300': job.status === 'paused',
-                  'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300': job.status === 'complete',
+                  'bg-gray-100 text-text-primary dark:bg-gray-900/30 dark:text-gray-300': job.status === 'complete',
                   'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300': job.status === 'failed'
                 }"
                       >
@@ -156,7 +156,7 @@
                     <div class="inline-flex gap-2">
                       <button
                         (click)="viewJob(job)"
-                        class="px-3 py-1.5 text-xs font-medium text-gray-900 bg-white hover:bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+                        class="px-3 py-1.5 text-xs font-medium text-text-primary bg-surface-card hover:bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
                         >
                         View
                       </button>
@@ -204,14 +204,14 @@
           <button
             [disabled]="currentPage() <= 1"
             (click)="onPageChange(currentPage() - 1)"
-            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 disabled:opacity-50"
+            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-surface-card disabled:opacity-50"
             >
             Prev
           </button>
           <button
             [disabled]="currentPage() >= getTotalPages()"
             (click)="onPageChange(currentPage() + 1)"
-            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 disabled:opacity-50"
+            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-surface-card disabled:opacity-50"
             >
             Next
           </button>

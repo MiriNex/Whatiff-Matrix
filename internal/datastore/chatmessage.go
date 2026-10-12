@@ -605,6 +605,60 @@ func (d *Datastore) MarkAllChatMessagesRead(ctx context.Context, userID uuid.UUI
 }
 
 // GetChatMessage retrieves a chat message from the datastore by ID
+// DeleteChatMessage deletes a single chat message owned by the user. Rows that
+// reference the message (attachments, rituals, tool calls, context items)
+// cascade at the database level.
+func (d *Datastore) DeleteChatMessage(ctx context.Context, userID, chatID, messageID uuid.UUID) error {
+	tx, err := d.dbClient.Tx(ctx)
+	if err != nil {
+		d.logger.Error(i18n.T("tx.start_failed"), zap.Error(err))
+		return err
+	}
+
+	defer func() {
+		if v := recover(); v != nil {
+			tx.Rollback()
+			panic(v)
+		}
+	}()
+
+	// Verify the message exists, belongs to the given chat, and the chat belongs to the user.
+	exists, err := tx.ChatMessage.Query().
+		Where(
+			chatmessage.ID(messageID),
+			chatmessage.HasChatWith(
+				entchat.ID(chatID),
+				entchat.HasOwnerWith(
+					user.ID(userID),
+				),
+			),
+		).
+		Exist(ctx)
+	if err != nil {
+		d.logger.Error(i18n.T1("query.failed", "Entity", "chat message"), zap.Error(err))
+		if rerr := tx.Rollback(); rerr != nil {
+			d.logger.Error(i18n.T("tx.rollback_failed"), zap.Error(rerr))
+		}
+		return err
+	}
+	if !exists {
+		if rerr := tx.Rollback(); rerr != nil {
+			d.logger.Error(i18n.T("tx.rollback_failed"), zap.Error(rerr))
+		}
+		return ErrChatMessageNotFound
+	}
+
+	if err := tx.ChatMessage.DeleteOneID(messageID).Exec(ctx); err != nil {
+		d.logger.Error("failed to delete chat message", zap.Error(err))
+		if rerr := tx.Rollback(); rerr != nil {
+			d.logger.Error(i18n.T("tx.rollback_failed"), zap.Error(rerr))
+		}
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (d *Datastore) GetChatMessage(ctx context.Context, userID, id uuid.UUID) (*models.ChatMessage, error) {
 	// Start transaction
 	tx, err := d.dbClient.Tx(ctx)

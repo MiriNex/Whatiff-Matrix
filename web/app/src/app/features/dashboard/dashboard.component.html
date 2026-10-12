@@ -3,7 +3,7 @@
   <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
     <!-- Welcome Section -->
     <div class="px-4 py-6 sm:px-0">
-      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+      <div class="bg-surface-card overflow-hidden shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -14,7 +14,7 @@
               </div>
             </div>
             <div class="ml-5">
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 class="text-2xl font-bold text-text-primary">
                 Welcome back, {{ getUserDisplayName() }}!
               </h1>
             </div>
@@ -25,12 +25,12 @@
 
     <!-- Quick Actions -->
     <div class="px-4 py-6 sm:px-0">
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="bg-surface-card shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
+          <h3 class="text-lg leading-6 font-medium text-text-primary mb-4">Quick Actions</h3>
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <!-- Start Chat Button -->
-            <a routerLink="/chat" class="relative group bg-white dark:bg-gray-800 p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
+            <a routerLink="/chat" class="relative group bg-surface-card p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
               <div>
                 <span class="rounded-lg inline-flex p-3 bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 ring-4 ring-white dark:ring-gray-800">
                   <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -39,7 +39,7 @@
                 </span>
               </div>
               <div class="mt-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 class="text-lg font-medium text-text-primary">
                   <span class="absolute inset-0" aria-hidden="true"></span>
                   Start New Chat
                 </h3>
@@ -48,7 +48,7 @@
             </a>
 
             <!-- Profile Settings Button -->
-            <a routerLink="/profile" class="relative group bg-white dark:bg-gray-800 p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
+            <a routerLink="/profile" class="relative group bg-surface-card p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
               <div>
                 <span class="rounded-lg inline-flex p-3 bg-green-50 dark:bg-green-900 text-green-600 dark:text-green-400 ring-4 ring-white dark:ring-gray-800">
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -57,7 +57,7 @@
                 </span>
               </div>
               <div class="mt-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 class="text-lg font-medium text-text-primary">
                   <span class="absolute inset-0" aria-hidden="true"></span>
                   Profile Settings
                 </h3>
@@ -66,7 +66,7 @@
             </a>
 
             <!-- View History Button -->
-            <a routerLink="/memories" class="relative group bg-white dark:bg-gray-800 p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
+            <a routerLink="/memories" class="relative group bg-surface-card p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
               <div>
                 <span class="rounded-lg inline-flex p-3 bg-purple-50 dark:bg-purple-900 text-purple-600 dark:text-purple-400 ring-4 ring-white dark:ring-gray-800">
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,7 +75,7 @@
                 </span>
               </div>
               <div class="mt-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 class="text-lg font-medium text-text-primary">
                   <span class="absolute inset-0" aria-hidden="true"></span>
                   Manage Memories
                 </h3>
@@ -88,10 +88,10 @@
     </div>
     <!-- Usage Statistics -->
     <div class="px-4 py-6 sm:px-0">
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="bg-surface-card shadow rounded-lg">
         <div class="px-4 py-5 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">Usage Statistics</h3>
+            <h3 class="text-lg leading-6 font-medium text-text-primary">Usage Statistics</h3>
             <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">Your activity and token usage</p>
           </div>
 
@@ -99,7 +99,7 @@
           <div class="mt-4 sm:mt-0">
             <select
               (change)="onPeriodChange($event)"
-              class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+              class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-surface-input text-text-primary focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
               @for (option of periodOptions; track option) {
                 <option
                   [value]="option.value"
@@ -148,7 +148,7 @@
           <div class="border-t border-gray-200 dark:border-gray-700 p-6">
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               <!-- Chats Tile -->
-              <div class="bg-white dark:bg-gray-800 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div class="bg-surface-card overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div class="p-5">
                   <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -161,14 +161,14 @@
                     <div class="ml-5 w-0 flex-1">
                       <dl>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Chats</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ formatNumber(usageStats()!.chats) }}</dd>
+                        <dd class="text-lg font-medium text-text-primary">{{ formatNumber(usageStats()!.chats) }}</dd>
                       </dl>
                     </div>
                   </div>
                 </div>
               </div>
               <!-- Messages Tile -->
-              <div class="bg-white dark:bg-gray-800 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div class="bg-surface-card overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div class="p-5">
                   <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -181,14 +181,14 @@
                     <div class="ml-5 w-0 flex-1">
                       <dl>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Messages</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ formatNumber(usageStats()!.messages) }}</dd>
+                        <dd class="text-lg font-medium text-text-primary">{{ formatNumber(usageStats()!.messages) }}</dd>
                       </dl>
                     </div>
                   </div>
                 </div>
               </div>
               <!-- Input Tokens Tile -->
-              <div class="bg-white dark:bg-gray-800 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div class="bg-surface-card overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div class="p-5">
                   <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -201,14 +201,14 @@
                     <div class="ml-5 w-0 flex-1">
                       <dl>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Input Tokens</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ formatNumber(usageStats()!.input_tokens) }}</dd>
+                        <dd class="text-lg font-medium text-text-primary">{{ formatNumber(usageStats()!.input_tokens) }}</dd>
                       </dl>
                     </div>
                   </div>
                 </div>
               </div>
               <!-- Output Tokens Tile -->
-              <div class="bg-white dark:bg-gray-800 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div class="bg-surface-card overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div class="p-5">
                   <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -221,7 +221,7 @@
                     <div class="ml-5 w-0 flex-1">
                       <dl>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Output Tokens</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ formatNumber(usageStats()!.output_tokens) }}</dd>
+                        <dd class="text-lg font-medium text-text-primary">{{ formatNumber(usageStats()!.output_tokens) }}</dd>
                       </dl>
                     </div>
                   </div>

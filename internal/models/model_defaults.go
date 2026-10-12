@@ -4,7 +4,7 @@ import "strings"
 
 const (
 	// DefaultModelName specifies which model from AvailableModels to use as the default
-	DefaultModelName = "gpt-5.1"
+	DefaultModelName = "glm-5.3"
 
 	// LegacyFineTunedModelName is the old fine-tuned model that will be migrated
 	LegacyFineTunedModelName = "ft:gpt-4.1-2025-04-14:sotherden-io:personal-agent:CFNpAx1S"
@@ -158,6 +158,14 @@ var AvailableModels = []ModelConfig{
 		VisionSupport: true,
 		Provider:      ModelProviderZAI,
 	},
+    {
+        Name:          "glm-5.3",
+        DisplayName:   "GLM-5.3",
+        Description:   "z.ai's latest flagship GLM model. The house default.",
+        ToolSupport:   true,
+        VisionSupport: false,
+        Provider:      ModelProviderZAI,
+    },
 
 	// Google Gemini models (routed through Google's OpenAI-compatible Chat Completions API).
 	{
@@ -168,14 +176,64 @@ var AvailableModels = []ModelConfig{
 		VisionSupport: true,
 		Provider:      ModelProviderGoogle,
 	},
-	{
-		Name:          "gemini-3.5",
-		DisplayName:   "Gemini 3.5",
-		Description:   "Google's flagship Gemini model balancing intelligence and cost for general-purpose conversation.",
-		ToolSupport:   true,
-		VisionSupport: true,
-		Provider:      ModelProviderGoogle,
-	},
+    {
+        Name:          "gemini-3.6-flash",
+        DisplayName:   "Gemini 3.6 Flash",
+        Description:   "Google's fast, low-cost Gemini model for high-volume conversational tasks.",
+        ToolSupport:   true,
+        VisionSupport: true,
+        Provider:      ModelProviderGoogle,
+    },
+    {
+        Name:          "gemini-3.8-flash",
+        DisplayName:   "Gemini 3.8 Flash",
+        Description:   "Google's newest fast Gemini model with vision support.",
+        ToolSupport:   true,
+        VisionSupport: true,
+        Provider:      ModelProviderGoogle,
+    },
+    {
+        Name:          "gemini-3.1-pro-preview",
+        DisplayName:   "Gemini 3.1 Pro (Preview)",
+        Description:   "Google's advanced reasoning model with a huge context window.",
+        ToolSupport:   true,
+        VisionSupport: true,
+        Provider:      ModelProviderGoogle,
+    },
+
+    // Mistral models (routed through Mistral's OpenAI-compatible Chat Completions API).
+    {
+        Name:          "open-mistral-nemo",
+        DisplayName:   "Mistral Nemo",
+        Description:   "Mistral's daily-use model with a 128k context window.",
+        ToolSupport:   true,
+        VisionSupport: false,
+        Provider:      ModelProviderMistral,
+    },
+    {
+        Name:          "ministral-8b-latest",
+        DisplayName:   "Ministral 8B",
+        Description:   "Mistral's latest compact edge model for fast everyday responses.",
+        ToolSupport:   true,
+        VisionSupport: false,
+        Provider:      ModelProviderMistral,
+    },
+    {
+        Name:          "mistral-small-latest",
+        DisplayName:   "Mistral Small",
+        Description:   "Mistral's balanced intermediate model for everyday language tasks.",
+        ToolSupport:   true,
+        VisionSupport: false,
+        Provider:      ModelProviderMistral,
+    },
+    {
+        Name:          "codestral-latest",
+        DisplayName:   "Codestral",
+        Description:   "Mistral's specialized code generation and completion model.",
+        ToolSupport:   true,
+        VisionSupport: false,
+        Provider:      ModelProviderMistral,
+    },
 }
 
 // GetDefaultModel returns the ModelConfig for the default model

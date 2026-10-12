@@ -119,6 +119,13 @@ interface AssistantVisual {
             <span class="message-group__checkpoint-line" aria-hidden="true"></span>
           </div>
         }
+        @if (isLast() && origin() === 'Assistant' && messages().length > 0) {
+          <div class="message-group__regenerate">
+            <button type="button" class="message-group__regenerate-btn" (click)="triggerRegenerate()">
+              Regenerar respuesta
+            </button>
+          </div>
+        }
       </div>
     </section>
   `,
@@ -144,6 +151,27 @@ interface AssistantVisual {
       flex: 1 1 0;
       max-width: none;
       min-width: 0;
+    }
+
+    .message-group__regenerate {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 0.25rem;
+    }
+
+    .message-group__regenerate-btn {
+      background: transparent;
+      border: 1px solid rgba(120, 120, 120, 0.4);
+      border-radius: 0.5rem;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+    }
+
+    .message-group__regenerate-btn:hover {
+      border-color: #4ec9ff;
+      color: #4ec9ff;
     }
 
     .message-group__header {
@@ -425,6 +453,10 @@ export class MessageGroupComponent {
   readonly showContext = output<ChatMessage>();
   readonly toggleBookmark = output<ChatMessage>();
   readonly retryUserMessage = output<ChatMessage>();
+  /** Whether this group is the last item rendered in the chat. */
+  readonly isLast = input(false);
+  /** Emits the assistant message IDs of this group when the user asks to regenerate the reply. */
+  readonly regenerate = output<readonly string[]>();
 
   /** When false, hide the entire assistant image column (expression, portrait, thinking). */
   readonly showAssistantAvatar = computed(() => this.assistantVisual()?.expressionsEnabled !== false);
@@ -439,6 +471,13 @@ export class MessageGroupComponent {
     }
     return { text: target.last_error_message.trim(), message: target };
   });
+
+  triggerRegenerate(): void {
+    const ids = this.messages().filter(m => m.origin === 'Assistant').map(m => m.id);
+    if (ids.length > 0) {
+      this.regenerate.emit(ids);
+    }
+  }
 
   /** Shown after assistant bubbles when a post-turn checkpoint (scratchpad + summary) completed. */
   readonly assistantCheckpointLine = computed((): string | null => {

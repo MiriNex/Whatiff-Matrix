@@ -8,7 +8,7 @@
         {{ oauthBanner()!.message }}
       </div>
     }
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
+    <div class="bg-surface-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
       <div class="flex gap-2">
         <input
           [ngModel]="search()"
@@ -16,7 +16,7 @@
           (keyup.enter)="onSearch()"
           type="text"
           placeholder="Search by name or description"
-          class="min-w-0 flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm"
+          class="min-w-0 flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm"
           />
         <button
           (click)="onSearch()"
@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+    <div class="bg-surface-card border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
       @if (isLoading()) {
         <div class="p-6 text-sm text-gray-600 dark:text-gray-400">Loading integrations...</div>
       }
@@ -42,7 +42,7 @@
             <div class="p-4">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ server.name }}</h3>
+                  <h3 class="text-sm font-semibold text-text-primary">{{ server.name }}</h3>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ server.description }}</p>
                   @if (server.error_message) {
                     <div
@@ -86,7 +86,7 @@
                   }
                   <button
                     (click)="startEdit(server)"
-                    class="px-3 py-1.5 text-xs font-medium text-gray-900 bg-white hover:bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+                    class="px-3 py-1.5 text-xs font-medium text-text-primary bg-surface-card hover:bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
                     Edit
                   </button>
                   <button
@@ -109,13 +109,13 @@
           <button
             [disabled]="currentPage() <= 1"
             (click)="onPageChange(currentPage() - 1)"
-            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 disabled:opacity-50">
+            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-surface-card disabled:opacity-50">
             Prev
           </button>
           <button
             [disabled]="currentPage() >= getTotalPages()"
             (click)="onPageChange(currentPage() + 1)"
-            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 disabled:opacity-50">
+            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-surface-card disabled:opacity-50">
             Next
           </button>
         </div>
@@ -123,8 +123,8 @@
     }
   </div>
 
-  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 h-fit">
-    <h2 class="inline-flex items-center gap-1 text-sm font-semibold text-gray-900 dark:text-white mb-3">
+  <div class="bg-surface-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 h-fit">
+    <h2 class="inline-flex items-center gap-1 text-sm font-semibold text-text-primary mb-3">
       {{ editingServer() ? 'Edit connector' : 'Add connector' }}
       <ui-help-hint label="What is a connector?" heading="Connectors" guide="connectors" guideLabel="Read the connectors guide" align="end">
         A connector links an outside service (an MCP server) so your personalities can use its tools. After saving,
@@ -135,22 +135,22 @@
       <div>
         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
         <input [ngModel]="formName()" (ngModelChange)="formName.set($event); onFormValueChange()" type="text"
-          class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
+          class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm" />
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
         <textarea [ngModel]="formDescription()" (ngModelChange)="formDescription.set($event); onFormValueChange()" rows="3"
-        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm"></textarea>
+        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm"></textarea>
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Connector URL</label>
         <input [ngModel]="formServerURL()" (ngModelChange)="formServerURL.set($event); onFormValueChange()" type="text"
-          class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
+          class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm" />
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Authentication mode</label>
         <select [ngModel]="formAuthMode()" (ngModelChange)="formAuthMode.set($event); onFormValueChange()"
-          class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm">
+          class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm">
           <option value="header">Header token</option>
           <option value="oauth">OAuth</option>
         </select>
@@ -167,7 +167,7 @@
         </div>
         <div class="flex items-center gap-2">
           <input [ngModel]="formAuthentication()" (ngModelChange)="onAuthenticationChange($event)" type="text" [placeholder]="editingServer() ? 'Leave empty to keep existing token' : 'Bearer your-token'"
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm" />
           @if (editingServer()) {
             <button
               (click)="unsetAuthenticationToken()"
@@ -208,7 +208,7 @@
               <div class="flex items-start gap-2">
                 <!-- Wraps rather than scrolls: people compare it character by character with the provider's field. -->
                 <code data-testid="oauth-redirect-uri"
-                  class="block w-full select-all break-all rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900/60 text-gray-900 dark:text-white px-3 py-2 text-xs font-mono">{{ oauthRedirectUri() }}</code>
+                  class="block w-full select-all break-all rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900/60 text-text-primary px-3 py-2 text-xs font-mono">{{ oauthRedirectUri() }}</code>
                 <button (click)="copyRedirectUri()" type="button"
                   class="shrink-0 px-3 py-2 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 dark:text-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-700 dark:hover:bg-indigo-900/30">
                   {{ redirectUriCopied() ? 'Copied' : 'Copy' }}
@@ -231,23 +231,23 @@
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">OAuth Authorization URL</label>
           <input [ngModel]="formOAuthAuthURL()" (ngModelChange)="formOAuthAuthURL.set($event); onFormValueChange()" type="text"
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm" />
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">OAuth Token URL</label>
           <input [ngModel]="formOAuthTokenURL()" (ngModelChange)="formOAuthTokenURL.set($event); onFormValueChange()" type="text"
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm" />
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">OAuth Client ID</label>
           <input [ngModel]="formOAuthClientID()" (ngModelChange)="formOAuthClientID.set($event); onFormValueChange()" type="text"
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm" />
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">OAuth Client Secret</label>
           <div class="flex items-center gap-2">
             <input [ngModel]="formOAuthClientSecret()" (ngModelChange)="formOAuthClientSecret.set($event); formClearOAuthClientSecret.set(false); onFormValueChange()" type="text" [placeholder]="editingServer() ? 'Leave empty to keep existing secret' : ''"
-              class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
+              class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm" />
             @if (editingServer()) {
               <button
                 (click)="unsetOAuthClientSecret()"
@@ -264,12 +264,12 @@
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">OAuth Scopes (space separated)</label>
           <input [ngModel]="formOAuthScopes()" (ngModelChange)="formOAuthScopes.set($event); onFormValueChange()" type="text"
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm" />
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">PKCE Policy</label>
           <select [ngModel]="formOAuthPKCEPolicy()" (ngModelChange)="formOAuthPKCEPolicy.set($event); onFormValueChange()"
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm">
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-text-primary px-3 py-2 text-sm">
             <option value="required">Required</option>
             <option value="supported">Supported</option>
             <option value="not_supported">Not Supported</option>
@@ -329,7 +329,7 @@
       @if (editingServer()) {
         <button
           (click)="startCreate()"
-          class="px-4 py-2 text-sm font-medium text-gray-900 bg-white hover:bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+          class="px-4 py-2 text-sm font-medium text-text-primary bg-surface-card hover:bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
           Cancel
         </button>
       }

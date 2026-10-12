@@ -161,37 +161,14 @@ func (a *Agent) extractMemoriesWithScratchpadDeltaClaude(ctx context.Context, us
 }
 
 func (a *Agent) getMemoryQuery(ctx context.Context, userID uuid.UUID, prompt string, userMessage string) (models.MemoryQuery, error) {
-
-	params := responses.ResponseNewParams{
-		Model:            "gpt-4.1-nano-2025-04-14",
-		SafetyIdentifier: openai.String(userID.String()),
-		Temperature:      openai.Float(provider.DefaultTemperature),
-		MaxOutputTokens:  openai.Int(provider.DefaultMaxContentLength),
-		Instructions:     openai.String(prompt),
-		Input: responses.ResponseNewParamsInputUnion{
-			OfString: openai.String(userMessage),
-		},
-		Text: responses.ResponseTextConfigParam{
-			Format: responses.ResponseFormatTextConfigUnionParam{
-				OfJSONSchema: &responses.ResponseFormatTextJSONSchemaConfigParam{
-					Name:        "MemoryQuery",
-					Schema:      memoryQuerySchema,
-					Strict:      openai.Bool(true),
-					Description: openai.String("Memory Query JSON"),
-					Type:        "json_schema",
-				},
-			},
-		},
-	}
-
-	resp, err := a.OpenAIProvider.CallWithRetry(telemetry.WithCallPath(ctx, telemetry.CallPathMemory), params)
+	text, err := a.utilityChatCompletion(ctx, prompt, userMessage)
 	if err != nil {
 		a.logger.Error("failed to get memory query", zap.Error(err))
 		return models.MemoryQuery{}, err
 	}
 
 	memoryQuery := models.MemoryQuery{}
-	err = json.Unmarshal([]byte(resp.OutputText()), &memoryQuery)
+	err = json.Unmarshal([]byte(stripJSONFences(text)), &memoryQuery)
 	if err != nil {
 		a.logger.Error("failed to unmarshal memory query", zap.Error(err))
 		return models.MemoryQuery{}, err

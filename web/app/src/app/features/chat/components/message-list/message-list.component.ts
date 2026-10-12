@@ -55,6 +55,8 @@ interface AssistantVisual {
                 (showContext)="showContext.emit($event)"
                 (toggleBookmark)="toggleBookmark.emit($event)"
                 (retryUserMessage)="retryUserMessage.emit($event)"
+                [isLast]="$last"
+                (regenerate)="regenerate.emit($event)"
               />
             }
             @case ('tool-call-group') {
@@ -206,6 +208,7 @@ export class MessageListComponent {
   readonly toggleBookmark = output<ChatMessage>();
   readonly openToolCallDetail = output<ToolCall>();
   readonly retryUserMessage = output<ChatMessage>();
+  readonly regenerate = output<readonly string[]>();
   readonly scrollToBottomRequested = output<void>();
   readonly scrollContainer = viewChild<ElementRef<HTMLElement>>('scrollContainer');
 

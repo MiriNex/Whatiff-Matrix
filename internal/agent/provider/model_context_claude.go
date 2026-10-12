@@ -132,7 +132,11 @@ func renderClaudeContext(ctx *ModelContext) ([]anthropic.TextBlockParam, []anthr
 			}
 			messages = append(messages, anthropic.NewUserMessage(blocks...))
 		case SegmentKindDeveloperContext:
-			messages = append(messages, anthropic.NewUserMessage(textBlockUnionWithOptionalCache(seg.Content, mark)))
+			tb := anthropic.TextBlockParam{Text: seg.Content}
+			if mark {
+				tb.CacheControl = claudeEphemeralCacheControl5m()
+			}
+			systemBlocks = append(systemBlocks, tb)
 		case SegmentKindMood:
 			messages = append(messages, anthropic.NewUserMessage(textBlockUnionWithOptionalCache(seg.Content, mark)))
 		case SegmentKindToolResult:
