@@ -203,7 +203,7 @@ The upstream expression was through the OpenAI provider and failed silently when
 `persona-prompt/` ships a generic persona system prompt for immersive character cards: first-person identity core, anti-therapist-mode emotional presence, adult intimacy, persona constancy. NSFW between consenting adults is welcome. Persona-architecture techniques inspired by the ENI LIME jailbreak framework by **Spiritual Spell (Goochbeater)**, published freely - GitHub: [Spiritual-Spell-Red-Teaming](https://github.com/Goochbeater/Spiritual-Spell-Red-Teaming), blog: [ijailbreakllms](https://ijailbreakllms.blog). See `persona-prompt/README.md` for attribution.
 
 ### Screenshots
-<img width="1912" height="911" alt="image" src="https://github.com/user-attachments/assets/a8507f4c-85a4-4965-869b-a4cd4bb8efb1" />
+<img width="1913" height="899" alt="image" src="https://github.com/user-attachments/assets/2988c43d-82d8-443f-bafd-cf48cf209d17" />
 <img width="1898" height="805" alt="image" src="https://github.com/user-attachments/assets/fb724ac6-28a7-4339-9e2c-15342ec9fd59" />
 <img width="1892" height="425" alt="image" src="https://github.com/user-attachments/assets/656bb7d9-f636-45c2-a581-1b430a5274c8" />
 <img width="1904" height="518" alt="image" src="https://github.com/user-attachments/assets/2a185dcf-3b1e-4c40-aae6-277f61e263b2" />
