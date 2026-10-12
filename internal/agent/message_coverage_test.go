@@ -589,21 +589,6 @@ func TestLoadMoodRituals_NilOrEmptyMoodReturnsNil(t *testing.T) {
 	require.Nil(t, a.loadMoodRituals(context.Background(), uuid.New(), &models.Mood{}))
 }
 
-// --- StartSummaryMemoryBackfill ---
-
-func TestStartSummaryMemoryBackfill_RunsInBackgroundWithoutPanicking(t *testing.T) {
-	t.Parallel()
-	a := &Agent{logger: zap.NewNop()}
-
-	require.NotPanics(t, func() {
-		a.StartSummaryMemoryBackfill(context.Background())
-	})
-	// memoryTool is nil, so the background goroutine's BackfillSummaryMemories
-	// call returns immediately (Skipped++); give it a moment to finish logging
-	// before the test process exits, since it races with nothing else here.
-	time.Sleep(50 * time.Millisecond)
-}
-
 // --- setJobStatusCancelledWithPartial ---
 
 func TestSetJobStatusCancelledWithPartial_NilJobOrUserMessageReturnsNilNil(t *testing.T) {

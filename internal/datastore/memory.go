@@ -851,44 +851,6 @@ func (d *Datastore) GetChatSummaryMemory(ctx context.Context, userID, chatID uui
 	return toMemoryModel(entMemory), nil
 }
 
-// ListChatsMissingSummaryMemory returns chats whose legacy checkpoint summary
-// still needs an internal Summary memory.
-func (d *Datastore) ListChatsMissingSummaryMemory(ctx context.Context, limit int) ([]models.ChatSummaryBackfillCandidate, error) {
-	if limit <= 0 {
-		limit = 100
-	}
-
-	chats, err := d.dbClient.Chat.Query().
-		Where(
-			entchat.CheckpointSummaryNotNil(),
-			entchat.CheckpointSummaryNEQ(""),
-			entchat.Not(entchat.HasMemoriesWith(memory.ScopeEQ(memory.ScopeSummary))),
-		).
-		WithOwner().
-		Order(ent.Asc(entchat.FieldUpdatedAt), ent.Asc(entchat.FieldID)).
-		Limit(limit).
-		All(ctx)
-	if err != nil {
-		d.logger.Error(i18n.T1("list.failed", "Entity", "summary backfill candidates"), zap.Error(err))
-		return nil, err
-	}
-
-	candidates := make([]models.ChatSummaryBackfillCandidate, 0, len(chats))
-	for _, chat := range chats {
-		if chat.Edges.Owner == nil {
-			d.logger.Warn(i18n.T1("chat.owner_missing", "ChatID", chat.ID.String()))
-			continue
-		}
-		candidates = append(candidates, models.ChatSummaryBackfillCandidate{
-			UserID:  chat.Edges.Owner.ID,
-			ChatID:  chat.ID,
-			Summary: chat.CheckpointSummary,
-		})
-	}
-
-	return candidates, nil
-}
-
 // truncateString truncates a string to the specified length and adds "..." if truncated
 func truncateString(s string, maxLen int) string {
 	if len(s) <= maxLen {

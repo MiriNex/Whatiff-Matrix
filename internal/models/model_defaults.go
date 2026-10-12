@@ -1,13 +1,10 @@
-package models
+﻿package models
 
 import "strings"
 
 const (
 	// DefaultModelName specifies which model from AvailableModels to use as the default
 	DefaultModelName = "glm-5.3"
-
-	// LegacyFineTunedModelName is the old fine-tuned model that will be migrated
-	LegacyFineTunedModelName = "ft:gpt-4.1-2025-04-14:sotherden-io:personal-agent:CFNpAx1S"
 )
 
 // ModelProvider identifies which API backend a model is routed through.

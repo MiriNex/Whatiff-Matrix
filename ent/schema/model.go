@@ -34,7 +34,7 @@ func (Model) Fields() []ent.Field {
 		field.Bool("vision_support").
 			Optional().
 			Nillable().
-			Comment("Whether the model accepts image input. NULL only on rows predating the column, until the startup backfill sets it; text-only models get images stripped"),
+			Comment("Whether the model accepts image input. NULL only on rows predating the column (every deployment has long since backfilled them); text-only models get images stripped"),
 		field.Int64("base_credits_per_slab").
 			Default(1).
 			Comment("Credits charged per token slab for chat/job turns using this model"),
