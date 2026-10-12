@@ -1,13 +1,22 @@
 
-import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, computed, inject, input, output, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { ChatMessage } from '../../../../core/models/message.model';
 import { CHAT_PENDING_ASSISTANT_MESSAGE_ID } from '../../chat.constants';
-import { parseThreadReferenceBlock } from '../../helpers/thread-reference.helpers';
+import { ThreadReference, parseThreadReferenceBlock } from '../../helpers/thread-reference.helpers';
 import { TooltipDirective } from '../../../../shared/ui/tooltip/tooltip.directive';
 import { BrainIconComponent, ChevRightIconComponent, StarIconComponent } from '../../../../shared/ui/icons/icons';
 import { MessageContentComponent } from '../message-content/message-content.component';
+
+/** Payload emitted when the user saves an inline edit of their own message. */
+export interface MessageEditSubmit {
+  message: ChatMessage;
+  /** The edited body text (attached-thread block not included). */
+  content: string;
+  /** Attached threads kept from the original message, re-serialized by the caller. */
+  references: ThreadReference[];
+}
 
 @Component({
   selector: 'app-message-bubble',
@@ -62,6 +71,22 @@ import { MessageContentComponent } from '../message-content/message-content.comp
               <span></span><span></span><span></span>
             </span>
           }
+        } @else if (editMode()) {
+          <textarea
+            #editBox
+            class="bubble__edit-input"
+            [value]="editDraft"
+            (input)="onEditInput($event)"
+            (keydown)="onEditKeydown($event)"
+            (blur)="onEditBlur($event)"
+            rows="3"
+            aria-label="Edit message"
+          ></textarea>
+          <div class="bubble__edit-actions">
+            <button type="button" class="bubble__edit-btn" (click)="confirmEdit()">Save &amp; resend</button>
+            <button type="button" class="bubble__edit-btn bubble__edit-btn--ghost" (click)="cancelEdit()">Cancel</button>
+            <span class="bubble__edit-hint">Enter to save · Shift+Enter new line · Esc cancels</span>
+          </div>
         } @else {
           <app-message-content
             [content]="bodyContent()"
@@ -86,6 +111,9 @@ import { MessageContentComponent } from '../message-content/message-content.comp
               <span>{{ shortTime(message().sent_at) }}</span>
             </time>
             <button type="button" class="bubble__copy" (click)="copy.emit(message())">Copy</button>
+            @if (message().origin === 'User') {
+              <button type="button" class="bubble__copy" (click)="startEdit()" uiTooltip="Edit this message and regenerate the reply">Edit</button>
+            }
             <button
               type="button"
               class="bubble__bookmark"
@@ -175,6 +203,58 @@ import { MessageContentComponent } from '../message-content/message-content.comp
 
     .bubble--user .bubble__body :where(code, pre) {
       background: color-mix(in srgb, currentColor 14%, transparent);
+    }
+
+    .bubble__edit-input {
+      background: transparent;
+      border: none;
+      color: inherit;
+      font: inherit;
+      line-height: 1.6;
+      max-height: 16rem;
+      min-height: 3rem;
+      overflow-y: auto;
+      padding: 0;
+      resize: vertical;
+      width: 100%;
+    }
+
+    .bubble__edit-input:focus {
+      outline: none;
+    }
+
+    .bubble__edit-actions {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+      margin-top: 0.375rem;
+    }
+
+    .bubble__edit-btn {
+      border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+      border-radius: 999px;
+      color: inherit;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.625rem;
+      padding: 0.1875rem 0.5rem;
+    }
+
+    .bubble__edit-btn:hover,
+    .bubble__edit-btn:focus-visible {
+      background: color-mix(in srgb, currentColor 12%, transparent);
+    }
+
+    .bubble__edit-btn--ghost {
+      opacity: 0.75;
+    }
+
+    .bubble__edit-hint {
+      color: var(--color-text-muted);
+      font-size: 0.5625rem;
+      margin-top: 0.375rem;
+      opacity: 0.85;
     }
 
     /* Collapsed-by-default model reasoning, sitting above the reply like a quiet aside. */
@@ -478,6 +558,7 @@ export class MessageBubbleComponent {
   private readonly router = inject(Router);
   readonly message = input.required<ChatMessage>();
   readonly displayContent = input('');
+  readonly submitEdit = output<MessageEditSubmit>();
 
   /**
    * A user message's leading attached-thread lines (see thread-reference.helpers), split from
@@ -526,6 +607,16 @@ export class MessageBubbleComponent {
         box.scrollTop = box.scrollHeight;
       }
     });
+    // Focus the edit textarea (caret at the end) as soon as edit mode renders.
+    afterRenderEffect(() => {
+      if (!this.editMode()) return;
+      const box = this.editBox()?.nativeElement;
+      if (box) {
+        box.focus();
+        const end = box.value.length;
+        box.setSelectionRange(end, end);
+      }
+    });
   }
 
   readonly isPendingPlaceholder = computed(() => this.message().id === CHAT_PENDING_ASSISTANT_MESSAGE_ID);
@@ -554,6 +645,61 @@ export class MessageBubbleComponent {
       .filter((n): n is string => !!n);
     return [...new Set(names)];
   });
+
+  /** Inline edit state for the user's own messages (edit-and-resend). */
+  readonly editMode = signal(false);
+  editDraft = '';
+  private readonly editBox = viewChild<ElementRef<HTMLTextAreaElement>>('editBox');
+
+  startEdit(): void {
+    if (this.editMode()) return;
+    // Edit the body only; attached threads stay as chips and are re-serialized on save.
+    this.editDraft = this.bodyContent();
+    this.editMode.set(true);
+  }
+
+  cancelEdit(): void {
+    this.editMode.set(false);
+  }
+
+  onEditInput(event: Event): void {
+    this.editDraft = (event.target as HTMLTextAreaElement).value;
+  }
+
+  onEditKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.cancelEdit();
+      return;
+    }
+    if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+      event.preventDefault();
+      this.confirmEdit();
+    }
+  }
+
+  /** Clicking outside cancels only when the text is unchanged; otherwise keep editing. */
+  onEditBlur(event: FocusEvent): void {
+    const related = event.relatedTarget as HTMLElement | null;
+    // Never cancel from a click inside this bubble (Save/Cancel/re-focus): the blur
+    // lands before the click, so cancelling here would swallow the button press.
+    if (related && related.closest('.bubble')) return;
+    if (this.editDraft.trim() === this.bodyContent().trim()) {
+      this.editMode.set(false);
+    }
+  }
+
+  confirmEdit(): void {
+    const content = this.editDraft.trim();
+    if (!content || content === this.bodyContent().trim()) {
+      this.editMode.set(false);
+      return;
+    }
+    const references = this.userThreadBlock().references;
+    this.editMode.set(false);
+    this.submitEdit.emit({ message: this.message(), content, references });
+  }
 
   readonly ariaLabel = computed(() =>
     this.showPendingDots() ? 'Assistant is composing a reply' : `${this.message().origin} message`,

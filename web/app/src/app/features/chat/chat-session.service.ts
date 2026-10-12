@@ -24,6 +24,7 @@ import {
   STREAMING_SCROLL_CHECK_INTERVAL,
 } from './chat.constants';
 import { isHttpErrorResponse } from './helpers/chat-send.helpers';
+import { ThreadReference, formatThreadReferences } from './helpers/thread-reference.helpers';
 import { ChatSendMessageOptions, ChatSendMessageResult } from './chat-send-result';
 import { ChatSendGate } from './services/chat-send-gate';
 import { AssistantTurn } from './assistant-turn';
@@ -509,6 +510,27 @@ export class ChatSessionService implements OnDestroy {
       if (!this.isActiveThread(chat.id)) return;
       this.turn.retryFailed();
       this._error.set(apiErrorMessage(error, 'Retry failed'));
+    }
+  }
+
+  /** Edit-and-resend: rewrite a user message (re-attaching its thread references)
+   *  and regenerate the reply, exactly like the retry flow. */
+  async editUserMessage(message: ChatMessage, newBody: string, references: readonly ThreadReference[]): Promise<void> {
+    const chat = this._thread();
+    if (!chat || !this.isActiveThread(chat.id) || message.origin !== 'User' || this.isGenerating()) return;
+
+    const newContent = `${formatThreadReferences(references)}${newBody}`;
+    this.turn.beginRetry(message.id);
+    this._error.set(null);
+    try {
+      const response = await firstValueFrom(this.messageService.editUserMessage(chat.id, message.id, newContent));
+      if (response.job_id) {
+        this.turn.startPolling(response.job_id, chat.id);
+      }
+    } catch (error) {
+      if (!this.isActiveThread(chat.id)) return;
+      this.turn.retryFailed();
+      this._error.set(apiErrorMessage(error, 'Edit failed'));
     }
   }
 

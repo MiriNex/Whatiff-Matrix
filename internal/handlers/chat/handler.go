@@ -17,6 +17,7 @@ import (
 type MessageAgent interface {
 	HandleUserMessage(ctx context.Context, request models.ChatMessage) (*models.ChatMessageResponse, error)
 	RetryUserChatMessage(ctx context.Context, chatID, messageID uuid.UUID) (*models.ChatMessageResponse, error)
+	EditUserChatMessage(ctx context.Context, chatID, messageID uuid.UUID, newMessage string) (*models.ChatMessageResponse, error)
 }
 
 // WelcomeMessageAgent is the minimal async prompt surface used for welcome generation.
@@ -80,6 +81,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	chatRouter.HandleFunc("/mark-all-read", h.MarkAllChatsRead).Methods("POST")
 
 	chatRouter.HandleFunc("/{chatId}/chat-message/{messageId}/retry", h.RetryChatMessage).Methods("POST")
+	chatRouter.HandleFunc("/{chatId}/chat-message/{messageId}/edit", h.EditChatMessage).Methods("POST")
 	chatRouter.HandleFunc("/{chatId}/chat-message/{messageId}", h.DeleteChatMessage).Methods("DELETE")
 	chatRouter.HandleFunc("/{chatId}/chat-message/{messageId}/active-job", h.GetActiveChatMessageJob).Methods("GET")
 	chatRouter.HandleFunc("/{chatId}/chat-message/{messageId}/bookmark", h.SetChatMessageBookmark).Methods("PATCH")

@@ -31,6 +31,10 @@ func (r *retryAgentStub) RetryUserChatMessage(ctx context.Context, chatID, messa
 	return r.resp, r.err
 }
 
+func (r *retryAgentStub) EditUserChatMessage(ctx context.Context, chatID, messageID uuid.UUID, newMessage string) (*models.ChatMessageResponse, error) {
+	return r.resp, r.err
+}
+
 type retryStoreStub struct {
 	fakeStore
 	msg       *models.ChatMessage

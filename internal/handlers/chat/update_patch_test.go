@@ -60,6 +60,9 @@ func (f *fakeStore) DeleteChat(ctx context.Context, userID, id uuid.UUID) error 
 	}
 	return errors.New("not implemented")
 }
+func (f *fakeStore) DeleteChatMessage(ctx context.Context, userID, chatID, messageID uuid.UUID) error {
+	return errors.New("not implemented")
+}
 func (f *fakeStore) ListChatFileAttachmentObjectRefs(ctx context.Context, userID, chatID uuid.UUID) ([]models.FileAttachment, error) {
 	if f.listChatAttachmentRefsFn != nil {
 		return f.listChatAttachmentRefsFn(ctx, userID, chatID)

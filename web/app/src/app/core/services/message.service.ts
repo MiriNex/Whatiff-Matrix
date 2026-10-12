@@ -266,6 +266,28 @@ export class MessageService {
       );
   }
 
+  /** Edit a user message and regenerate the response (edit-and-resend):
+   *  optimistically rewrites the text and drops every message after it. */
+  editUserMessage(chatId: string, messageId: string, newContent: string): Observable<ChatMessageResponse> {
+    return this.http
+      .post<ChatMessageResponse>(`${this.apiUrl}/${chatId}/chat-message/${messageId}/edit`, { message: newContent })
+      .pipe(
+        tap(() => {
+          const cur = this.messagesSubject.getValue();
+          const idx = cur.findIndex(m => m.id === messageId);
+          if (idx >= 0) {
+            // Keep everything up to and including the edited message, then stop:
+            // the server deletes the tail and regenerates a fresh response.
+            const next = cur.slice(0, idx + 1).map((m, i) =>
+              i === idx ? { ...m, message: newContent, last_error_message: null } : m,
+            );
+            this.messagesSubject.next(next);
+          }
+        }),
+        catchError(this.handleError),
+      );
+  }
+
   addMessageToList(message: ChatMessage): void {
     // Only add message if it belongs to the currently active chat
     if (this.currentChatId && message.chat_id !== this.currentChatId) {

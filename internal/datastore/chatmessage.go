@@ -1181,6 +1181,59 @@ func (d *Datastore) SetChatMessageBookmarked(ctx context.Context, userID, messag
 	return d.GetChatMessage(ctx, userID, messageID)
 }
 
+// UpdateChatMessageText rewrites the body text of a chat message owned by the user
+// and returns the updated message. Used by edit-and-resend.
+func (d *Datastore) UpdateChatMessageText(ctx context.Context, userID, messageID uuid.UUID, message string) (*models.ChatMessage, error) {
+	n, err := d.dbClient.ChatMessage.Update().
+		Where(
+			chatmessage.ID(messageID),
+			chatmessage.HasChatWith(
+				entchat.HasOwnerWith(user.ID(userID)),
+			),
+		).
+		SetMessage(message).
+		Save(ctx)
+	if err != nil {
+		d.logger.Error("failed to update chat message text", zap.Error(err))
+		return nil, err
+	}
+	if n == 0 {
+		return nil, ErrChatMessageNotFound
+	}
+	return d.GetChatMessage(ctx, userID, messageID)
+}
+
+// DeleteChatMessagesAfterMessage deletes every message strictly after the given
+// message in (sent_at, id) thread order — the standard edit-and-resend tail drop.
+// The edited message itself is kept. Referenced rows (attachments, rituals, tool
+// calls, context items) cascade at the database level, as in DeleteChatMessage.
+func (d *Datastore) DeleteChatMessagesAfterMessage(ctx context.Context, userID, chatID, messageID uuid.UUID) (int, error) {
+	msg, err := d.GetChatMessage(ctx, userID, messageID)
+	if err != nil {
+		return 0, err
+	}
+	if msg.ChatID != chatID {
+		return 0, ErrChatMessageNotFound
+	}
+	n, err := d.dbClient.ChatMessage.Delete().
+		Where(
+			chatmessage.HasChatWith(
+				entchat.ID(chatID),
+				entchat.HasOwnerWith(user.ID(userID)),
+			),
+			chatmessage.Or(
+				chatmessage.SentAtGT(msg.SentAt),
+				chatmessage.And(chatmessage.SentAtEQ(msg.SentAt), chatmessage.IDGT(messageID)),
+			),
+		).
+		Exec(ctx)
+	if err != nil {
+		d.logger.Error("failed to delete messages after edited message", zap.Error(err))
+		return 0, err
+	}
+	return n, nil
+}
+
 // ListChatMessageBookmarks returns every bookmarked message in a chat the user owns, oldest
 // first (thread order), independent of message-list pagination so the navigator always sees
 // the complete set. Bodies are trimmed to a snippet by the caller/handler if needed.

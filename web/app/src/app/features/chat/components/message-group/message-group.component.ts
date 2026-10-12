@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 
 import { ChatMessage } from '../../../../core/models/message.model';
 import { AuthImagePipe } from '../../../../core/pipes/auth-image.pipe';
-import { MessageBubbleComponent } from '../message-bubble/message-bubble.component';
+import { MessageBubbleComponent, MessageEditSubmit } from '../message-bubble/message-bubble.component';
 import { TooltipDirective } from '../../../../shared/ui/tooltip/tooltip.directive';
 
 interface AssistantVisual {
@@ -95,6 +95,7 @@ interface AssistantVisual {
             (copy)="copy.emit($event)"
             (showContext)="showContext.emit($event)"
             (toggleBookmark)="toggleBookmark.emit($event)"
+            (submitEdit)="submitEdit.emit($event)"
           />
         }
         @if (userGenerationError(); as errInfo) {
@@ -453,6 +454,7 @@ export class MessageGroupComponent {
   readonly showContext = output<ChatMessage>();
   readonly toggleBookmark = output<ChatMessage>();
   readonly retryUserMessage = output<ChatMessage>();
+  readonly submitEdit = output<MessageEditSubmit>();
   /** Whether this group is the last item rendered in the chat. */
   readonly isLast = input(false);
   /** Emits the assistant message IDs of this group when the user asks to regenerate the reply. */

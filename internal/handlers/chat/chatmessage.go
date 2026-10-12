@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/theimaginaryfoundation/what-iff/ent"
@@ -133,6 +134,62 @@ func (h *Handler) RetryChatMessage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		handlerutils.RespondWithError(w, h.logger, http.StatusInternalServerError, handlerutils.CodeNotSet, "Failed to retry message", err)
+		return
+	}
+	handlerutils.RespondWithJSON(w, h.logger, http.StatusAccepted, resp)
+}
+
+type editChatMessageRequest struct {
+	Message string `json:"message"`
+}
+
+// EditChatMessage rewrites a user message's text and regenerates the response
+// (edit-and-resend): every message after it is deleted and a new generation job
+// is enqueued, mirroring RetryChatMessage.
+func (h *Handler) EditChatMessage(w http.ResponseWriter, r *http.Request) {
+	if _, ok := middleware.GetUserIDFromContext(r.Context()); !ok {
+		handlerutils.RespondWithError(w, h.logger, http.StatusUnauthorized, handlerutils.CodeNotSet, "Unauthorized", nil)
+		return
+	}
+	vars := mux.Vars(r)
+	chatID, err := uuid.Parse(vars["chatId"])
+	if err != nil {
+		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Invalid chat ID", err)
+		return
+	}
+	messageID, err := uuid.Parse(vars["messageId"])
+	if err != nil {
+		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Invalid message ID", err)
+		return
+	}
+	if h.messageAgent == nil {
+		handlerutils.RespondWithError(w, h.logger, http.StatusInternalServerError, handlerutils.CodeNotSet, "Message agent not configured", nil)
+		return
+	}
+	var req editChatMessageRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Invalid request body", err)
+		return
+	}
+	if strings.TrimSpace(req.Message) == "" {
+		handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Message cannot be empty", nil)
+		return
+	}
+	resp, err := h.messageAgent.EditUserChatMessage(r.Context(), chatID, messageID, req.Message)
+	if err != nil {
+		if errors.Is(err, datastore.ErrChatMessageNotFound) {
+			handlerutils.RespondWithError(w, h.logger, http.StatusNotFound, handlerutils.CodeNotSet, "Chat message not found", err)
+			return
+		}
+		if errors.Is(err, agent.ErrRetryChatMismatch) {
+			handlerutils.RespondWithError(w, h.logger, http.StatusNotFound, handlerutils.CodeNotSet, "Chat message not found in this chat", err)
+			return
+		}
+		if errors.Is(err, agent.ErrRetryNotUserOrigin) {
+			handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Only user messages can be edited", err)
+			return
+		}
+		handlerutils.RespondWithError(w, h.logger, http.StatusInternalServerError, handlerutils.CodeNotSet, "Failed to edit message", err)
 		return
 	}
 	handlerutils.RespondWithJSON(w, h.logger, http.StatusAccepted, resp)

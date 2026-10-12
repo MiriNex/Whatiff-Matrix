@@ -5,6 +5,7 @@ import { ChatMessage } from '../../../../core/models/message.model';
 import { ToolCall } from '../../../../core/models/toolcall.model';
 import { GroupedItem } from '../../helpers/message-grouping.helpers';
 import { MessageGroupComponent } from '../message-group/message-group.component';
+import { MessageEditSubmit } from '../message-bubble/message-bubble.component';
 import { ToolCallGroupComponent } from '../tool-call-group/tool-call-group.component';
 
 const AUTO_SCROLL_BOTTOM_EPSILON_PX = 8;
@@ -55,6 +56,7 @@ interface AssistantVisual {
                 (showContext)="showContext.emit($event)"
                 (toggleBookmark)="toggleBookmark.emit($event)"
                 (retryUserMessage)="retryUserMessage.emit($event)"
+                (submitEdit)="submitEdit.emit($event)"
                 [isLast]="$last"
                 (regenerate)="regenerate.emit($event)"
               />
@@ -208,6 +210,7 @@ export class MessageListComponent {
   readonly toggleBookmark = output<ChatMessage>();
   readonly openToolCallDetail = output<ToolCall>();
   readonly retryUserMessage = output<ChatMessage>();
+  readonly submitEdit = output<MessageEditSubmit>();
   readonly regenerate = output<readonly string[]>();
   readonly scrollToBottomRequested = output<void>();
   readonly scrollContainer = viewChild<ElementRef<HTMLElement>>('scrollContainer');

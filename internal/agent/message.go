@@ -820,6 +820,86 @@ func (a *Agent) RetryUserChatMessage(ctx context.Context, chatID, messageID uuid
 	}, nil
 }
 
+// EditUserChatMessage rewrites a user message's text and regenerates the response:
+// the standard edit-and-resend flow. All messages strictly after the edited one are
+// deleted (thread tail), the message text is updated in place, and generation is
+// enqueued exactly like RetryUserChatMessage.
+func (a *Agent) EditUserChatMessage(ctx context.Context, chatID, messageID uuid.UUID, newMessage string) (*models.ChatMessageResponse, error) {
+	// Detach from request cancellation before enqueue + background execution. User id and timezone
+	// are copied into a fresh Background context (see middleware.CopyUserToIDContext).
+	detachedCtx, ok := middleware.CopyUserToIDContext(ctx, context.Background())
+	if !ok {
+		return nil, errors.New("user ID not found in context")
+	}
+	userID, _ := middleware.GetUserIDFromContext(detachedCtx)
+
+	msg, err := a.ds.GetChatMessage(detachedCtx, userID, messageID)
+	if err != nil {
+		return nil, err
+	}
+	if msg.ChatID != chatID {
+		return nil, ErrRetryChatMismatch
+	}
+	if msg.Origin != models.MessageOriginUser {
+		return nil, ErrRetryNotUserOrigin
+	}
+
+	newMessage = strings.TrimSpace(newMessage)
+	if newMessage == "" {
+		return nil, errors.New("edited message is empty")
+	}
+
+	// Refuse while another generation for this message is already running, before any mutation.
+	active, err := a.ds.FindLatestActiveChatMessageJob(detachedCtx, userID, messageID)
+	if err != nil {
+		return nil, err
+	}
+	if active != nil {
+		return &models.ChatMessageResponse{
+			ID:    messageID,
+			JobID: active.ID.String(),
+			Type:  JobTypeChatMessage,
+		}, nil
+	}
+
+	// Drop the thread tail strictly after the edited message, then rewrite the text.
+	if _, err := a.ds.DeleteChatMessagesAfterMessage(detachedCtx, userID, chatID, messageID); err != nil {
+		return nil, err
+	}
+	msg, err = a.ds.UpdateChatMessageText(detachedCtx, userID, messageID, newMessage)
+	if err != nil {
+		return nil, err
+	}
+
+	// From here on this is a retry of the (now edited) message: same job pipeline.
+	if err := a.ds.SetChatMessageLastError(detachedCtx, userID, messageID, nil); err != nil {
+		a.logger.Warn("failed to clear last_error_message before edit-and-resend", zap.Error(err))
+	}
+
+	newJob, err := a.ds.CreateJob(detachedCtx, userID, models.Job{
+		JobType:     JobTypeChatMessage,
+		Reference:   messageID.String(),
+		Status:      models.JobStatusPending,
+		DraftDeltas: []string{},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create job: %w", err)
+	}
+
+	runCtx, cancel := context.WithCancel(detachedCtx)
+	a.registerRunningJobCancel(newJob.ID, userID, cancel)
+	go a.runAsyncChatMessageJob(runCtx, cancel, newJob, msg.ID, "edit", func() error {
+		_, err := a.handleUserMessage(runCtx, newJob, msg)
+		return err
+	})
+
+	return &models.ChatMessageResponse{
+		ID:    messageID,
+		JobID: newJob.ID.String(),
+		Type:  JobTypeChatMessage,
+	}, nil
+}
+
 // chatContext holds the context needed for processing a chat message
 type chatContext struct {
 	userID                 uuid.UUID

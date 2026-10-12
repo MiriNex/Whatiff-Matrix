@@ -24,6 +24,7 @@ import { Personality, PersonalityExpression } from '../../core/models/personalit
 import { ToolCall } from '../../core/models/toolcall.model';
 import { ChatComposerComponent } from './components/chat-composer/chat-composer.component';
 import { MessageListComponent } from './components/message-list/message-list.component';
+import { MessageEditSubmit } from './components/message-bubble/message-bubble.component';
 import { ThreadBookmarksComponent } from './components/thread-bookmarks/thread-bookmarks.component';
 import { MessageService } from '../../core/services/message.service';
 import { PersonaPickerDialogComponent } from '../personality/picker/persona-picker-dialog.component';
@@ -610,6 +611,10 @@ export class ChatPageComponent implements OnInit, OnDestroy {
 
   retryUserMessageFromList(message: ChatMessage): void {
     void this.session.retryUserMessage(message);
+  }
+
+  submitEditFromList(edit: MessageEditSubmit): void {
+    void this.session.editUserMessage(edit.message, edit.content, edit.references);
   }
 
   regenerateFromList(assistantIds: readonly string[]): void {
