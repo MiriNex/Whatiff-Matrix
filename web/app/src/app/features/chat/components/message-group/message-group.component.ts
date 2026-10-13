@@ -126,7 +126,7 @@ interface AssistantVisual {
         @if (isLast() && origin() === 'Assistant' && messages().length > 0) {
           <div class="message-group__regenerate">
             <button type="button" class="message-group__regenerate-btn" (click)="triggerRegenerate()">
-              Regenerar respuesta
+              Reload
             </button>
           </div>
         }

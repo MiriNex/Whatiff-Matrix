@@ -10,6 +10,9 @@
       </h1>
       <p>Review and correct saved context that informs your conversations.</p>
     </div>
+    <button type="button" class="memories-shell__add-btn" uiTooltip="Create a memory yourself" (click)="openCreateModal()">
+      + Add memory
+    </button>
   </header>
 
   <div class="memories-shell__tabs" role="tablist" aria-label="Memory manager sections">
@@ -55,4 +58,24 @@
   @if (activeTab() === 'compaction-log') {
     <app-compaction-log-page [embedded]="true" />
   }
+
+  <ui-modal [open]="createOpen()" [labelledBy]="'create-memory-title'" (dismiss)="closeCreateModal()">
+    <h4 modal-header id="create-memory-title">Create memory</h4>
+    <label class="memories-shell__field-label" for="new-memory-content">Memory content</label>
+    <textarea id="new-memory-content" rows="5" [value]="createContent()" (input)="createContent.set($any($event.target).value)" placeholder="A fact or preference your personalities should remember"></textarea>
+    <label class="memories-shell__field-label" for="new-memory-scope">Visible to</label>
+    <select id="new-memory-scope" [value]="createPinnedId()" (change)="createPinnedId.set($any($event.target).value)">
+      <option value="">All personalities (global)</option>
+      @for (p of personalities(); track p.id) {
+        <option [value]="p.id">Only {{ p.name }}</option>
+      }
+    </select>
+    @if (createError(); as err) {
+      <p class="memories-shell__create-error" role="alert">{{ err }}</p>
+    }
+    <div modal-footer>
+      <ui-button size="sm" variant="secondary" (activate)="closeCreateModal()">Cancel</ui-button>
+      <ui-button size="sm" variant="primary" [disabled]="createSaving() || !createContent().trim()" (activate)="saveNewMemory()">Save</ui-button>
+    </div>
+  </ui-modal>
 </section>
