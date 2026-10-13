@@ -17,7 +17,8 @@ import { buildChatgptExport } from '../../../fixtures/chatgpt-export';
 // a successful import could still show "Imported 0 threads" in the UI. Also covers PR #309/#304
 // (non-chunked imports reporting 0 due to the same progress-count parsing bug): this fixture is
 // well under the chunk-size threshold, so the whole file uploads as a single, non-chunked request.
-test('reports the correct imported count, not zero', async ({ chatImportModal, threadListPanel, userWithPersonality }) => {
+test('reports the correct imported count, not zero', async ({ chatImportModal, threadListPanel, userWithPersonality }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium-desktop', 'Import is desktop-only chrome.');
   const { titles, file } = buildChatgptExport(3);
 
   await threadListPanel.navigateTo();
@@ -46,7 +47,8 @@ test('the post-import picker only offers threads from this import run', async ({
   seed,
   threadListPanel,
   userWithPersonality,
-}) => {
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium-desktop', 'Import is desktop-only chrome.');
   const unrelated = await seed.thread();
   await threadListPanel.navigateTo();
   await threadListPanel.narrowTo(unrelated.name);

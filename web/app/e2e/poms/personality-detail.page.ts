@@ -7,7 +7,7 @@ export class PersonalityDetailPage {
 
   constructor(private readonly page: Page) {
     this.confirmation = new ConfirmationModal(page);
-    this.nameInput = this.page.getByRole('textbox', { name: 'Personality name' });
+    this.nameInput = this.page.getByRole('textbox', { name: 'Oracle name' });
     this.saveChangesButton = this.page.getByRole('button', { name: 'Save changes' });
     this.autoPinToggle = this.page.getByRole('switch', { name: 'Auto-pin new User memories' });
     this.promptEditor = this.page.getByLabel('System prompt editor');

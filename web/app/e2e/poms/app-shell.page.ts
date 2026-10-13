@@ -8,7 +8,7 @@ import { type Locator, type Page } from '@playwright/test';
  */
 export const navSections = {
   chat: { label: 'Chat', route: '/chat', mode: 'app' },
-  personalities: { label: 'Personalities', route: '/personality', mode: 'app' },
+  personalities: { label: 'Oracles', route: '/personality', mode: 'app' },
   gallery: { label: 'Gallery', route: '/gallery', mode: 'app' },
   memories: { label: 'Memories', route: '/memories', mode: 'config' },
   modes: { label: 'Modes', route: '/mode', mode: 'config' },

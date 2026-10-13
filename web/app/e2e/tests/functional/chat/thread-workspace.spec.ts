@@ -130,7 +130,8 @@ test('shows a reply’s token breakdown from its Context action', async ({ chatP
   await expect(chatPage.contextCostOutlet).toHaveCount(1);
 });
 
-test('opens the Import & Export screen from Thread Manager', async ({ chatImportModal, threadListPanel, userWithPersonality }) => {
+test('opens the Import & Export screen from Thread Manager', async ({ chatImportModal, threadListPanel, userWithPersonality }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium-desktop', 'Import is desktop-only chrome.');
   await threadListPanel.navigateTo();
   await threadListPanel.openImport();
 

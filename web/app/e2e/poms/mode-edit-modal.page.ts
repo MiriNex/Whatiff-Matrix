@@ -140,15 +140,15 @@ export class ModeEditModalPage {
   /**
    * Associates a mode card (in the grid, not the edit modal) with a
    * personality via its inline `app-mode-association-picker`. The accessible
-   * name of the add button is actually "+ Add personality" (leading "+" glyph
-   * included); the substring match on "Add personality" covers it.
+   * name of the add button is actually "+ Add oracle" (leading "+" glyph
+   * included); the substring match on "Add oracle" covers it.
    */
   async addPersonality(modeName: string, personalityName: string): Promise<void> {
     // Same mobile off-canvas sidebar issue as openEdit() — see closeMobileSidebarIfOpen().
     await this.closeMobileSidebarIfOpen();
     const card = this.card(modeName);
-    await card.getByRole('button', { name: 'Add personality' }).click();
-    await card.getByPlaceholder('Filter personalities...').fill(personalityName);
+    await card.getByRole('button', { name: 'Add oracle' }).click();
+    await card.getByPlaceholder('Filter oracles...').fill(personalityName);
     await card.locator('.mode-card__personality-option').filter({ hasText: personalityName }).click();
   }
 }

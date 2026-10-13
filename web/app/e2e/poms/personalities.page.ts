@@ -59,7 +59,7 @@ export class PersonalitiesPage {
    */
   async createManually(name: string, description: string): Promise<void> {
     await this.page.getByPlaceholder('e.g. Vera Calder, Filbolt Pottsworth').fill(name);
-    await this.page.getByPlaceholder('Describe how this personality should behave, talk, and react…').fill(description);
+    await this.page.getByPlaceholder('Describe how this oracle should behave, talk, and react…').fill(description);
     await this.page.getByRole('button', { name: 'Create', exact: true }).click();
   }
 }
