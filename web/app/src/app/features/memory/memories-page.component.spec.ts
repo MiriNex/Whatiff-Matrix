@@ -7,6 +7,7 @@ import { MemoriesPageComponent } from './memories-page.component';
 import { MemoriesListTabComponent } from './memories-list-tab.component';
 import { MemoryMergeHistoryPageComponent } from './memory-merge-history-page.component';
 import { CompactionLogPageComponent } from './compaction-log-page.component';
+import { PersonalityService } from '../../core/services/personality.service';
 
 describe('MemoriesPageComponent', () => {
   beforeEach(async () => {
@@ -16,6 +17,7 @@ describe('MemoriesPageComponent', () => {
         provideZonelessChangeDetection(),
         { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
         { provide: Router, useValue: { navigate: vi.fn().mockName('navigate') } },
+        { provide: PersonalityService, useValue: { listPersonalities: vi.fn().mockReturnValue(of({ results: [], total_count: 0, page: 1 })) } },
       ],
     })
       // Tabs load their own data; stub them out so this spec covers only the shell.
