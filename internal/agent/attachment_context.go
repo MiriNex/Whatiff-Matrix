@@ -12,8 +12,8 @@ import (
 	"github.com/theimaginaryfoundation/what-iff/internal/agent/filechunker"
 	"github.com/theimaginaryfoundation/what-iff/internal/datastore"
 	"github.com/theimaginaryfoundation/what-iff/internal/models"
-	"github.com/theimaginaryfoundation/what-iff/internal/utils"
 	"github.com/theimaginaryfoundation/what-iff/internal/storage"
+	"github.com/theimaginaryfoundation/what-iff/internal/utils"
 )
 
 const (

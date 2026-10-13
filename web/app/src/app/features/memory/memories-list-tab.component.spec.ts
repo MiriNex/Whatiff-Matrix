@@ -320,7 +320,7 @@ describe('MemoriesListTabComponent bootstrap / ngOnInit', () => {
     const host = fixture.nativeElement as HTMLElement;
     const select = host.querySelectorAll('.memories-list__filters select')[0] as HTMLSelectElement;
     const options = Array.from(select.querySelectorAll('option'));
-    expect(options.map(o => o.textContent?.trim())).toEqual(['Any personality', 'Global (every personality)', PERSONALITY_A.name, PERSONALITY_B.name]);
+    expect(options.map(o => o.textContent?.trim())).toEqual(['Any oracle', 'Global (every personality)', PERSONALITY_A.name, PERSONALITY_B.name]);
   });
 
   it('falls back to an empty personality list on load error', async () => {
@@ -330,7 +330,7 @@ describe('MemoriesListTabComponent bootstrap / ngOnInit', () => {
     const host = fixture.nativeElement as HTMLElement;
     const select = host.querySelectorAll('.memories-list__filters select')[0] as HTMLSelectElement;
     const options = Array.from(select.querySelectorAll('option'));
-    expect(options.map(o => o.textContent?.trim())).toEqual(['Any personality', 'Global (every personality)']);
+    expect(options.map(o => o.textContent?.trim())).toEqual(['Any oracle', 'Global (every personality)']);
   });
 
   it('applies a second route queryParams emission, overwriting the search box and clearing a stale date error', async () => {

@@ -112,7 +112,7 @@ describe('ProfileSettingsModalComponent (open-source profile-only)', () => {
     const text = fixture.nativeElement.textContent ?? '';
     expect(text).toContain('Default model');
     expect(text).toContain('Model One');
-    expect(text).toContain('Default personality');
+    expect(text).toContain('Default oracle');
     expect(text).toContain('Vera');
   });
 
@@ -125,8 +125,8 @@ describe('ProfileSettingsModalComponent (open-source profile-only)', () => {
     expect(defaults?.textContent).toContain('Thread defaults');
     expect(defaults?.textContent).toContain('Choose what new threads start with.');
     expect(defaults?.textContent).toContain('Default model');
-    expect(defaults?.textContent).toContain('Default personality');
-    expect(defaults?.textContent).toContain('No default personality');
+    expect(defaults?.textContent).toContain('Default oracle');
+    expect(defaults?.textContent).toContain('No default oracle');
   });
 
   it('keeps auto-saving chat defaults outside the profile submit form', async () => {

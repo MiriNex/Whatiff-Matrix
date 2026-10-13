@@ -114,7 +114,7 @@ describe('CompactionLogPageComponent', () => {
         expect(personalityService.listPromptChanges).toHaveBeenCalledWith('personality-9');
         expect(toggle).not.toBeNull();
         expect(toggle?.getAttribute('aria-expanded')).toBe('false');
-        expect(fixture.nativeElement.textContent).toContain('Personality prompt changes');
+        expect(fixture.nativeElement.textContent).toContain('Oracle prompt changes');
         expect(fixture.nativeElement.textContent).toContain('A long-running project conversation');
         expect(fixture.nativeElement.textContent).not.toContain('Old prompt text');
         expect(fixture.nativeElement.textContent).not.toContain('New prompt text');

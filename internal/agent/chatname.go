@@ -7,6 +7,7 @@ import (
 
 	"go.uber.org/zap"
 )
+
 // chatNameModel is the legacy OpenAI Responses model name still referenced by
 // expression generation utilities (expression_pick, likeness). TODO: migrate those
 // to the utility LLM (utilityChatCompletion) alongside memory query and chat naming.

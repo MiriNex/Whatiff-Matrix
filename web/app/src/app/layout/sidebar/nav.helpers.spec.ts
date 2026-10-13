@@ -2,14 +2,14 @@ import { appNavItems, configNavItems, extraConfigItems, isConfigPath, NavItem, n
 
 describe('nav.helpers', () => {
     describe('appNavItems', () => {
-        it('returns chat / personalities / gallery in canonical order', () => {
+        it('returns chat / personalities / projects / gallery in canonical order', () => {
             const ids = appNavItems().map(i => i.id);
-            expect(ids).toEqual(['chat', 'personalities', 'gallery']);
+            expect(ids).toEqual(['chat', 'personalities', 'projects', 'gallery']);
         });
 
         it('uses app routes that match the registered Angular paths', () => {
             const routes = appNavItems().map(i => i.route);
-            expect(routes).toEqual(['/chat', '/personality', '/gallery']);
+            expect(routes).toEqual(['/chat', '/personality', '/projects', '/gallery']);
         });
 
         it('every item carries a label and an icon component', () => {

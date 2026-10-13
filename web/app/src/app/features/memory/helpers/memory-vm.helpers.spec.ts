@@ -128,7 +128,7 @@ describe('memory-vm.helpers', () => {
     });
 
     it('formats every level badge, including the default fallback', () => {
-        expect(levelBadgeText('personality')).toBe('Personality');
+        expect(levelBadgeText('personality')).toBe('Oracle');
         expect(levelBadgeText('summary')).toBe('Summary');
         expect(levelBadgeText('unknown-level' as Memory['level'])).toBe('unknown-level');
     });

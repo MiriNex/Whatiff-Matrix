@@ -101,6 +101,6 @@ describe('ModeCardComponent', () => {
 
     fixture.detectChanges();
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
-    expect(text.match(/Add personality/g)).toHaveLength(1);
+    expect(text.match(/Add oracle/g)).toHaveLength(1);
   });
 });

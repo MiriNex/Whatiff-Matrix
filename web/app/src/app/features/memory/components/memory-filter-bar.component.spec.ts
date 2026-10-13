@@ -51,7 +51,7 @@ describe('MemoryFilterBarComponent', () => {
         expect(Array.from(selects[3].options).map(option => option.text)).toEqual([
             'All levels',
             'Global',
-            'Personality',
+            'Oracle',
             'Thread',
             'Summary',
         ]);

@@ -55,7 +55,7 @@ describe('RitualFormComponent', () => {
         expect(component.name()).toBe('Source analysis');
         expect(options.length).toBe(3);
         expect(Array.from(options).map(option => option.text)).toEqual([
-            'Global (every personality)',
+            'Global (every oracle)',
             'Ada',
             'Grace',
         ]);
