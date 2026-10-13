@@ -18,6 +18,7 @@ import { buildChatgptExport } from '../../../fixtures/chatgpt-export';
 // (non-chunked imports reporting 0 due to the same progress-count parsing bug): this fixture is
 // well under the chunk-size threshold, so the whole file uploads as a single, non-chunked request.
 test('reports the correct imported count, not zero', async ({ chatImportModal, threadListPanel, userWithPersonality }, testInfo) => {
+  /* eslint-disable-next-line playwright/no-skipped-test -- a conditional, per-project skip; the rule can't tell it from a blanket skip. */
   test.skip(testInfo.project.name !== 'chromium-desktop', 'Import is desktop-only chrome.');
   const { titles, file } = buildChatgptExport(3);
 
@@ -48,6 +49,7 @@ test('the post-import picker only offers threads from this import run', async ({
   threadListPanel,
   userWithPersonality,
 }, testInfo) => {
+  /* eslint-disable-next-line playwright/no-skipped-test -- a conditional, per-project skip; the rule can't tell it from a blanket skip. */
   test.skip(testInfo.project.name !== 'chromium-desktop', 'Import is desktop-only chrome.');
   const unrelated = await seed.thread();
   await threadListPanel.navigateTo();

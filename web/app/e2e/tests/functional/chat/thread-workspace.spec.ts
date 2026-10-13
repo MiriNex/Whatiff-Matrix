@@ -131,6 +131,7 @@ test('shows a reply’s token breakdown from its Context action', async ({ chatP
 });
 
 test('opens the Import & Export screen from Thread Manager', async ({ chatImportModal, threadListPanel, userWithPersonality }, testInfo) => {
+  /* eslint-disable-next-line playwright/no-skipped-test -- a conditional, per-project skip; the rule can't tell it from a blanket skip. */
   test.skip(testInfo.project.name !== 'chromium-desktop', 'Import is desktop-only chrome.');
   await threadListPanel.navigateTo();
   await threadListPanel.openImport();
