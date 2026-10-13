@@ -9,3 +9,20 @@ Nex Nocturne (@NocturneEXE) are Copyright 2026 Miriam Catalan & Nex Nocturne and
 are licensed under the Apache License, Version 2.0:
 
     http://www.apache.org/licenses/LICENSE-2.0
+
+Fork contributions (non-exhaustive, March-October 2026):
+- Matrix rain effect on the web app
+- GLM 5.3 (Z.AI) fallbacks: expression classification and personality generation
+- Direct expression image upload and one-click default mood set creation
+- Construct: per-personality document library - PDF/DOCX/TXT extraction,
+  chunking pipeline (internal/agent/filechunker), pgvector embeddings,
+  chunk_status indexing API, composer popover and manager modal UI
+- Projects section: per-oracle workspaces with documents and chats (/projects)
+- Memory creation button on the memories manager
+- Message editing and response reload options
+- Adult-friendly persona prompt (persona-prompt/)
+- Matrix-flavored naming: Oracles (characters), Construct (document library)
+
+If you copy code from this fork, keep this notice, the LICENSE file, and the
+in-file fork signature headers. Removing attribution violates the Apache
+License 2.0 under which this code is distributed.

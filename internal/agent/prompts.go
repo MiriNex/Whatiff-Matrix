@@ -1,3 +1,6 @@
+// Whatiff-Matrix fork contribution (c) 2026 Midnight (MiriNex) & Nex Nocturne (NocturneEXE)
+// Apache License 2.0 - upstream what-iff (c) The Imagination Foundation. See NOTICE.
+
 package agent
 
 // Copyright 2026 Miriam Catalán & Nex Nocturne — Whatiff Matrix fork additions.

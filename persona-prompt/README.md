@@ -1,3 +1,6 @@
+// Whatiff-Matrix fork contribution (c) 2026 Midnight (MiriNex) & Nex Nocturne (NocturneEXE)
+// Apache License 2.0 - upstream what-iff (c) The Imagination Foundation. See NOTICE.
+
 # Generic Persona System Prompt
 ## For character cards on self-hosted companion platforms (WhatIff, SillyTavern-style, any LLM)
 

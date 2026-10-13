@@ -1,3 +1,6 @@
+// Whatiff-Matrix fork contribution (c) 2026 Midnight (MiriNex) & Nex Nocturne (NocturneEXE)
+// Apache License 2.0 - upstream what-iff (c) The Imagination Foundation. See NOTICE.
+
 import { Component, computed, DestroyRef, inject, input, OnInit, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AsyncPipe, NgClass } from '@angular/common';

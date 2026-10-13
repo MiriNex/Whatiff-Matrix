@@ -1,0 +1,38 @@
+name: fork-signature
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  signature:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check fork signature (NOTICE + headers)
+        run: |
+          set -e
+          status=0
+          if [ ! -f NOTICE ]; then
+            echo "::error::NOTICE file missing"
+            status=1
+          elif ! grep -q "Copyright 2026 Miriam Catalan & Nex Nocturne" NOTICE; then
+            echo "::error file=NOTICE::fork signature missing from NOTICE"
+            status=1
+          fi
+          for f in \
+            internal/agent/filechunker/pipeline.go \
+            web/app/src/app/features/projects/projects-page.component.ts \
+            web/app/src/app/features/projects/project-detail-page.component.ts \
+            persona-prompt/README.md; do
+            if [ ! -f "$f" ]; then
+              echo "::error file=$f::fork file missing"
+              status=1
+              continue
+            fi
+            if ! grep -q "fork contribution" "$f"; then
+              echo "::error file=$f::fork signature header missing"
+              status=1
+            fi
+          done
+          exit $status
