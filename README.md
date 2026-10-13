@@ -204,6 +204,7 @@ The upstream expression was through the OpenAI provider and failed silently when
 - An option to edit the user input.
 - **+ Add memory on /memories**: upstream had no way to create memories from the manager (the form was orphaned). This fork adds a create button with a scope picker (all personalities or just one) plus `?create=1` deep-link support.
 - Character cards are called **Oracles** and the shared document library is called **Construct** (Matrix-flavored naming, visible labels only).
+- Matrix naming and effects are a fan homage to The Matrix (1999); this project is not affiliated with or endorsed by Warner Bros. or the Wachowskis.
 
 ### Adult-friendly persona cards
 `persona-prompt/` ships a generic persona system prompt for immersive character cards: first-person identity core, anti-therapist-mode emotional presence, adult intimacy, persona constancy. NSFW between consenting adults is welcome. Persona-architecture techniques inspired by the ENI LIME jailbreak framework by **Spiritual Spell (Goochbeater)**, published freely - GitHub: [Spiritual-Spell-Red-Teaming](https://github.com/Goochbeater/Spiritual-Spell-Red-Teaming), blog: [ijailbreakllms](https://ijailbreakllms.blog). See `persona-prompt/README.md` for attribution.

@@ -503,7 +503,7 @@ export class ProjectDetailPageComponent {
     const personality = this.personality();
     if (!personality) return;
     this.chatService
-      .listChatsPage(1, 100, { personality_id: personality.id })
+      .listChatsPage(1, 100, { personality_id: personality.id, in_project: true })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => this.threads.set(res.results ?? []),
@@ -569,6 +569,7 @@ export class ProjectDetailPageComponent {
         this.chatService.createChat({
           name: DEFAULT_THREAD_NAME,
           personality_id: personality.id,
+          in_project: true,
         }),
       );
       this.chatService.setLastChatId(chat.id);

@@ -192,6 +192,7 @@ func (h *Handler) ListChats(w http.ResponseWriter, r *http.Request) {
 	searchQuery := queryParams.Get("search")
 	tagFilter := queryParams.Get("tag")
 	personalityIDRaw := queryParams.Get("personality_id")
+	inProjectRaw := queryParams.Get("in_project")
 	isFavoriteRaw := queryParams.Get("is_favorite")
 	archivedRaw := queryParams.Get("archived")
 	minDateStr := queryParams.Get("min_date")
@@ -225,6 +226,15 @@ func (h *Handler) ListChats(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		filters.PersonalityID = &personalityID
+	}
+
+	if inProjectRaw = strings.TrimSpace(inProjectRaw); inProjectRaw != "" {
+		inProject, err := strconv.ParseBool(inProjectRaw)
+		if err != nil {
+			handlerutils.RespondWithError(w, h.logger, http.StatusBadRequest, handlerutils.CodeNotSet, "Invalid in_project", err)
+			return
+		}
+		filters.InProject = &inProject
 	}
 
 	if isFavoriteRaw = strings.TrimSpace(isFavoriteRaw); isFavoriteRaw != "" {

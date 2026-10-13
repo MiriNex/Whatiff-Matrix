@@ -48,6 +48,8 @@ type Chat struct {
 	// Archived reflects stored archive state when loaded from the DB (non-nil).
 	// Nil means "omit on UpdateChat" so PATCH callers that do not send archived preserve the row.
 	Archived *bool `json:"archived,omitempty"`
+	// InProject marks a chat created inside its personality's project workspace.
+	InProject bool `json:"in_project"`
 	// Source is the origin of an imported chat (e.g. "openai", "anthropic"). Internal-only; not exposed in JSON.
 	Source *string `json:"-"`
 	// ImportHash is the per-conversation dedup key used by the import pipeline. Internal-only; not exposed in JSON.
@@ -98,6 +100,8 @@ type ChatFilters struct {
 	IncludeArchived bool       `json:"-"`
 	MinDate         *time.Time `json:"min_date,omitempty"`
 	MaxDate         *time.Time `json:"max_date,omitempty"`
+	// InProject, when set, filters to chats created inside (true) or outside (false) project workspaces.
+	InProject *bool `json:"in_project,omitempty"`
 	// Source, when set, filters to chats imported from that source (e.g. ChatSourceOpenAI,
 	// ChatSourceAnthropic). Used by the post-import thread picker to list just-imported threads.
 	Source *string `json:"source,omitempty"`

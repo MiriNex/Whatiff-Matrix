@@ -58,6 +58,7 @@ func toChatModel(e *ent.Chat) *models.Chat {
 		h := e.ImportHash
 		chatModel.ImportHash = &h
 	}
+	chatModel.InProject = e.InProject
 	chatModel.RehydrationState = e.RehydrationState
 	chatModel.ContextScope = models.ContextScope(e.ContextScope).OrDefault()
 
@@ -284,6 +285,8 @@ func (d *Datastore) CreateChat(ctx context.Context, userID uuid.UUID, chat model
 		// same transaction, so the thread never exists with them on.
 		create.SetDisabledTools(disabledTools)
 	}
+
+	create.SetInProject(chat.InProject)
 
 	if chat.LastMessageTime != nil {
 		create.SetLastMessageTime(*chat.LastMessageTime)
@@ -656,6 +659,10 @@ func (d *Datastore) ListChats(ctx context.Context, userID uuid.UUID, pageNum, pa
 
 	if filters.PersonalityID != nil {
 		query = query.Where(entchat.HasPersonalityWith(personality.ID(*filters.PersonalityID)))
+	}
+
+	if filters.InProject != nil {
+		query = query.Where(entchat.InProject(*filters.InProject))
 	}
 
 	if filters.IsFavorite != nil {

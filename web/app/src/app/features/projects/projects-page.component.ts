@@ -215,7 +215,7 @@ export class ProjectsPageComponent {
         }
         const threadCounts = new Map<string, number>();
         for (const chat of result.chats?.results ?? []) {
-          if (chat.personality_id) {
+          if (chat.personality_id && chat.in_project) {
             threadCounts.set(chat.personality_id, (threadCounts.get(chat.personality_id) ?? 0) + 1);
           }
         }

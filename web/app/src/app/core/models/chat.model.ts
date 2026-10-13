@@ -20,6 +20,7 @@ export interface Chat {
   model_id?: string;
   model_name?: string;
   personality_id?: string;
+  in_project?: boolean;
   personality_name?: string;
   disabled_tools?: string[];
   tags?: string[];
@@ -53,6 +54,7 @@ export interface ChatFilters {
   search?: string;
   tag?: string;
   personality_id?: string;
+  in_project?: boolean;
   is_favorite?: boolean;
   /** When true, list archived threads only. When false or omitted, active threads only. */
   archived?: boolean;
@@ -69,6 +71,7 @@ export interface CreateChatRequest {
   last_message_time?: string;
   /** Optional. Personality UUID to assign to the new chat. Must be owned by the user. */
   personality_id?: string;
+  in_project?: boolean;
   /** Optional. Active model UUID to assign to the new chat. */
   model_id?: string;
   tags?: string[];
@@ -82,6 +85,7 @@ export interface UpdateChatRequest {
   last_message_time?: string;
   model_id?: string;
   personality_id?: string;
+  in_project?: boolean;
   disabled_tools?: string[];
   tags?: string[];
   is_favorite?: boolean;
@@ -94,6 +98,7 @@ export interface PatchChatRequest {
   last_message_time?: string;
   model_id?: string;
   personality_id?: string;
+  in_project?: boolean;
   disabled_tools?: string[];
   tags?: string[];
   is_favorite?: boolean;

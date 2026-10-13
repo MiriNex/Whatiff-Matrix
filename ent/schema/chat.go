@@ -63,6 +63,9 @@ func (Chat) Fields() []ent.Field {
 		field.Bool("archived").
 			Default(false).
 			Comment("When true, thread is hidden from default lists; list with archived=true to browse the archive"),
+		field.Bool("in_project").
+			Default(false).
+			Comment("When true, the chat lives inside its personality's project workspace (Projects section)"),
 		field.String("source").
 			Optional().
 			Comment("Origin of chat, e.g. 'openai'/'anthropic' for imported conversation exports"),
