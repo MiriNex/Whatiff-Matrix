@@ -207,6 +207,9 @@ The upstream expression was through the OpenAI provider and failed silently when
 
 <img width="1920" height="919" alt="image" src="https://github.com/user-attachments/assets/3c0db2fb-7233-4c3a-9975-dd79c022dc57" />
 
+<img width="1904" height="898" alt="image" src="https://github.com/user-attachments/assets/d8c293e4-90e1-45c2-96cd-22925b107035" />
+
+
 
 
 
