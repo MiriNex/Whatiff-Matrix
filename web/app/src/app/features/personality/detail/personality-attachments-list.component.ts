@@ -37,14 +37,14 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
   template: `
     <section
       [class]="containerClass()"
-      aria-label="Personality attachments"
+      aria-label="Personality Construct"
     >
       <header class="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 class="inline-flex items-center gap-1 text-base font-semibold text-(--color-text-primary)">
-            Attachments
-            <ui-help-hint label="What are attachments?" heading="Attachments">
-              Reference files this personality can search and read with its file tools, in any of its threads.
+            Construct
+            <ui-help-hint label="What is the Construct?" heading="Construct">
+              The personality"s memory vault: PDFs, Word docs and text files it extracts, indexes and reads in any of its threads.
             </ui-help-hint>
           </h2>
           <p class="text-xs text-(--color-text-secondary)">{{ remaining() }} of {{ maxFiles }} slots available · 10MB max per file</p>
@@ -72,10 +72,10 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
       }
 
       @if (isLoading()) {
-        <p class="text-sm text-(--color-text-secondary)" role="status">Loading attachments…</p>
+        <p class="text-sm text-(--color-text-secondary)" role="status">Loading Construct…</p>
       } @else if (attachments().length === 0 && pending().length === 0) {
         <p class="rounded-lg border border-dashed border-border-base bg-(--color-surface-elevated) p-6 text-center text-sm text-(--color-text-secondary)">
-          No files attached yet. Upload reference docs to give this personality more context.
+          The Construct is empty. Upload PDFs or docs to give this personality more context.
         </p>
       } @else {
         <ul class="flex flex-col divide-y divide-border-base">

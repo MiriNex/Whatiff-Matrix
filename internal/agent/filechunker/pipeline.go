@@ -13,6 +13,7 @@ import (
 	"github.com/theimaginaryfoundation/what-iff/internal/agent/embedding"
 	"github.com/theimaginaryfoundation/what-iff/internal/datastore"
 	"github.com/theimaginaryfoundation/what-iff/internal/telemetry"
+	"github.com/theimaginaryfoundation/what-iff/internal/utils"
 	"go.uber.org/zap"
 )
 
@@ -121,7 +122,8 @@ func NewMockFileChunkPipeline(ds *datastore.Datastore, logger *zap.Logger) *File
 // This method is safe to call from a goroutine — it logs errors rather than panicking.
 func (p *FileChunkPipeline) ProcessAndStore(ctx context.Context, fileAttachmentID uuid.UUID, content []byte, fileName string, contentType string) error {
 	// 1. Check if the content type is supported.
-	if !IsTextType(contentType) && !IsTextFileByExtension(fileName) {
+	if !IsTextType(contentType) && !IsTextFileByExtension(fileName) &&
+		!utils.IsDocumentExtractionType(fileName, contentType) {
 		return fmt.Errorf("unsupported content type %q for file %q", contentType, fileName)
 	}
 
@@ -139,8 +141,17 @@ func (p *FileChunkPipeline) ProcessAndStore(ctx context.Context, fileAttachmentI
 		return nil
 	}
 
-	// 2. Convert content bytes to string.
-	text := string(content)
+	// 2. Extract text: PDF/DOCX are decoded to plain text first (Construct).
+	var text string
+	if utils.IsDocumentExtractionType(fileName, contentType) {
+		extracted, err := utils.ExtractDocumentText(fileName, contentType, content)
+		if err != nil {
+			return fmt.Errorf("extracting %q: %w", fileName, err)
+		}
+		text = extracted
+	} else {
+		text = string(content)
+	}
 
 	// 3. Chunk the text. Stage timings and the chunk count go on the file metrics under the
 	// upload operation (this pipeline only runs for uploads).

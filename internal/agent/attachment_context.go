@@ -9,6 +9,7 @@ import (
 	"github.com/theimaginaryfoundation/what-iff/internal/agent/filechunker"
 	"github.com/theimaginaryfoundation/what-iff/internal/datastore"
 	"github.com/theimaginaryfoundation/what-iff/internal/models"
+	"github.com/theimaginaryfoundation/what-iff/internal/utils"
 	"github.com/theimaginaryfoundation/what-iff/internal/storage"
 )
 
@@ -87,7 +88,8 @@ func (b *messageContextBuilder) resolveDocumentAttachmentContext(
 	label string,
 ) attachmentDocContext {
 	out := attachmentDocContext{label: label}
-	if !filechunker.IsTextType(att.FileType) && !filechunker.IsTextFileByExtension(att.Name) {
+	if !filechunker.IsTextType(att.FileType) && !filechunker.IsTextFileByExtension(att.Name) &&
+		!utils.IsDocumentExtractionType(att.Name, att.FileType) {
 		return out
 	}
 

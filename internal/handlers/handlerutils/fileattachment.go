@@ -435,7 +435,8 @@ func TriggerAsyncFileChunking(
 	}
 
 	if !filechunker.IsTextType(fileTypeInfo.ContentType) &&
-		!filechunker.IsTextFileByExtension(fileName) {
+		!filechunker.IsTextFileByExtension(fileName) &&
+		!utils.IsDocumentExtractionType(fileName, fileTypeInfo.ContentType) {
 		_ = os.Remove(tempFilePath)
 		return
 	}

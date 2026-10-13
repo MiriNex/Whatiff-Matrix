@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/theimaginaryfoundation/what-iff/internal/models"
+	"github.com/theimaginaryfoundation/what-iff/internal/utils"
 	"go.uber.org/zap"
 )
 
@@ -61,7 +62,20 @@ func ResolveAttachmentTextContent(ctx context.Context, logger *zap.Logger, store
 			tryDownload(FileKeyForAttachment(userID, att.ID, att.Name, att.FileType, att.ChatID, att.PersonalityID))
 		}
 	}
-	text := strings.TrimSpace(string(raw))
+	content := raw
+	if utils.IsDocumentExtractionType(att.Name, att.FileType) {
+		extracted, err := utils.ExtractDocumentText(att.Name, att.FileType, raw)
+		if err != nil {
+			if logger != nil {
+				logger.Debug("attachment text: document extraction failed",
+					zap.String("attachment_id", att.ID.String()),
+					zap.Error(err))
+			}
+			return "", false
+		}
+		content = []byte(extracted)
+	}
+	text := strings.TrimSpace(string(content))
 	if text == "" {
 		return "", false
 	}
