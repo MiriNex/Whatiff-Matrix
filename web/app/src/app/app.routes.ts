@@ -45,6 +45,21 @@ export const routes: Routes = [
         ]
       },
       {
+        path: 'projects',
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./features/projects/projects-page.component')
+              .then(m => m.ProjectsPageComponent)
+          },
+          {
+            path: ':id',
+            loadComponent: () => import('./features/projects/project-detail-page.component')
+              .then(m => m.ProjectDetailPageComponent)
+          }
+        ]
+      },
+      {
         path: 'memories',
         children: [
           {

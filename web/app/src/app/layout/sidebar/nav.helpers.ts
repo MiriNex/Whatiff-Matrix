@@ -5,6 +5,7 @@ import {
   ChatIconComponent,
   ClockIconComponent,
   ImageIconComponent,
+  LayersIconComponent,
   SmileIconComponent,
   UsersIconComponent,
   WrenchIconComponent,
@@ -47,6 +48,7 @@ export function navTooltip(label: string, hint: string, labelVisible: boolean): 
 const APP_NAV_ITEMS: ReadonlyArray<NavItem> = [
   { id: 'chat', label: 'Chat', hint: 'Your threads. Click again to open or close the Thread Manager', route: '/chat', icon: ChatIconComponent },
   { id: 'personalities', label: 'Oracles', hint: 'The characters you talk to: prompt, portraits and notes', route: '/personality', icon: UsersIconComponent },
+  { id: 'projects', label: 'Projects', hint: 'Workspaces with documents and chats: one Construct per project', route: '/projects', icon: LayersIconComponent },
   { id: 'gallery', label: 'Gallery', hint: "Images you've generated or imported, and expressions", route: '/gallery', icon: ImageIconComponent },
 ];
 
