@@ -18,6 +18,9 @@ type agentTestHooks struct {
 	GetMemoriesOverride func(ctx context.Context, userID uuid.UUID, chatID uuid.UUID, personalityID uuid.UUID, userMessage string) ([]string, error)
 	LoadHistoryOverride func(ctx context.Context, userID, chatID, excludeMessageID uuid.UUID, pageSize int, minDate *time.Time, logContext string) []*models.ChatMessage
 
+	// UtilityChatCompletion stubs the env-configured utility LLM client for tests.
+	UtilityChatCompletion func(ctx context.Context, systemPrompt, userMessage string) (string, error)
+
 	ImageRitualOpenAIInfer          func(ctx context.Context, params responses.ResponseNewParams) (prompt string, result *provider.GenerateResponse, err error)
 	ImageRitualClaudeInfer          func(ctx context.Context, params anthropic.MessageNewParams) (prompt string, result *provider.GenerateResponse, err error)
 	ImageRitualGenerateImagePNG     func(ctx context.Context, prompt string) (string, error)

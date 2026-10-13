@@ -36,6 +36,9 @@ func utilityLLMModel() string {
 // utilityChatCompletion runs a small system+user chat completion on the
 // utility LLM and returns the text reply.
 func (a *Agent) utilityChatCompletion(ctx context.Context, systemPrompt, userMessage string) (string, error) {
+	if a.testHooks.UtilityChatCompletion != nil {
+		return a.testHooks.UtilityChatCompletion(ctx, systemPrompt, userMessage)
+	}
 	client := utilityLLMClient()
 	if client == nil {
 		return "", errors.New("utility LLM not configured (set UTIL_LLM_BASE_URL and UTIL_LLM_API_KEY)")

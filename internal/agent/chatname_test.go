@@ -77,10 +77,12 @@ func TestGenerateChatName_ProviderErrorIsReturned(t *testing.T) {
 
 func TestGenerateChatName_SuccessReturnsOutputText(t *testing.T) {
 	t.Parallel()
-	srv := jsonResponsesServer(t, responseTextJSONBody("resp_1", "My New Chat"))
-	defer srv.Close()
 
-	a := &Agent{logger: zap.NewNop(), OpenAIProvider: newHTTPTestOpenAIProvider(srv.URL)}
+	a := &Agent{logger: zap.NewNop(), testHooks: agentTestHooks{
+		UtilityChatCompletion: func(_ context.Context, _, _ string) (string, error) {
+			return "My New Chat", nil
+		},
+	}}
 	got, err := a.generateChatName(context.Background(), "hi")
 	require.NoError(t, err)
 	require.Equal(t, "My New Chat", got)

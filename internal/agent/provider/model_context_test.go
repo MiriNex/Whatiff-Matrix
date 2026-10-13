@@ -262,18 +262,16 @@ func TestModelContext_RenderClaudeContext_DeveloperBeforeUser(t *testing.T) {
 	ctx.InsertBeforeLastUserMessage(SegmentKindDeveloperContext, RoleDeveloper, "extra developer context", false)
 
 	system, messages := renderClaudeContext(ctx)
-	require.Empty(t, system)
-	require.Len(t, messages, 3)
+	require.Len(t, system, 1)
+	require.Equal(t, "extra developer context", system[0].Text)
+	require.Len(t, messages, 2)
 	require.Equal(t, "u1", firstClaudeText(messages[0]))
 	require.NotNil(t, messages[0].Content[0].OfText)
 	require.Equal(t, anthropic.CacheControlEphemeralTTLTTL5m, messages[0].Content[0].OfText.CacheControl.TTL,
-		"cache anchor on last contiguous cacheable segment (history before dynamic developer segment)")
-	require.Contains(t, firstClaudeText(messages[1]), "extra developer context")
+		"cache anchor stays on the history turn when the dynamic developer segment renders into system")
+	require.Equal(t, "current", firstClaudeText(messages[1]))
 	require.NotNil(t, messages[1].Content[0].OfText)
 	require.Empty(t, messages[1].Content[0].OfText.CacheControl.TTL)
-	require.Equal(t, "current", firstClaudeText(messages[2]))
-	require.NotNil(t, messages[2].Content[0].OfText)
-	require.Empty(t, messages[2].Content[0].OfText.CacheControl.TTL)
 }
 
 func TestRenderClaudeContext_NilContext(t *testing.T) {
@@ -358,17 +356,16 @@ func TestRenderClaudeContext_ExpressionPortraitContinuityOrder(t *testing.T) {
 	)
 	ctx.AppendUserMessage(RoleUser, "current user question", nil, false)
 
-	_, messages := renderClaudeContext(ctx)
-	require.Len(t, messages, 3)
+	system, messages := renderClaudeContext(ctx)
+	require.Len(t, system, 1)
+	require.Contains(t, system[0].Text, "happy")
+	require.Contains(t, system[0].Text, "preceding user message")
+	require.Len(t, messages, 2)
 
 	require.Equal(t, ExpressionPortraitVisualReferenceCaption, messages[0].Content[0].OfText.Text)
 	require.NotNil(t, messages[0].Content[1].OfImage)
 
-	devText := firstClaudeText(messages[1])
-	require.Contains(t, devText, "happy")
-	require.Contains(t, devText, "preceding user message")
-
-	require.Equal(t, "current user question", firstClaudeText(messages[2]))
+	require.Equal(t, "current user question", firstClaudeText(messages[1]))
 }
 
 func TestRenderClaudeContext_ExpressionPortrait(t *testing.T) {

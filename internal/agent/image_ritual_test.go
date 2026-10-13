@@ -45,7 +45,7 @@ func TestHandleImageGenerateRitual_OpenAI_Success(t *testing.T) {
 	chatID := uuid.New()
 	userMsg := &models.ChatMessage{ChatID: chatID, Message: "a red balloon"}
 	chatCtx := &chatContext{
-		model: models.DefaultModelName,
+		model: "gpt-5.1",
 		chat:  &models.Chat{ID: chatID},
 	}
 	mc := &provider.ModelContext{}
@@ -94,7 +94,7 @@ func TestHandleImageGenerateRitual_OpenAI_Success(t *testing.T) {
 	require.NotNil(t, assistant)
 	require.Len(t, assistant.Attachments, 1, "returned message must carry the created attachment")
 	require.Equal(t, int64(42), gen.OutputTokens)
-	require.Equal(t, models.DefaultModelName, string(gotParams.Model))
+	require.Equal(t, "gpt-5.1", string(gotParams.Model))
 	require.Equal(t, int64(imagePromptMaxOutputTokens), gotParams.MaxOutputTokens.Value)
 	require.Equal(t, 1, inferCalls)
 	require.Equal(t, 1, genCalls)
@@ -178,7 +178,7 @@ func TestHandleImageGenerateRitual_EmptyPrompt(t *testing.T) {
 	}}
 
 	_, _, err := a.handleImageGenerateRitual(ctx, uid, &models.ChatMessage{ChatID: chatID}, &chatContext{
-		model: models.DefaultModelName,
+		model: "gpt-5.1",
 		chat:  &models.Chat{ID: chatID},
 	}, mc)
 	require.ErrorContains(t, err, "empty image prompt from inference")
@@ -202,7 +202,7 @@ func TestHandleImageGenerateRitual_GenerateImageError(t *testing.T) {
 	}}
 
 	_, _, err := a.handleImageGenerateRitual(ctx, uid, &models.ChatMessage{ChatID: chatID}, &chatContext{
-		model: models.DefaultModelName,
+		model: "gpt-5.1",
 		chat:  &models.Chat{ID: chatID},
 	}, mc)
 	require.ErrorContains(t, err, "failed to generate image")

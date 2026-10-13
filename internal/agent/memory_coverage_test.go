@@ -145,10 +145,12 @@ func TestGetMemoryQuery_UnmarshalErrorIsReturned(t *testing.T) {
 
 func TestGetMemoryQuery_SuccessParsesQuery(t *testing.T) {
 	t.Parallel()
-	srv := jsonResponsesServer(t, responseTextJSONBody("resp_1", `{\"query\":\"likes Go\",\"should_enrich\":true}`))
-	defer srv.Close()
 
-	a := &Agent{logger: zap.NewNop(), OpenAIProvider: newHTTPTestOpenAIProvider(srv.URL)}
+	a := &Agent{logger: zap.NewNop(), testHooks: agentTestHooks{
+		UtilityChatCompletion: func(_ context.Context, _, _ string) (string, error) {
+			return `{"query":"likes Go","should_enrich":true}`, nil
+		},
+	}}
 	got, err := a.getMemoryQuery(context.Background(), uuid.New(), "instructions", "user message")
 	require.NoError(t, err)
 	require.True(t, got.ShouldEnrich)

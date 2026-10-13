@@ -316,6 +316,7 @@ func newMCPLifecycleAgentFixture(t *testing.T, serverURL string) (*Agent, *chatC
 			is_favorite bool NOT NULL DEFAULT false,
 			is_auto_mood bool NOT NULL DEFAULT true,
 			archived bool NOT NULL DEFAULT false,
+			in_project bool NOT NULL DEFAULT false,
 			chat_model uuid,
 			chat_personality uuid,
 			chat_active_mood uuid,

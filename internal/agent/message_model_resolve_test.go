@@ -23,9 +23,9 @@ func TestResolveModelForChat_NilChatUsesDefault(t *testing.T) {
 	a := &Agent{logger: zap.NewNop()}
 	got := a.resolveModelForChat(context.Background(), nil)
 	require.Equal(t, defaultModel, got.name)
-	require.Equal(t, string(models.ModelProviderOpenAI), got.provider)
+	require.Equal(t, string(models.ModelProviderOpenAI), got.provider, "DB-less resolve keeps the agent fallback provider")
 	require.Equal(t, "", got.subscriptionTier, "unknown model resolves to empty tier; the meter classifies it")
-	require.True(t, got.visionSupport, "default model's vision flag comes from the seed catalog")
+	require.Equal(t, models.GetDefaultModel().VisionSupport, got.visionSupport, "default model's vision flag comes from the seed catalog")
 }
 
 func TestResolveModelForChat_NameOnlyWithoutDBRowKeepsNameAndDefaultProvider(t *testing.T) {

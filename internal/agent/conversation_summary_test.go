@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/theimaginaryfoundation/what-iff/internal/agent/provider"
+	"github.com/theimaginaryfoundation/what-iff/internal/models"
 )
 
 func TestBuildCheckpointConversationSummaryInput(t *testing.T) {
@@ -135,13 +136,15 @@ func TestBuildCheckpointSummaryParams_RequiresSource(t *testing.T) {
 	require.Error(t, err)
 }
 
-// summarizeConversationForCheckpoint's cheapest branch is its own nil-provider
-// guard, which fires before chatCtx is dereferenced.
+// With OpenAIProvider nil the checkpoint summary falls back to the utility
+// LLM; with that unconfigured too, the fallback surfaces its configuration
+// error instead of touching a nil provider.
 func TestSummarizeConversationForCheckpoint_NilProviderReturnsError(t *testing.T) {
 	t.Parallel()
 
 	a := &Agent{}
-	_, err := a.summarizeConversationForCheckpoint(context.Background(), uuid.New(), nil, checkpointSummarySource{})
+	chatCtx := &chatContext{chat: &models.Chat{ID: uuid.New()}}
+	_, err := a.summarizeConversationForCheckpoint(context.Background(), uuid.New(), chatCtx, checkpointSummarySource{})
 	require.Error(t, err)
-	require.ErrorContains(t, err, "OpenAIProvider is nil")
+	require.ErrorContains(t, err, "utility LLM not configured")
 }
