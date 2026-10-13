@@ -168,13 +168,65 @@ func (a *Agent) getMemoryQuery(ctx context.Context, userID uuid.UUID, prompt str
 	}
 
 	memoryQuery := models.MemoryQuery{}
-	err = json.Unmarshal([]byte(stripJSONFences(text)), &memoryQuery)
-	if err != nil {
-		a.logger.Error("failed to unmarshal memory query", zap.Error(err))
-		return models.MemoryQuery{}, err
+	raw := stripJSONFences(text)
+	if err := json.Unmarshal([]byte(raw), &memoryQuery); err != nil {
+		// Utility models sometimes answer in prose or wrap JSON in markdown the
+		// fence-stripper does not cover. Salvage the first JSON object; otherwise
+		// fall back to searching with the user message itself so retrieval never
+		// dies on a chatty utility model.
+		if obj, ok := extractFirstJSONObject(raw); ok {
+			if err2 := json.Unmarshal([]byte(obj), &memoryQuery); err2 == nil {
+				return memoryQuery, nil
+			}
+		}
+		a.logger.Warn("memory query not valid JSON; falling back to user message", zap.Error(err))
+		query := userMessage
+		if len(query) > 512 {
+			query = query[:512]
+		}
+		return models.MemoryQuery{Query: query, ShouldEnrich: true}, nil
 	}
 
 	return memoryQuery, nil
+}
+
+// extractFirstJSONObject returns the first balanced {...} object in s, ignoring
+// braces inside JSON strings. It lets memory retrieval survive utility models
+// that wrap their JSON answer in prose or markdown.
+func extractFirstJSONObject(s string) (string, bool) {
+	start := strings.Index(s, "{")
+	if start < 0 {
+		return "", false
+	}
+	depth := 0
+	inStr := false
+	esc := false
+	for i := start; i < len(s); i++ {
+		c := s[i]
+		if inStr {
+			switch {
+			case esc:
+				esc = false
+			case c == '\\':
+				esc = true
+			case c == '"':
+				inStr = false
+			}
+			continue
+		}
+		switch c {
+		case '"':
+			inStr = true
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return s[start : i+1], true
+			}
+		}
+	}
+	return "", false
 }
 
 // userNameContextPrefix starts the first-message line naming the user.

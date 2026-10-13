@@ -77,7 +77,9 @@ func buildCheckpointSummaryParams(userID uuid.UUID, existingSummary string, src 
 
 func (a *Agent) summarizeConversationForCheckpoint(ctx context.Context, userID uuid.UUID, chatCtx *chatContext, src checkpointSummarySource) (string, error) {
 	if a.OpenAIProvider == nil {
-		return "", fmt.Errorf("OpenAIProvider is nil, cannot summarize conversation for checkpoint")
+		// No OpenAI key configured: summarize on the utility LLM instead so
+		// non-OpenAI chats still get working checkpoint summaries.
+		return a.summarizeConversationForCheckpointUtility(ctx, chatCtx, src)
 	}
 
 	params, err := buildCheckpointSummaryParams(userID, chatCtx.chat.CheckpointSummary, src)
@@ -91,6 +93,43 @@ func (a *Agent) summarizeConversationForCheckpoint(ctx context.Context, userID u
 	}
 
 	summary := strings.TrimSpace(resp.OutputText())
+	if summary == "" {
+		return "", fmt.Errorf("conversation summarization returned empty summary")
+	}
+	return summary, nil
+}
+
+// summarizeConversationForCheckpointUtility renders the checkpoint context as
+// plain text and asks the utility LLM for the same compact summary. It keeps
+// checkpointing working for deployments without an OpenAI key (e.g. z.ai GLM).
+func (a *Agent) summarizeConversationForCheckpointUtility(ctx context.Context, chatCtx *chatContext, src checkpointSummarySource) (string, error) {
+	updatePrompt := buildCheckpointConversationSummaryInput(chatCtx.chat.CheckpointSummary)
+	var b strings.Builder
+	if src.ModelContext != nil {
+		for _, seg := range src.ModelContext.Segments {
+			content := strings.TrimSpace(seg.Content)
+			if content == "" || seg.Kind == provider.SegmentKindExpressionPortrait {
+				continue
+			}
+			role := "System"
+			switch seg.Role {
+			case provider.RoleUser:
+				role = "User"
+			case provider.RoleAssistant:
+				role = "Assistant"
+			}
+			fmt.Fprintf(&b, "%s: %s\n\n", role, content)
+		}
+	}
+	if trimmed := strings.TrimSpace(src.AssistantReply); trimmed != "" {
+		fmt.Fprintf(&b, "Assistant: %s\n\n", trimmed)
+	}
+	b.WriteString(updatePrompt)
+	summary, err := a.utilityChatCompletion(ctx, checkpointConversationSummaryInstructions, b.String())
+	if err != nil {
+		return "", fmt.Errorf("utility summary failed: %w", err)
+	}
+	summary = strings.TrimSpace(summary)
 	if summary == "" {
 		return "", fmt.Errorf("conversation summarization returned empty summary")
 	}
