@@ -193,7 +193,10 @@ The upstream expression was through the OpenAI provider and failed silently when
 
 ### Character expressions by mood
 - Direct image upload per expression slot (UPLOAD button in the expressions manager - no more gallery round-trips)
-- One-click "+ Add default moods": creates the standard set of 9 expression slots with labels.
+### Projects & the Construct library
+- **Construct**: every oracle has its own document library. Upload PDFs, DOCX, TXT, Markdown, code and more; files are extracted, chunked and embedded (pgvector) so the oracle can read them in any of its chats (+ menu -> *Read a document from your Construct*), with live indexing badges and a full manager.
+- **Projects section** (new top-bar icon): each oracle becomes a workspace with its documents and its chats side by side. Open a project to upload or delete PDFs and jump into any chat, or start a new one that already knows the project's documents.
+- Built for real use: **study projects** (one per subject, class PDFs attached), **roleplay stories** (each campaign with its own lore documents), or any long-running project where the AI should know your files.
 
 ### UI
 - Matrix rain effect on the web app
