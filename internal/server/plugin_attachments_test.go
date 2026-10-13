@@ -196,15 +196,14 @@ func TestAgentAttachmentIngesterReportsAnUnsupportedFileType(t *testing.T) {
 	assert.Empty(t, ds.created, "nothing is saved for a rejected file")
 }
 
-func TestAgentAttachmentIngesterSurfacesAProviderFailureAsAnInternalError(t *testing.T) {
+func TestAgentAttachmentIngesterKeepsTheUploadAliveWhenTheProviderRejectsIt(t *testing.T) {
 	ds, provider := &fakeAttachmentDatastore{}, &fakeAttachmentProvider{uploadErr: errors.New("openai down")}
 
-	_, err := newTestIngester(ds, provider, &fakeAttachmentFiles{}).IngestAttachment(context.Background(), validUpload())
+	created, err := newTestIngester(ds, provider, &fakeAttachmentFiles{}).IngestAttachment(context.Background(), validUpload())
 
-	require.Error(t, err)
-	assert.NotErrorIs(t, err, plugins.ErrAttachmentUnsupported)
-	assert.NotErrorIs(t, err, plugins.ErrAttachmentTooLarge)
-	assert.Empty(t, ds.created)
+	require.NoError(t, err)
+	require.Nil(t, created.FileID)
+	assert.Len(t, ds.created, 1, "the attachment record is still created")
 }
 
 func TestAgentAttachmentIngesterRollsBackWhenTheObjectStoreFails(t *testing.T) {

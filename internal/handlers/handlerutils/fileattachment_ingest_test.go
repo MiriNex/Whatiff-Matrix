@@ -148,12 +148,12 @@ func TestProcessUploadRejectsAFileOverTheUploadLimit(t *testing.T) {
 	require.Equal(t, int64(1), uploadCount(tm, t, "text", telemetry.FileUploadFailure))
 }
 
-func TestProcessUploadReportsAProviderFailureAsAServerError(t *testing.T) {
-	_, tempPath, err := ProcessUpload(context.Background(), failingFileAttachmentUploader{}, uuid.New(), nil, strings.NewReader("hi"), "notes.txt")
-	require.Empty(t, tempPath)
-	var ue *UploadError
-	require.ErrorAs(t, err, &ue)
-	require.Equal(t, http.StatusInternalServerError, ue.Status)
+func TestProcessUploadKeepsTheUploadAliveWhenTheProviderRejectsIt(t *testing.T) {
+	attachment, tempPath, err := ProcessUpload(context.Background(), failingFileAttachmentUploader{}, uuid.New(), nil, strings.NewReader("hi"), "notes.txt")
+	require.NoError(t, err)
+	require.NotNil(t, tempPath)
+	require.Nil(t, attachment.FileID, "provider rejection keeps the upload alive with a nil FileID")
+	require.NoError(t, os.Remove(tempPath))
 }
 
 func prepared(t *testing.T, name string, data []byte) (models.FileAttachment, string) {

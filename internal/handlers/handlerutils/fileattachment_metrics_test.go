@@ -63,10 +63,12 @@ func TestUploadFileAttachmentMetricsCountSuccessOnce(t *testing.T) {
 func TestUploadFileAttachmentMetricsCountFailures(t *testing.T) {
 	tm := telemetrytest.UseGlobal(t)
 
+	// A provider rejection is best-effort: the upload survives with a nil FileID
+	// and is not counted as a failed upload.
 	_, _, err := UploadFileAttachment(httptest.NewRecorder(),
 		multipartUploadRequest(t, "notes.txt", []byte("hi")), zap.NewNop(), failingFileAttachmentUploader{}, uuid.New(), nil)
-	require.Error(t, err)
-	require.Equal(t, int64(1), uploadCount(tm, t, "text", telemetry.FileUploadFailure))
+	require.NoError(t, err)
+	require.Zero(t, uploadCount(tm, t, "text", telemetry.FileUploadFailure))
 
 	// An unrecognised extension fails before the type is known, so it is counted as "other".
 	_, _, err = UploadFileAttachment(httptest.NewRecorder(),
@@ -79,7 +81,7 @@ func TestUploadFileAttachmentMetricsCountFailures(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, tmp.Close())
 	require.Error(t, UploadToS3(context.Background(), failingFileStore{}, "key", tmp.Name(), "text/plain"))
-	require.Equal(t, int64(2), uploadCount(tm, t, "text", telemetry.FileUploadFailure))
+	require.Equal(t, int64(1), uploadCount(tm, t, "text", telemetry.FileUploadFailure))
 	require.Zero(t, tm.CounterValue(t, telemetry.FileUploads.Name, telemetry.AttrOutcome.String(telemetry.FileUploadSuccess)))
 }
 
