@@ -1,3 +1,6 @@
+// Copyright 2026 Miriam Catalán & Nex Nocturne — Whatiff Matrix fork additions.
+// SPDX-License-Identifier: Apache-2.0
+
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';

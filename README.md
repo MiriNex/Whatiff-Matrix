@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img width="160" height="160" alt="Whatiff-Matrix" src="https://github.com/user-attachments/assets/3b2845f1-218f-4e92-936f-8e65db8db583" />
 
@@ -218,3 +218,8 @@ The upstream expression was through the OpenAI provider and failed silently when
 
 
 
+
+## Fork copyright
+
+Whatiff Matrix fork additions — edit-and-resend, GLM personality-generation fallback, matrix rain, custom Whatiff Matrix branding — © 2026 Miriam Catalán & Nex Nocturne. SPDX-License-Identifier: Apache-2.0.
+Upstream what-iff is © The Imaginary Foundation, Apache-2.0.

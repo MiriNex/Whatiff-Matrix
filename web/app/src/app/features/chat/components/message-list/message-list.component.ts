@@ -1,3 +1,6 @@
+// Copyright 2026 Miriam Catalán & Nex Nocturne — Whatiff Matrix fork additions.
+// SPDX-License-Identifier: Apache-2.0
+
 
 import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 

@@ -1,3 +1,6 @@
+// Copyright 2026 Miriam Catalán & Nex Nocturne — Whatiff Matrix fork additions.
+// SPDX-License-Identifier: Apache-2.0
+
 import { Component, OnInit, inject, effect, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { initFlowbite } from 'flowbite';
