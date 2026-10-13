@@ -14,7 +14,7 @@ import { UserPreferencesService } from './core/services/user-preferences.service
   styleUrl: './app.scss'
 })
 export class App implements OnInit {
-  protected title = 'WhatIff';
+  protected title = 'Whatiff Matrix';
   private authService = inject(AuthService);
   private userPreferencesService = inject(UserPreferencesService);
 
