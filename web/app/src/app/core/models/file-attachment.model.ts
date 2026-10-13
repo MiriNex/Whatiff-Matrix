@@ -20,6 +20,8 @@ export interface FileAttachment {
   /** Server-derived origin class (see openapi FileAttachment.source). Absent when the
    *  server could not determine it; the gallery then falls back to heuristics. */
   source?: 'generated' | 'imported';
+  /** Indexing state for docs: pending | chunked | failed. Absent for images. */
+  chunk_status?: 'pending' | 'chunked' | 'failed';
 }
 
 export interface FileAttachmentPersonalityRef {

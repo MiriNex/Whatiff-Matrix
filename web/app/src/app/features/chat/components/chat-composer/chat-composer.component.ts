@@ -1,4 +1,4 @@
-import { CommonModule, AsyncPipe } from '@angular/common';
+﻿import { CommonModule, AsyncPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -35,6 +35,7 @@ import { Ritual } from '../../../../core/models/ritual.model';
 import { RitualService } from '../../../../core/services/ritual.service';
 import { MoodService } from '../../../../core/services/mood.service';
 import { ImageGalleryService } from '../../../../core/services/image-gallery.service';
+import { FileAttachmentService } from '../../../../core/services/file-attachment.service';
 import { Mood } from '../../../../core/models/mood.model';
 import { MODE_PLURAL, MODE_SINGULAR } from '../../../mood/mode-ui.labels';
 import { AuthImagePipe } from '../../../../core/pipes/auth-image.pipe';
@@ -73,6 +74,7 @@ const SLASH_COMMANDS: readonly SlashCommand[] = [
   { id: 'skill', label: 'Skill', description: 'Add saved instructions to this message', keywords: ['ritual', 'rit', 'routine', 'skills'] },
   { id: 'thread', label: 'Thread', description: 'Attach threads your personality can read', keywords: ['threads', 'reference', 'context'] },
   { id: 'gallery', label: 'Gallery image', description: 'Attach an image from the gallery', keywords: ['photo', 'image'] },
+  { id: 'construct', label: 'Construct library', description: 'Browse this oracle’s documents', keywords: ['construct', 'docs', 'pdf', 'library', 'knowledge'] },
   { id: 'personality', label: 'Oracle', description: 'Change the thread’s oracle', keywords: ['persona', 'character'] },
   { id: 'mode', label: MODE_SINGULAR, description: 'Switch the thread’s mode: its instructions, skills and model', keywords: ['emotion', 'mood'] },
 ];
@@ -447,9 +449,43 @@ let nextPreviewId = 0;
                     <span aria-hidden="true">{{ personaButtonLabel().charAt(0) }}</span>
                     {{ personaButtonLabel() }}
                   </button>
+                  <button type="button" role="menuitem" (click)="openConstructFromMenu()">
+                    <ui-file-icon [size]="13" />
+                    Construct library
+                  </button>
                   <button type="button" role="menuitem" (click)="openGalleryFromMenu()">
                     <ui-image-icon [size]="13" />
                     Add from gallery
+                  </button>
+                </div>
+              }
+              @if (constructOpen()) {
+                <div class="composer__gallery-popover composer__construct-popover" role="dialog" aria-label="Construct library">
+                  <p class="composer__construct-title">Construct — {{ selectedPersonalityName() || 'oracle' }}</p>
+                  @if (constructLoading()) {
+                    <p class="composer__gallery-status">Loading library…</p>
+                  } @else if (constructDocs().length === 0) {
+                    <p class="composer__gallery-status">The Construct is empty. Open the library to upload documents.</p>
+                  } @else {
+                    <ul class="composer__construct-list">
+                      @for (doc of constructDocs(); track doc.id) {
+                        <li>
+                          <button type="button" class="composer__construct-doc" (click)="mentionConstructDoc(doc)" [attr.aria-label]="'Reference ' + doc.name">
+                            <ui-file-icon [size]="14" />
+                            <span class="composer__construct-name">{{ doc.name }}</span>
+                            @switch (doc.chunk_status) {
+                              @case ('chunked') { <span class="composer__construct-badge composer__construct-badge--ok">indexed</span> }
+                              @case ('failed') { <span class="composer__construct-badge composer__construct-badge--fail">failed</span> }
+                              @case ('pending') { <span class="composer__construct-badge composer__construct-badge--pending">indexing…</span> }
+                            }
+                          </button>
+                        </li>
+                      }
+                    </ul>
+                    <p class="composer__construct-hint">Click a doc to tell the oracle to read it.</p>
+                  }
+                  <button type="button" class="composer__construct-manage-btn" (click)="openConstructManager()">
+                    Manage library
                   </button>
                 </div>
               }
@@ -573,6 +609,74 @@ let nextPreviewId = 0;
             class="rounded-lg bg-(--color-accent) px-3 py-1.5 text-sm font-semibold text-white hover:brightness-95"
             (click)="confirmLimitWarningAndSend()"
           >Send anyway</button>
+        </div>
+      </ui-modal>
+
+      <ui-modal
+        [open]="constructModalOpen()"
+        [labelledBy]="'chat-composer-construct-manager-title'"
+        size="md"
+        (dismiss)="closeConstructModal()"
+      >
+        <div modal-header>
+          <h2 id="chat-composer-construct-manager-title" class="text-base font-semibold text-(--color-text-primary)">
+            Construct — {{ selectedPersonalityName() || 'oracle' }}
+          </h2>
+        </div>
+        <div class="composer__construct-manager">
+          @if (constructError()) {
+            <p class="composer__construct-manager-error">{{ constructError() }}</p>
+          }
+          <div class="composer__construct-manager-toolbar">
+            <button
+              type="button"
+              class="composer__construct-upload-btn"
+              (click)="constructFileInput.click()"
+              [disabled]="constructUploading() || !personalityId()"
+            >
+              {{ constructUploading() ? 'Uploading…' : 'Upload documents' }}
+            </button>
+            <input
+              #constructFileInput
+              type="file"
+              class="composer__construct-file-input"
+              multiple
+              accept=".pdf,.doc,.docx,.txt,.md,.csv,.json,.html,.css,.js,.ts,.py,.go,.java,.c,.cpp,.cs,.php,.xml,.rtf,.odt"
+              (change)="onConstructFilesSelected($event)"
+            />
+            <button
+              type="button"
+              class="composer__construct-refresh-btn"
+              (click)="refreshConstructDocs()"
+              [disabled]="constructLoading()"
+            >Refresh</button>
+          </div>
+          @if (constructLoading()) {
+            <p class="composer__gallery-status">Loading library…</p>
+          } @else if (constructDocs().length === 0) {
+            <p class="composer__construct-manager-empty">No documents yet. Upload PDFs or text files; the oracle will read them in chat.</p>
+          } @else {
+            <ul class="composer__construct-list composer__construct-manager-list">
+              @for (doc of constructDocs(); track doc.id) {
+                <li class="composer__construct-manager-row">
+                  <ui-file-icon [size]="14" />
+                  <span class="composer__construct-name">{{ doc.name }}</span>
+                  @switch (doc.chunk_status) {
+                    @case ('chunked') { <span class="composer__construct-badge composer__construct-badge--ok">indexed</span> }
+                    @case ('failed') { <span class="composer__construct-badge composer__construct-badge--fail">failed</span> }
+                    @case ('pending') { <span class="composer__construct-badge composer__construct-badge--pending">indexing…</span> }
+                  }
+                  <button
+                    type="button"
+                    class="composer__construct-delete-btn"
+                    (click)="deleteConstructDoc(doc)"
+                    [disabled]="constructBusyId() === doc.id"
+                    [attr.aria-label]="'Delete ' + doc.name"
+                  >×</button>
+                </li>
+              }
+            </ul>
+          }
         </div>
       </ui-modal>
     </form>
@@ -1134,6 +1238,202 @@ let nextPreviewId = 0;
       text-align: center;
     }
 
+    .composer__construct-popover {
+      min-width: 17rem;
+      max-width: min(26rem, 92vw);
+    }
+
+    .composer__construct-title {
+      color: var(--color-text-primary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin: 0;
+      padding: 0.25rem 0.5rem 0.5rem;
+    }
+
+    .composer__construct-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      list-style: none;
+      margin: 0;
+      padding: 0 0.25rem;
+    }
+
+    .composer__construct-doc {
+      align-items: center;
+      background: transparent;
+      border: none;
+      border-radius: 0.375rem;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.4rem 0.5rem;
+      text-align: left;
+      width: 100%;
+    }
+
+    .composer__construct-doc:hover {
+      background: var(--color-surface-muted);
+    }
+
+    .composer__construct-name {
+      flex: 1;
+      font-size: 0.8125rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .composer__construct-badge {
+      border-radius: 999px;
+      font-size: 0.625rem;
+      padding: 0.1rem 0.45rem;
+      flex-shrink: 0;
+    }
+
+    .composer__construct-badge--ok {
+      background: color-mix(in srgb, #22c55e 18%, transparent);
+      color: #4ade80;
+    }
+
+    .composer__construct-badge--fail {
+      background: color-mix(in srgb, #ef4444 18%, transparent);
+      color: #f87171;
+    }
+
+    .composer__construct-badge--pending {
+      background: color-mix(in srgb, #eab308 18%, transparent);
+      color: #facc15;
+    }
+
+    .composer__construct-hint {
+      color: var(--color-text-muted);
+      font-size: 0.6875rem;
+      margin: 0;
+      padding: 0.4rem 0.5rem 0.25rem;
+    }
+
+    .composer__construct-manage-btn {
+      background: var(--color-surface-muted);
+      border: 1px solid var(--color-border-base);
+      border-radius: 0.375rem;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      font-size: 0.75rem;
+      margin: 0.35rem 0.5rem 0.25rem;
+      padding: 0.35rem 0.5rem;
+      width: calc(100% - 1rem);
+    }
+
+    .composer__construct-manage-btn:hover {
+      background: var(--color-surface-elevated);
+    }
+
+    .composer__construct-manager {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .composer__construct-manager-error {
+      background: color-mix(in srgb, #ef4444 12%, transparent);
+      border-radius: 0.375rem;
+      color: #f87171;
+      font-size: 0.75rem;
+      margin: 0;
+      padding: 0.4rem 0.6rem;
+    }
+
+    .composer__construct-manager-toolbar {
+      align-items: center;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: space-between;
+    }
+
+    .composer__construct-upload-btn {
+      background: var(--color-accent);
+      border: none;
+      border-radius: 0.375rem;
+      color: white;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.4rem 0.75rem;
+    }
+
+    .composer__construct-upload-btn:disabled {
+      cursor: wait;
+      opacity: 0.6;
+    }
+
+    .composer__construct-refresh-btn {
+      background: transparent;
+      border: 1px solid var(--color-border-base);
+      border-radius: 0.375rem;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 0.4rem 0.75rem;
+    }
+
+    .composer__construct-refresh-btn:disabled {
+      cursor: wait;
+      opacity: 0.6;
+    }
+
+    .composer__construct-file-input {
+      display: none;
+    }
+
+    .composer__construct-manager-list {
+      max-height: 18rem;
+      overflow-y: auto;
+    }
+
+    .composer__construct-manager-row {
+      align-items: center;
+      border-radius: 0.375rem;
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.4rem 0.5rem;
+    }
+
+    .composer__construct-manager-row:hover {
+      background: var(--color-surface-muted);
+    }
+
+    .composer__construct-delete-btn {
+      background: transparent;
+      border: none;
+      border-radius: 0.375rem;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 0.15rem 0.3rem;
+    }
+
+    .composer__construct-delete-btn:hover {
+      color: #f87171;
+    }
+
+    .composer__construct-delete-btn:disabled {
+      cursor: wait;
+      opacity: 0.5;
+    }
+
+    .composer__construct-manager-empty {
+      color: var(--color-text-muted);
+      font-size: 0.8rem;
+      margin: 0;
+      padding: 0.75rem 0.25rem;
+      text-align: center;
+    }
+
     .composer__menu-emoji {
       display: inline-flex;
       font-size: 0.875rem;
@@ -1348,6 +1648,7 @@ export class ChatComposerComponent {
   private readonly moodService = inject(MoodService);
   private readonly emojiSearch = inject(EmojiSearch);
   readonly imageGallery = inject(ImageGalleryService);
+  private readonly fileAttachmentService = inject(FileAttachmentService);
   readonly modeSingular = MODE_SINGULAR;
   readonly modeSingularPlural = MODE_PLURAL;
   readonly draft = input('');
@@ -1440,6 +1741,13 @@ export class ChatComposerComponent {
   readonly galleryOpen = signal(false);
   readonly galleryLoading = signal(false);
   readonly galleryBusy = signal(false);
+  readonly constructOpen = signal(false);
+  readonly constructLoading = signal(false);
+  readonly constructDocs = signal<FileAttachment[]>([]);
+  readonly constructModalOpen = signal(false);
+  readonly constructUploading = signal(false);
+  readonly constructError = signal<string | null>(null);
+  readonly constructBusyId = signal<string | null>(null);
   readonly galleryImages = signal<FileAttachment[]>([]);
   readonly modePickerOpen = signal(false);
   readonly modeLoading = signal(false);
@@ -1751,6 +2059,9 @@ export class ChatComposerComponent {
       case 'gallery':
         this.openGalleryPicker();
         return;
+      case 'construct':
+        this.openConstructPicker();
+        return;
       case 'personality':
         this.closeAuxiliaryPopovers();
         this.personaButtonClicked.emit();
@@ -1774,6 +2085,7 @@ export class ChatComposerComponent {
     this.skillPickerOpen.set(false);
     this.threadPickerOpen.set(false);
     this.galleryOpen.set(false);
+    this.constructOpen.set(false);
     this.modePickerOpen.set(false);
   }
 
@@ -1800,6 +2112,133 @@ export class ChatComposerComponent {
     this.threadPickerOpen.set(false);
     this.modePickerOpen.set(false);
     this.openGalleryPicker();
+  }
+
+  openConstructFromMenu(): void {
+    this.plusOpen.set(false);
+    this.emojiOpen.set(false);
+    this.skillPickerOpen.set(false);
+    this.threadPickerOpen.set(false);
+    this.modePickerOpen.set(false);
+    this.openConstructPicker();
+  }
+
+  openConstructPicker(): void {
+    this.slashOpen.set(false);
+    this.emojiOpen.set(false);
+    this.skillPickerOpen.set(false);
+    this.threadPickerOpen.set(false);
+    this.modePickerOpen.set(false);
+    this.galleryOpen.set(false);
+    this.constructOpen.set(true);
+    this.constructLoading.set(true);
+    this.constructDocs.set([]);
+    const pid = this.personalityId();
+    if (!pid) {
+      this.constructLoading.set(false);
+      return;
+    }
+    this.fileAttachmentService
+      .listFileAttachments(1, 40, { personality_id: pid, docs_only: true })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.constructLoading.set(false)),
+      )
+      .subscribe({
+        next: res => this.constructDocs.set(res.results ?? []),
+        error: () => this.constructDocs.set([]),
+      });
+  }
+
+  mentionConstructDoc(doc: FileAttachment): void {
+    const name = doc.name.replace(/\s+/g, ' ').trim();
+    const hint = '[Read ' + name + ' from your Construct] ';
+    const current = this.draft().trim();
+    this.draftChange.emit(current ? current + ' ' + hint : hint);
+    this.constructOpen.set(false);
+    this.focusTextarea();
+  }
+
+  openConstructManager(): void {
+    this.constructOpen.set(false);
+    this.constructModalOpen.set(true);
+    this.refreshConstructDocs();
+  }
+
+  closeConstructModal(): void {
+    this.constructModalOpen.set(false);
+  }
+
+  refreshConstructDocs(): void {
+    const pid = this.personalityId();
+    if (!pid) {
+      this.constructDocs.set([]);
+      return;
+    }
+    this.constructLoading.set(true);
+    this.constructError.set(null);
+    this.fileAttachmentService
+      .listFileAttachments(1, 40, { personality_id: pid, docs_only: true })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.constructLoading.set(false)),
+      )
+      .subscribe({
+        next: res => this.constructDocs.set(res.results ?? []),
+        error: () => this.constructError.set('Could not load the library. Try again.'),
+      });
+  }
+
+  onConstructFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+    if (files.length === 0) return;
+    this.uploadConstructFiles(files);
+  }
+
+  uploadConstructFiles(files: File[]): void {
+    const pid = this.personalityId();
+    if (!pid) {
+      this.constructError.set('This chat has no oracle selected.');
+      return;
+    }
+    this.constructUploading.set(true);
+    this.constructError.set(null);
+    const uploads = files.map(file =>
+      this.fileAttachmentService.uploadPersonalityFileAttachment(pid, file).pipe(
+        catchError(() => of(null)),
+      ),
+    );
+    forkJoin(uploads)
+      .pipe(finalize(() => {
+        this.constructUploading.set(false);
+        this.refreshConstructDocs();
+      }))
+      .subscribe(results => {
+        const failed = results.filter(r => r === null).length;
+        if (failed > 0) {
+          this.constructError.set(
+            failed === files.length
+              ? 'Upload failed. Check the file type and size.'
+              : 'Uploaded ' + (files.length - failed) + ' of ' + files.length + ' documents; the rest failed.',
+          );
+        }
+      });
+  }
+
+  deleteConstructDoc(doc: FileAttachment): void {
+    this.constructBusyId.set(doc.id);
+    this.fileAttachmentService
+      .deleteFileAttachment(doc.id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.constructBusyId.set(null)),
+      )
+      .subscribe({
+        next: () => this.constructDocs.set(this.constructDocs().filter(d => d.id !== doc.id)),
+        error: () => this.constructError.set('Could not delete the document. Try again.'),
+      });
   }
 
   openGalleryPicker(): void {
@@ -1836,6 +2275,7 @@ export class ChatComposerComponent {
       .subscribe({
         next: attachment => {
           this.galleryOpen.set(false);
+    this.constructOpen.set(false);
           this.galleryAttachment.emit(attachment);
         },
         error: () => {},
@@ -1847,6 +2287,7 @@ export class ChatComposerComponent {
     this.skillPickerOpen.set(false);
     this.threadPickerOpen.set(false);
     this.galleryOpen.set(false);
+    this.constructOpen.set(false);
     this.modePickerOpen.set(false);
     this.emojiOpen.set(true);
   }
@@ -1857,6 +2298,7 @@ export class ChatComposerComponent {
     this.skillPickerOpen.set(false);
     this.threadPickerOpen.set(false);
     this.galleryOpen.set(false);
+    this.constructOpen.set(false);
     this.slashOpen.set(false);
     this.modePickerOpen.set(true);
     this.modeFilter.set('');
@@ -1883,6 +2325,7 @@ export class ChatComposerComponent {
     this.plusOpen.set(false);
     this.emojiOpen.set(false);
     this.galleryOpen.set(false);
+    this.constructOpen.set(false);
     this.modePickerOpen.set(false);
     this.slashOpen.set(false);
     this.skillPickerOpen.set(true);
@@ -1920,6 +2363,7 @@ export class ChatComposerComponent {
     this.plusOpen.set(false);
     this.emojiOpen.set(false);
     this.galleryOpen.set(false);
+    this.constructOpen.set(false);
     this.modePickerOpen.set(false);
     this.skillPickerOpen.set(false);
     this.slashOpen.set(false);
@@ -2238,6 +2682,14 @@ export class ChatComposerComponent {
       const inPlusAnchor = target.closest('.composer__plus-anchor');
       if (!inThread && !inPlusAnchor) {
         this.threadPickerOpen.set(false);
+      }
+    }
+
+    if (this.constructOpen() && target instanceof Element) {
+      const inConstruct = target.closest('.composer__construct-popover');
+      const inPlusAnchorC = target.closest('.composer__plus-anchor');
+      if (!inConstruct && !inPlusAnchorC) {
+        this.constructOpen.set(false);
       }
     }
 

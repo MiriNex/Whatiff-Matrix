@@ -1,4 +1,4 @@
-package datastore
+﻿package datastore
 
 import (
 	"context"
@@ -69,6 +69,9 @@ func toFileAttachmentModel(e *ent.FileAttachment) *models.FileAttachment {
 		}
 	}
 	fileAttachmentModel.Source = classifyFileAttachmentSource(e)
+	if e.ChunkStatus != nil {
+		fileAttachmentModel.ChunkStatus = string(*e.ChunkStatus)
+	}
 
 	return &fileAttachmentModel
 }
@@ -518,6 +521,7 @@ func (d *Datastore) ListFileAttachments(ctx context.Context, userID uuid.UUID, p
 		entfileattachment.FieldS3Key,
 		entfileattachment.FieldFolder,
 		entfileattachment.FieldCreatedAt,
+		entfileattachment.FieldChunkStatus,
 	).All(ctx)
 	if err != nil {
 		d.logger.Error(i18n.T1("list.failed", "Entity", "file attachments"), zap.Error(err))

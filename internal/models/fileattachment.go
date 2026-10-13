@@ -59,6 +59,10 @@ type FileAttachment struct {
 	// Source is empty when the chat message edge was not loaded, so callers can
 	// tell "unknown" apart from a real classification.
 	Source FileAttachmentSource `json:"source,omitempty"`
+
+	// ChunkStatus exposes whether the async chunker indexed this doc:
+	// pending | chunked | failed. Absent for non-doc uploads (images).
+	ChunkStatus string `json:"chunk_status,omitempty"`
 }
 
 // FileAttachmentPersonalityRef is a lightweight personality reference included
