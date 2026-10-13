@@ -158,7 +158,7 @@
               @if (personalities().length > 0) {
                 <div>
                   <label for="ritualPersonality" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Associated Personality (Optional)
+                    Associated Oracle (Optional)
                   </label>
                   <select id="ritualPersonality"
                     [(ngModel)]="createForm().personality_id"
@@ -169,7 +169,7 @@
                     }
                   </select>
                   <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    Associate this skill with a specific personality, or leave empty to make it globally available.
+                    Associate this skill with a specific oracle, or leave empty to make it globally available.
                   </p>
                 </div>
               }
@@ -242,7 +242,7 @@
           @if (personalities().length > 0) {
             <div>
               <label for="personalityFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Personality
+                Oracle
               </label>
               <select id="personalityFilter"
                 [(ngModel)]="personalityFilter"

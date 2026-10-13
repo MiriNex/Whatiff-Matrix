@@ -105,7 +105,7 @@
       <div class="memory-card__editor" (click)="$event.stopPropagation()">
         @if (showPinControl()) {
           <label class="memory-card__pin-label">
-            Pin to personality
+            Pin to oracle
             <select class="memory-card__pin-select" [ngModel]="pinDraft()" [disabled]="pinUpdating()" (ngModelChange)="onPinChange($event)">
               <option [ngValue]="null">{{ globalScopeLabel }}</option>
               @for (personality of personalities(); track personality.id) {

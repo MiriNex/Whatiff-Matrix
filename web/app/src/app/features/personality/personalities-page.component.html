@@ -2,9 +2,9 @@
   <header class="flex flex-col items-center gap-3 text-center lg:flex-row lg:items-end lg:justify-between lg:text-left">
     <div class="min-w-0">
       <h1 class="inline-flex items-center gap-1 text-[1.25rem] font-bold leading-tight text-(--color-text-primary)">
-        Personalities
+        Oracles
         <ui-help-hint label="What is an oracle?" heading="Oracles" guide="gettingStarted">
-          A personality is who you chat with: its voice, expertise, memory and avatar. You can have several and pick
+          A oracle is who you chat with: its voice, expertise, memory and avatar. You can have several and pick
           one for each thread.
         </ui-help-hint>
       </h1>
@@ -50,7 +50,7 @@
 
   @if (isLoading()) {
     <div class="rounded-2xl border border-(--color-border-default) bg-(--color-surface-card) p-6 text-center text-sm text-(--color-text-secondary)" role="status" aria-live="polite">
-      Loading personalities…
+      Loading oracles…
     </div>
   } @else if (hasResults()) {
     <app-personality-card-grid
@@ -69,7 +69,7 @@
       class="rounded-2xl border border-dashed border-(--color-border-default) bg-(--color-surface-card) p-8 text-center text-sm text-(--color-text-secondary)"
       role="status"
     >
-      No personalities match the current filters.
+      No oracles match the current filters.
     </div>
   }
 </section>
@@ -147,7 +147,7 @@
   </div>
   <p class="text-sm text-(--color-text-secondary)">
     This prompt is over {{ createPromptWarningLimitLabel }} characters and may reduce model quality.
-    Create personality anyway?
+    Create oracle anyway?
   </p>
   <div modal-footer class="flex justify-end gap-2">
     <button

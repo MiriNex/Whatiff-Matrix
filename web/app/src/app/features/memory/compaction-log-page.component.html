@@ -8,12 +8,12 @@
     <h1 class="compaction-log-title">
       Compaction log
       <ui-help-hint label="What is the compaction log?" heading="Compaction log" guide="continuity">
-        When a thread gets long, a checkpoint rewrites its summary and the personality's scratchpad, and saves new
+        When a thread gets long, a checkpoint rewrites its summary and the oracle's scratchpad, and saves new
         memories. Each entry shows what changed so you can restore an earlier version.
       </ui-help-hint>
     </h1>
     <p>
-      Every thread checkpoint and personality prompt change, captured like a diff. Review summary,
+      Every thread checkpoint and oracle prompt change, captured like a diff. Review summary,
       scratchpad, memory, and prompt changes here and restore a known-good state when needed.
     </p>
   </header>
@@ -22,12 +22,12 @@
       <h2 class="compaction-log-title">
         Compaction log
         <ui-help-hint label="What is the compaction log?" heading="Compaction log" guide="continuity">
-          When a thread gets long, a checkpoint rewrites its summary and the personality's scratchpad, and saves new
+          When a thread gets long, a checkpoint rewrites its summary and the oracle's scratchpad, and saves new
           memories. Each entry shows what changed so you can restore an earlier version.
         </ui-help-hint>
       </h2>
       <p>
-        Every thread checkpoint and personality prompt change, captured like a diff. Restore a known-good state when needed.
+        Every thread checkpoint and oracle prompt change, captured like a diff. Restore a known-good state when needed.
       </p>
     </div>
   }
@@ -47,7 +47,7 @@
       </select>
     </label>
     <label>
-      Personality
+      Oracle
       <select #personalityFilter [value]="selectedPersonalityID()" (change)="updateFilters(chatFilter.value, personalityFilter.value)">
         <option value="">All oracles</option>
         @for (personality of personalities(); track personality.id) {
