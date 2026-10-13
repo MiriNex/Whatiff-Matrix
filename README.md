@@ -207,9 +207,11 @@ The upstream expression was through the OpenAI provider and failed silently when
 
 ### Screenshots
 
-<img width="1920" height="919" alt="image" src="https://github.com/user-attachments/assets/3c0db2fb-7233-4c3a-9975-dd79c022dc57" />
+<img width="1902" height="575" alt="image" src="https://github.com/user-attachments/assets/f857814a-bdf2-4838-9044-73a2e52cefe7" />
 
-<img width="1916" height="911" alt="image" src="https://github.com/user-attachments/assets/c7541b90-d4f6-4c04-9861-c70dc1b39ae2" />
+
+<img width="1920" height="902" alt="image" src="https://github.com/user-attachments/assets/a390e77b-ba6a-404e-84e7-d1f418ba6361" />
+
 
 
 
