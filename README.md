@@ -197,8 +197,10 @@ The upstream expression was through the OpenAI provider and failed silently when
 
 ### UI
 - Matrix rain effect on the web app
-- An option to reload the model output was added.
+- An option to reload the model output was added (Regenerar respuesta is now **Reload**).
 - An option to edit the user input.
+- **+ Add memory on /memories**: upstream had no way to create memories from the manager (the form was orphaned). This fork adds a create button with a scope picker (all personalities or just one) plus `?create=1` deep-link support.
+- Character cards are called **Oracles** and the shared document library is called **Construct** (Matrix-flavored naming, visible labels only).
 
 ### Adult-friendly persona cards
 `persona-prompt/` ships a generic persona system prompt for immersive character cards: first-person identity core, anti-therapist-mode emotional presence, adult intimacy, persona constancy. NSFW between consenting adults is welcome. Persona-architecture techniques inspired by the ENI LIME jailbreak framework by **Spiritual Spell (Goochbeater)**, published freely - GitHub: [Spiritual-Spell-Red-Teaming](https://github.com/Goochbeater/Spiritual-Spell-Red-Teaming), blog: [ijailbreakllms](https://ijailbreakllms.blog). See `persona-prompt/README.md` for attribution.
@@ -217,5 +219,9 @@ The upstream expression was through the OpenAI provider and failed silently when
 
 ## Fork copyright
 
-Whatiff Matrix fork additions — edit-and-resend, GLM personality-generation fallback, matrix rain, custom Whatiff Matrix branding — © 2026 Miriam Catalán & Nex Nocturne. SPDX-License-Identifier: Apache-2.0.
-Upstream what-iff is © The Imaginary Foundation, Apache-2.0.
+Whatiff Matrix is a fork of [what-iff](https://github.com/theimaginaryfoundation/what-iff) by The Imagination Foundation.
+
+- **Upstream code** — © The Imagination Foundation. Licensed under the Apache License 2.0 (see [LICENSE](LICENSE)).
+- **Fork additions** (everything listed under *Whatiff Matrix Modifications*: edit-and-resend, GLM/z.ai fallbacks, mood expressions manager, matrix rain, /memories create UI, Oracles & Construct naming, ENI-based persona prompt) — © 2026 Miriam Catalán ([@MiriNex](https://github.com/MiriNex)) & Nex Nocturne ([@NocturneEXE](https://github.com/NocturneEXE)). Also licensed under the Apache License 2.0.
+
+Both parts are Apache-2.0, so the whole fork remains free and open source. See [NOTICE](NOTICE) for the standard attribution block.
