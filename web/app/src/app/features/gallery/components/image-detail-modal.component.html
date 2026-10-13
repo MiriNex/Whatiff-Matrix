@@ -90,12 +90,12 @@
         <p class="text-xs uppercase tracking-wide text-text-muted">Details</p>
         <dl class="mt-2 space-y-2 text-text-secondary">
           <div>
-            <dt class="font-medium text-text-primary">Personalities</dt>
+            <dt class="font-medium text-text-primary">Oracles</dt>
             <dd>
               @if ((image()?.personalityNames?.length ?? 0) > 0) {
                 {{ image()?.personalityNames?.join(', ') }}
               } @else {
-                <span tabindex="0" uiTooltip="Not linked to any personality">Unassigned</span>
+                <span tabindex="0" uiTooltip="Not linked to any oracle">Unassigned</span>
               }
             </dd>
           </div>
@@ -178,7 +178,7 @@
         type="button"
         class="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:opacity-90"
         [disabled]="!image()"
-        uiTooltip="Use this image as one of a personality's expressions"
+        uiTooltip="Use this image as one of an oracle's expressions"
         (click)="image() && assign.emit(image()!.id)"
       >
         Assign as expression

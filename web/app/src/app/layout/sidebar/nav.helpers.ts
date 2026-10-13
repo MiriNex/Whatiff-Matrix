@@ -46,7 +46,7 @@ export function navTooltip(label: string, hint: string, labelVisible: boolean): 
 
 const APP_NAV_ITEMS: ReadonlyArray<NavItem> = [
   { id: 'chat', label: 'Chat', hint: 'Your threads. Click again to open or close the Thread Manager', route: '/chat', icon: ChatIconComponent },
-  { id: 'personalities', label: 'Personalities', hint: 'The characters you talk to: prompt, portraits and notes', route: '/personality', icon: UsersIconComponent },
+  { id: 'personalities', label: 'Oracles', hint: 'The characters you talk to: prompt, portraits and notes', route: '/personality', icon: UsersIconComponent },
   { id: 'gallery', label: 'Gallery', hint: "Images you've generated or imported, and expressions", route: '/gallery', icon: ImageIconComponent },
 ];
 

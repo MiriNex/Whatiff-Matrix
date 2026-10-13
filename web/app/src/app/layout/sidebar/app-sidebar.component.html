@@ -145,7 +145,7 @@
             type="button"
             class="app-sidebar__pill app-sidebar__select-btn"
             aria-label="Select threads to attach to your next message"
-            uiTooltip="Attach threads so your personality can read them, e.g. to recap a decision"
+            uiTooltip="Attach threads so your oracle can read them, e.g. to recap a decision"
             placement="right"
             (click)="startRefSelection()"
           >
@@ -217,7 +217,7 @@
                   </button>
                 </persona-accent-scope>
               } @empty {
-                <p class="app-sidebar__personality-empty">No personalities found</p>
+                <p class="app-sidebar__personality-empty">No oracles found</p>
               }
             </div>
           }
@@ -283,7 +283,7 @@
     <section class="app-sidebar__personality-actions">
       <h2>ADD PERSONALITY</h2>
       <div class="app-sidebar__personality-actions-buttons">
-        <button type="button" class="app-sidebar__personality-action app-sidebar__personality-action--generate" uiTooltip="Answer a few questions and get a drafted personality to review" placement="right" (click)="openGeneratePersonality()">
+        <button type="button" class="app-sidebar__personality-action app-sidebar__personality-action--generate" uiTooltip="Answer a few questions and get a drafted oracle to review" placement="right" (click)="openGeneratePersonality()">
           <ui-sparkle-icon [size]="12" />
           Generate
         </button>
@@ -302,8 +302,8 @@
           type="button"
           class="app-sidebar__pill"
           [class.app-sidebar__pill--active]="galleryFilterMode() === 'all'"
-          aria-label="Show all personalities"
-          uiTooltip="Images for every personality, plus global ones"
+          aria-label="Show all oracles"
+          uiTooltip="Images for every oracle, plus global ones"
           placement="bottom"
           (click)="clearGalleryPersonalityFilters()"
         >
@@ -331,7 +331,7 @@
           <input
             type="text"
             class="app-sidebar__personality-search"
-            placeholder="Filter by personality…"
+            placeholder="Filter by oracle…"
             [value]="galleryPersonalityQuery()"
             (input)="onGalleryPersonalityQueryChange($any($event.target).value)"
             (focus)="openGalleryPersonalityDropdown()"
@@ -359,7 +359,7 @@
                   </button>
                 </persona-accent-scope>
               } @empty {
-                <p class="app-sidebar__personality-empty">No personalities found</p>
+                <p class="app-sidebar__personality-empty">No oracles found</p>
               }
             </div>
           }
@@ -429,7 +429,7 @@
           class="app-sidebar__pill"
           [class.app-sidebar__pill--active]="modeFilterMode() === 'all'"
           aria-label="Show all modes"
-          uiTooltip="Modes for every personality"
+          uiTooltip="Modes for every oracle"
           placement="bottom"
           (click)="clearModePersonalityFilters()"
         >
@@ -445,7 +445,7 @@
           <input
             type="text"
             class="app-sidebar__personality-search"
-            placeholder="Filter by personality…"
+            placeholder="Filter by oracle…"
             [value]="modePersonalityQuery()"
             (input)="onModePersonalityQueryChange($any($event.target).value)"
             (focus)="openModePersonalityDropdown()"
@@ -473,7 +473,7 @@
                   </button>
                 </persona-accent-scope>
               } @empty {
-                <p class="app-sidebar__personality-empty">No personalities found</p>
+                <p class="app-sidebar__personality-empty">No oracles found</p>
               }
             </div>
           }
@@ -570,7 +570,7 @@
           <input
             type="text"
             class="app-sidebar__personality-search"
-            placeholder="Filter by personality…"
+            placeholder="Filter by oracle…"
             [value]="memoryPersonalityQuery()"
             (input)="onMemoryPersonalityQueryChange($any($event.target).value)"
             (focus)="openMemoryPersonalityDropdown()"
@@ -598,7 +598,7 @@
                   </button>
                 </persona-accent-scope>
               } @empty {
-                <p class="app-sidebar__personality-empty">No personalities found</p>
+                <p class="app-sidebar__personality-empty">No oracles found</p>
               }
             </div>
           }
@@ -668,7 +668,7 @@
           class="app-sidebar__pill"
           [class.app-sidebar__pill--active]="skillFilterMode() === 'all'"
           aria-label="Show all skills"
-          uiTooltip="Built-in, global and personality skills"
+          uiTooltip="Built-in, global and oracle skills"
           placement="bottom"
           (click)="clearSkillPersonalityFilters()"
         >
@@ -679,7 +679,7 @@
           class="app-sidebar__pill"
           [class.app-sidebar__pill--active]="skillFilterMode() === 'global'"
           aria-label="Show global skills only"
-          uiTooltip="Only skills available with every personality"
+          uiTooltip="Only skills available with every oracle"
           placement="bottom"
           (click)="selectGlobalSkillFilter()"
         >
@@ -695,7 +695,7 @@
           <input
             type="text"
             class="app-sidebar__personality-search"
-            placeholder="Filter by personality…"
+            placeholder="Filter by oracle…"
             [value]="skillPersonalityQuery()"
             (input)="onSkillPersonalityQueryChange($any($event.target).value)"
             (focus)="openSkillPersonalityDropdown()"
@@ -723,7 +723,7 @@
                   </button>
                 </persona-accent-scope>
               } @empty {
-                <p class="app-sidebar__personality-empty">No personalities found</p>
+                <p class="app-sidebar__personality-empty">No oracles found</p>
               }
             </div>
           }
@@ -962,7 +962,7 @@
         class="app-sidebar__palette-launcher"
         aria-label="Open command palette"
         aria-keyshortcuts="Meta+K Control+K"
-        uiTooltip="Search threads, personalities, skills, memories and images"
+        uiTooltip="Search threads, oracles, skills, memories and images"
         placement="top"
         (click)="openPalette()"
       >

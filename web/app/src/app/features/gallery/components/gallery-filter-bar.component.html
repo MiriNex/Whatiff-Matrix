@@ -20,13 +20,13 @@
       }
     </select>
 
-    <label class="sr-only" for="gallery-filter-personality">Filter by personality</label>
+    <label class="sr-only" for="gallery-filter-personality">Filter by oracle</label>
     <select
       id="gallery-filter-personality"
       class="rounded-xl border border-border-base bg-surface-base px-3 py-2 text-sm text-text-primary"
       [ngModel]="filters().personalityId"
       (ngModelChange)="onPersonalityChange($event)">
-      <option value="all">All personalities</option>
+      <option value="all">All oracles</option>
       @for (personality of personalities(); track personality.id) {
         <option [value]="personality.id">{{ personality.name }}</option>
       }

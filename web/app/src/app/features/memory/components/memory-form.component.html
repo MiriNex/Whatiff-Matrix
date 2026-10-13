@@ -9,7 +9,7 @@
         aria-describedby="memory-level-hint"
         (ngModelChange)="onLevelChange($event)">
         <option value="global">Global</option>
-        <option value="personality">Personality</option>
+        <option value="personality">Oracle</option>
         <option value="thread">Thread</option>
         <option value="summary">Summary</option>
       </select>
@@ -20,7 +20,7 @@
   @if (showPinControl()) {
     <div class="memory-form__pin rounded-xl border border-border-base bg-surface-elevated p-3">
       <label class="flex flex-col gap-1 text-xs text-text-secondary">
-        <span class="font-semibold text-text-primary">Pin to personality</span>
+        <span class="font-semibold text-text-primary">Pin to oracle</span>
         <select
           class="mt-1 w-full rounded-xl border border-border-base bg-surface-base px-3 py-2 text-sm text-text-primary"
           [ngModel]="pinnedPersonalityId()"

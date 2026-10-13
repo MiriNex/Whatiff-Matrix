@@ -138,7 +138,7 @@
                       [disabled]="isUpdatingPin() || isLoadingPersonalities()"
                       class="flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-primary text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                      <option [ngValue]="null">None (accessible by all personalities)</option>
+                      <option [ngValue]="null">None (accessible by all oracles)</option>
                       @for (personality of personalities(); track personality) {
                         <option [ngValue]="personality.id">
                           {{ personality.name }}

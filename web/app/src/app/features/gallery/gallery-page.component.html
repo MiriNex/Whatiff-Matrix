@@ -29,7 +29,7 @@
         type="button"
         [attr.aria-pressed]="mode() === 'expressions'"
         [class.gallery-page__mode-button--active]="mode() === 'expressions'"
-        uiTooltip="Set each personality's expression portraits"
+        uiTooltip="Set each oracle's expression portraits"
         placement="bottom"
         (click)="setMode('expressions')"
       >Expression Manager</button>
@@ -156,9 +156,9 @@
   } @else {
     <section class="gallery-page__expressions-shell">
       @if (personalities().length === 0) {
-        <p class="gallery-page__expressions-loading">No personalities available.</p>
+        <p class="gallery-page__expressions-loading">No oracles available.</p>
       } @else if (filteredExpressionPersonalities().length === 0) {
-        <p class="gallery-page__expressions-loading">No personalities match the active filter.</p>
+        <p class="gallery-page__expressions-loading">No oracles match the active filter.</p>
       } @else {
         @for (personality of filteredExpressionPersonalities(); track personality.id) {
           <app-personality-expressions-manager

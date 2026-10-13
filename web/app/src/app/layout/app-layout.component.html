@@ -55,7 +55,7 @@
 @if (generatePersonalityModal.open()) {
   <ui-modal [open]="true" [labelledBy]="'generate-personality-modal-title'" size="lg" (dismiss)="onGenerateModalDismiss($event, generateFlow.hasUnsavedAnswers())">
     <div modal-header>
-      <h2 id="generate-personality-modal-title" class="text-lg font-semibold text-(--color-text-primary)">Generate Personality</h2>
+      <h2 id="generate-personality-modal-title" class="text-lg font-semibold text-(--color-text-primary)">Generate Oracle</h2>
     </div>
     <app-personality-generate #generateFlow [modalMode]="true" (closeModal)="closeGeneratePersonality()" />
     @if (!generateFlow.isLoading() && generateFlow.flow() && !generateFlow.isReviewScreen() && !generateFlow.isGenerating()) {
@@ -140,7 +140,7 @@
 
 <app-persona-picker-dialog
   [open]="personaPickerOpen()"
-  title="Choose a Personality"
+  title="Choose a Oracle"
   subtitle="Select a personality to continue"
   pickerAppearance="rich"
   (select)="onPersonaPicked($event)"

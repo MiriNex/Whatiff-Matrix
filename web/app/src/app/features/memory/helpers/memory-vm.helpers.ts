@@ -80,7 +80,7 @@ export function levelBadgeText(level: Memory['level']): string {
     case 'global':
       return 'Global';
     case 'personality':
-      return 'Personality';
+      return 'Oracle';
     case 'thread':
       return 'Thread';
     case 'summary':

@@ -42,7 +42,7 @@ import {
  */
 const SECTION_LABEL: Record<SearchSection['type'], string> = {
   chat: 'Threads',
-  personality: 'Personalities',
+  personality: 'Oracles',
   ritual: 'Skills',
   memory: 'Memories',
   image: 'Images',

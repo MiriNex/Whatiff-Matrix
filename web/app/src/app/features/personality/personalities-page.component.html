@@ -3,13 +3,13 @@
     <div class="min-w-0">
       <h1 class="inline-flex items-center gap-1 text-[1.25rem] font-bold leading-tight text-(--color-text-primary)">
         Personalities
-        <ui-help-hint label="What is a personality?" heading="Personalities" guide="gettingStarted">
+        <ui-help-hint label="What is an oracle?" heading="Oracles" guide="gettingStarted">
           A personality is who you chat with: its voice, expertise, memory and avatar. You can have several and pick
           one for each thread.
         </ui-help-hint>
       </h1>
       @if (!showWelcome()) {
-        <p class="mt-1 text-[0.8125rem] text-(--color-text-secondary)">Your cast of AI personalities. Each has a unique voice, expertise, and memory.</p>
+        <p class="mt-1 text-[0.8125rem] text-(--color-text-secondary)">Your cast of AI oracles. Each has a unique voice, expertise, and memory.</p>
       }
     </div>
     <!-- The first-run welcome has its own, fuller start actions; don't show a second set here. -->
@@ -85,7 +85,7 @@
 
 <ui-modal [open]="isCreateOpen()" [labelledBy]="'create-personality-title'" size="lg" (dismiss)="closeCreate()">
   <div modal-header>
-    <h2 id="create-personality-title" class="text-lg font-semibold text-(--color-text-primary)">Create new personality</h2>
+    <h2 id="create-personality-title" class="text-lg font-semibold text-(--color-text-primary)">Create new oracle</h2>
   </div>
 
   @if (createErrorMessage()) {
@@ -111,7 +111,7 @@
       <textarea
         rows="8"
         class="rounded-lg border border-(--color-border-default) bg-(--color-surface-input) px-3 py-2 text-(--color-text-primary) outline-none focus:border-(--color-accent) focus:ring-2 focus:ring-(--color-accent)"
-        placeholder="Describe how this personality should behave, talk, and react…"
+        placeholder="Describe how this oracle should behave, talk, and react…"
         [value]="createForm().system_prompt"
         (input)="setCreateSystemPrompt($any($event.target).value)"
       ></textarea>

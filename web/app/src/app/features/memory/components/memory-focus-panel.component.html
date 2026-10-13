@@ -35,7 +35,7 @@
   </section>
 
   <section class="focus-panel__section">
-    <h3>Personality / scope</h3>
+    <h3>Oracle / scope</h3>
     <div class="focus-panel__persona-row">
       @if (pinnedPersonality(); as persona) {
         <persona-accent-scope [personality]="{ id: persona.id, name: persona.label, accent_color: persona.accent_color ?? null }">
@@ -54,7 +54,7 @@
         <button
           type="button"
           class="focus-panel__link-btn"
-          uiTooltip="Change which personality can use this memory"
+          uiTooltip="Change which oracle can use this memory"
           (click)="move.emit(memory().id)"
         >
           Move

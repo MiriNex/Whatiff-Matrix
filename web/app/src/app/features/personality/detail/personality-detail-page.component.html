@@ -1,11 +1,11 @@
 @if (isLoading()) {
   <section class="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8" role="status" aria-live="polite">
-    <p class="text-sm text-(--color-text-secondary)">Loading personality…</p>
+    <p class="text-sm text-(--color-text-secondary)">Loading oracle…</p>
   </section>
 } @else if (errorMessage(); as message) {
   <section class="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8" role="alert">
     <div class="rounded-2xl border border-red-500 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">{{ message }}</div>
-    <button type="button" class="mt-3 text-sm font-medium text-(--color-accent) hover:underline" (click)="goBack()">← Back to personalities</button>
+    <button type="button" class="mt-3 text-sm font-medium text-(--color-accent) hover:underline" (click)="goBack()">← Back to oracles</button>
   </section>
 } @else if (personality(); as personality) {
   <persona-accent-scope [personality]="personality">
@@ -21,10 +21,10 @@
         />
         <div class="flex flex-1 flex-col gap-1">
           <label class="flex w-full max-w-xl">
-            <span class="sr-only">Personality name</span>
+            <span class="sr-only">Oracle name</span>
             <input
               type="text"
-              aria-label="Personality name"
+              aria-label="Oracle name"
               class="min-w-0 flex-1 rounded-lg border border-(--color-border-default) bg-(--color-surface-input) px-3 py-2 text-base font-semibold text-(--color-text-primary) outline-none focus:border-(--color-accent) focus:ring-2 focus:ring-(--color-accent)"
               [value]="editorDraft()?.name ?? personality.name"
               (input)="setDraftField('name', $any($event.target).value)"
@@ -34,7 +34,7 @@
             <span
               class="rounded-full bg-[var(--persona-accent-surface)] px-2 py-0.5 font-medium text-(--color-text-primary)"
               tabindex="0"
-              uiTooltip="Threads that use this personality"
+              uiTooltip="Threads that use this oracle"
             >
               {{ personality.stats.chat_count }} thread{{ personality.stats.chat_count === 1 ? '' : 's' }}
             </span>
@@ -42,7 +42,7 @@
               <span
                 class="rounded-full border border-[var(--persona-accent)] px-2 py-0.5 font-semibold uppercase tracking-wide text-(--color-text-primary)"
                 tabindex="0"
-                uiTooltip="New threads start with this personality"
+                uiTooltip="New threads start with this oracle"
               >
                 Default
               </span>
@@ -60,14 +60,14 @@
           <button
             type="button"
             class="rounded-lg bg-(--color-accent) px-3 py-2 text-sm font-semibold text-white hover:brightness-95"
-            uiTooltip="Start a new thread with this personality"
+            uiTooltip="Start a new thread with this oracle"
             (click)="onUseInNewChat()"
           >Use in new thread</button>
           @if (!isDefault()) {
             <button
               type="button"
               class="rounded-lg border border-(--color-border-default) px-3 py-2 text-sm font-medium text-(--color-text-primary) hover:bg-(--color-surface-elevated)"
-              uiTooltip="New threads will start with this personality"
+              uiTooltip="New threads will start with this oracle"
               (click)="onMakeDefault()"
             >Make default</button>
           }

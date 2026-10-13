@@ -248,7 +248,7 @@
                 [(ngModel)]="personalityFilter"
                 (change)="onFiltersApplied()"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-surface-input text-text-primary focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                <option value="">All Personalities</option>
+                <option value="">All Oracles</option>
                 <option value="global">Global Only</option>
                 @for (personality of personalities(); track personality.id) {
                   <option [value]="personality.id">{{ personality.name }}</option>

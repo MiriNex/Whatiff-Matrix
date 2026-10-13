@@ -49,7 +49,7 @@
     <label>
       Personality
       <select #personalityFilter [value]="selectedPersonalityID()" (change)="updateFilters(chatFilter.value, personalityFilter.value)">
-        <option value="">All personalities</option>
+        <option value="">All oracles</option>
         @for (personality of personalities(); track personality.id) {
           <option [value]="personality.id">{{ personality.name }}</option>
         }
@@ -63,29 +63,29 @@
       class="compaction-section-toggle"
       data-testid="prompt-change-toggle"
       [attr.aria-expanded]="promptChangesExpanded()"
-      uiTooltip="Edits to each personality's system prompt, with before and after"
+      uiTooltip="Edits to each oracle's system prompt, with before and after"
       placement="right"
       (click)="togglePromptChanges()">
-      <span id="prompt-change-heading">Personality prompt changes</span>
+      <span id="prompt-change-heading">Oracle prompt changes</span>
       <span class="compaction-toggle__chevron" aria-hidden="true"></span>
     </button>
     <p class="text-sm text-(--color-text-secondary)">Prompt edits and restores are append-only audit entries.</p>
 
     @if (promptChangesExpanded()) {
       @if (promptChangesLoading()) {
-        <p class="compaction-log-status" role="status">Loading personality prompt changes…</p>
+        <p class="compaction-log-status" role="status">Loading oracle prompt changes…</p>
       } @else if (promptChangesError()) {
         <p class="compaction-log-error" role="alert">{{ promptChangesError() }}</p>
       } @else if (promptChanges().length === 0) {
-        <p class="compaction-log-status">No personality prompt changes logged yet.</p>
+        <p class="compaction-log-status">No oracle prompt changes logged yet.</p>
       } @else {
-        <ul class="compaction-log-list" role="list" aria-label="Personality prompt changes">
+        <ul class="compaction-log-list" role="list" aria-label="Oracle prompt changes">
           @for (change of promptChanges(); track change.id) {
             <li class="compaction-card">
               <div class="compaction-card__head">
                 <div class="compaction-card__badges">
                   <span class="compaction-card__badge compaction-card__badge--muted">
-                    <span class="compaction-card__badge-label">Personality</span>
+                    <span class="compaction-card__badge-label">Oracle</span>
                     <span class="compaction-card__badge-value">{{ change.personality_name }}</span>
                   </span>
                   <span class="compaction-card__badge compaction-card__badge--muted">
@@ -184,7 +184,7 @@
             <div class="compaction-card__body">
 
               <button type="button" class="compaction-section-toggle" [attr.aria-expanded]="!isSectionCollapsed(event, 'summary')" (click)="toggleSection(event, 'summary')">
-                <span uiTooltip="The thread summary and personality scratchpad, before and after">Summaries</span>
+                <span uiTooltip="The thread summary and oracle scratchpad, before and after">Summaries</span>
                 <span class="compaction-toggle__chevron" aria-hidden="true"></span>
               </button>
               @if (!isSectionCollapsed(event, 'summary')) {
@@ -236,7 +236,7 @@
                   <div class="diff-block__title-row">
                     <h3 class="diff-block__title">
                       Scratchpad
-                      <span class="diff-block__hint" uiTooltip="Notes shared across all of this personality's threads">(personality-wide)</span>
+                      <span class="diff-block__hint" uiTooltip="Notes shared across all of this oracle's threads">(oracle-wide)</span>
                     </h3>
                     @if (!scratchpadChanged(event)) {
                       <span class="diff-block__unchanged">unchanged</span>
@@ -251,7 +251,7 @@
                             type="button"
                             class="diff-pane__revert"
                             [disabled]="revertingId() === event.old_scratchpad?.id || isSnapshotReverted(event.old_scratchpad)"
-                            uiTooltip="Restore this scratchpad for all of this personality's threads"
+                            uiTooltip="Restore this scratchpad for all of this oracle's threads"
                             (click)="revert(event.old_scratchpad)">
                             {{ isSnapshotReverted(event.old_scratchpad) ? 'Restored' : (revertingId() === event.old_scratchpad?.id ? 'Reverting…' : 'Revert to this') }}
                           </button>
@@ -267,7 +267,7 @@
                             type="button"
                             class="diff-pane__revert"
                             [disabled]="revertingId() === event.new_scratchpad?.id || isSnapshotReverted(event.new_scratchpad)"
-                            uiTooltip="Restore this scratchpad for all of this personality's threads"
+                            uiTooltip="Restore this scratchpad for all of this oracle's threads"
                             (click)="revert(event.new_scratchpad)">
                             {{ isSnapshotReverted(event.new_scratchpad) ? 'Restored' : (revertingId() === event.new_scratchpad?.id ? 'Reverting…' : 'Revert to this') }}
                           </button>

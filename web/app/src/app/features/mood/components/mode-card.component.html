@@ -35,7 +35,7 @@
               type="button"
               class="mode-card__carousel-remove"
               [attr.aria-label]="'Remove ' + personality.name + ' from mode'"
-              uiTooltip="Stop this personality using the mode"
+              uiTooltip="Stop this oracle using the mode"
               (click)="removeAssociation.emit({ moodId: card().mood.id, personalityId: personality.id, event: $event })">
               ×
             </button>
@@ -58,10 +58,10 @@
         <button
           type="button"
           class="mode-card__carousel-add-card"
-          uiTooltip="Only attached personalities can use this mode"
+          uiTooltip="Only attached oracles can use this mode"
           (click)="openAssociationPicker.emit({ moodId: card().mood.id, event: $event })">
           <span class="mode-card__carousel-add-avatar">+</span>
-          <span class="mode-card__carousel-add-label">Add personality</span>
+          <span class="mode-card__carousel-add-label">Add oracle</span>
         </button>
       </div>
       @if (isAssociationPickerOpen()) {

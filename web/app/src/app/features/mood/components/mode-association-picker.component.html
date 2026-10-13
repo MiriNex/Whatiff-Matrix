@@ -5,7 +5,7 @@
     </span>
     <input
       type="text"
-      placeholder="Filter personalities..."
+      placeholder="Filter oracles..."
       class="mode-card__association-picker-search-input"
       [ngModel]="query()"
       (ngModelChange)="queryChange.emit($event)"
@@ -28,7 +28,7 @@
           <span class="mode-card__personality-option-label" [style.color]="personality.accentColor">{{ personality.name }}</span>
         </button>
       } @empty {
-        <div class="mode-card__association-picker-empty">No personalities available</div>
+        <div class="mode-card__association-picker-empty">No oracles available</div>
       }
     </div>
   }

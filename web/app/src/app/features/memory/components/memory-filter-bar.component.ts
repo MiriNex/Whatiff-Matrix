@@ -44,7 +44,7 @@ export const SCOPE_OPTIONS: ReadonlyArray<{ value: MemoryScopeFilter; label: str
 export const LEVEL_OPTIONS: ReadonlyArray<{ value: MemoryLevelFilter; label: string }> = [
   { value: 'all', label: 'All levels' },
   { value: 'global', label: 'Global' },
-  { value: 'personality', label: 'Personality' },
+  { value: 'personality', label: 'Oracle' },
   { value: 'thread', label: 'Thread' },
   { value: 'summary', label: 'Summary' },
 ];

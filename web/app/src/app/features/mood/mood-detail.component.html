@@ -172,7 +172,7 @@
         <!-- Personalities multi-select -->
         <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
           <div class="flex items-center justify-between mb-1">
-            <h3 class="text-sm font-semibold text-white">Attached Personalities</h3>
+            <h3 class="text-sm font-semibold text-white">Attached Oracles</h3>
             <button
               (click)="savePersonalities()"
               [disabled]="isSavingPersonalities()"
@@ -180,9 +180,9 @@
               {{ isSavingPersonalities() ? 'Saving…' : 'Save' }}
             </button>
           </div>
-          <p class="text-xs text-gray-400 mb-3">Select which personalities can use this mode.</p>
+          <p class="text-xs text-gray-400 mb-3">Select which oracles can use this mode.</p>
           @if (personalities().length === 0) {
-            <p class="text-xs text-gray-500">No personalities found.</p>
+            <p class="text-xs text-gray-500">No oracles found.</p>
           } @else {
             <div class="space-y-1 max-h-48 overflow-y-auto">
               @for (p of personalities(); track p.id) {

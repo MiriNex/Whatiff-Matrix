@@ -62,7 +62,7 @@ export const WIZARD_PAGES: readonly WizardPage[] = [
     ],
   },
   {
-    title: 'Personality',
+    title: 'Oracle',
     subtitle: 'What behaviors should this personality prefer or avoid?',
     questions: [
       { id: 'quirks', label: 'What personality quirks or unique traits should it have?', placeholder: 'e.g., occasionally uses fox metaphors, starts with a relevant quote, dry humor...' },

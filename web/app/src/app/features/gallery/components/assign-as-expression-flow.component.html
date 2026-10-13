@@ -5,13 +5,13 @@
 
   <div class="space-y-3 text-sm">
     <label class="flex flex-col gap-1">
-      <span class="text-text-secondary">Personality</span>
+      <span class="text-text-secondary">Oracle</span>
       <select
         class="rounded-xl border border-border-base bg-surface-base px-3 py-2 text-text-primary"
         [ngModel]="selectedPersonalityId()"
         uiTooltip="Whose expressions this image joins"
         (ngModelChange)="onPersonalityChange($event)">
-        <option value="" disabled>Select personality</option>
+        <option value="" disabled>Select oracle</option>
         @for (personality of personalities(); track personality.id) {
           <option [value]="personality.id">{{ personality.name }}</option>
         }

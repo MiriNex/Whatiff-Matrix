@@ -62,10 +62,10 @@
   <ui-modal [open]="createOpen()" [labelledBy]="'create-memory-title'" (dismiss)="closeCreateModal()">
     <h4 modal-header id="create-memory-title">Create memory</h4>
     <label class="memories-shell__field-label" for="new-memory-content">Memory content</label>
-    <textarea id="new-memory-content" rows="5" [value]="createContent()" (input)="createContent.set($any($event.target).value)" placeholder="A fact or preference your personalities should remember"></textarea>
+    <textarea id="new-memory-content" rows="5" [value]="createContent()" (input)="createContent.set($any($event.target).value)" placeholder="A fact or preference your oracles should remember"></textarea>
     <label class="memories-shell__field-label" for="new-memory-scope">Visible to</label>
     <select id="new-memory-scope" [value]="createPinnedId()" (change)="createPinnedId.set($any($event.target).value)">
-      <option value="">All personalities (global)</option>
+      <option value="">All oracles (global)</option>
       @for (p of personalities(); track p.id) {
         <option [value]="p.id">Only {{ p.name }}</option>
       }

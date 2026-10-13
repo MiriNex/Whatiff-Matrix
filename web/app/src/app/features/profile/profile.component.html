@@ -267,7 +267,7 @@
             <h4 class="text-sm font-medium text-text-primary mb-2">Current Settings</h4>
             <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
               <p><span class="font-medium">Default Model:</span> {{ getModelDisplayName($safeNavigationMigration(currentPreferences()?.default_model_id)) }}</p>
-              <p><span class="font-medium">Default Personality:</span> {{ getPersonalityDisplayName($safeNavigationMigration(currentPreferences()?.default_personality_id)) }}</p>
+              <p><span class="font-medium">Default Oracle:</span> {{ getPersonalityDisplayName($safeNavigationMigration(currentPreferences()?.default_personality_id)) }}</p>
             </div>
           </div>
         }
@@ -556,7 +556,7 @@
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-text-primary">Memories</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">All your chat-derived, user, and personality-pinned memories as a ZIP archive</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">All your chat-derived, user, and oracle-pinned memories as a ZIP archive</p>
         </div>
         <div class="flex items-center gap-3">
           <input

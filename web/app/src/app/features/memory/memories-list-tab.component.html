@@ -26,9 +26,9 @@
 
     <div class="memories-list__filters" aria-label="Memory filters">
       <label class="memories-list__filter-field">
-        <span>Personality</span>
+        <span>Oracle</span>
         <select [value]="filters().personalityId" (change)="onPersonalityFilterChange($any($event.target).value)">
-          <option value="">Any personality</option>
+          <option value="">Any oracle</option>
           <option [value]="globalPersonalityFilter">{{ globalScopeLabel }}</option>
           @for (personality of personalities(); track personality.id) {
             <option [value]="personality.id">{{ personality.label }}</option>
@@ -101,7 +101,7 @@
           <ui-chev-down-icon [size]="12" />
         </div>
       </label>
-      <button type="button" class="memories-list__clear" uiTooltip="Reset search, personality, dates, source and sort" (click)="onClearFilters()">
+      <button type="button" class="memories-list__clear" uiTooltip="Reset search, oracle, dates, source and sort" (click)="onClearFilters()">
         Clear
       </button>
       @if (dateRangeError(); as dateError) {
@@ -115,7 +115,7 @@
         role="tab"
         [class.memories-list__status--active]="statusFilter() === 'active' && filters().scope === 'user'"
         [attr.aria-selected]="statusFilter() === 'active' && filters().scope === 'user'"
-        uiTooltip="Active global and personality memories, used across threads"
+        uiTooltip="Active global and oracle memories, used across threads"
         (click)="setScopeFilter('user')"
       >
         User
@@ -176,7 +176,7 @@
         @if (!isThreadView()) {
           <button
             type="button"
-            uiTooltip="Change which personality can use the selected memories"
+            uiTooltip="Change which oracle can use the selected memories"
             (click)="onMoveSelected()"
             [disabled]="mutating()"
           >

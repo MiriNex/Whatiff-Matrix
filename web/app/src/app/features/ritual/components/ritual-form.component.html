@@ -57,7 +57,7 @@
         [disabled]="isSystem()"
         [ngModel]="personalityId()"
         (ngModelChange)="personalityId.set($event)">
-        <option value="">Global (every personality)</option>
+        <option value="">Global (every oracle)</option>
         @for (personality of personalities(); track personality.id) {
           <option [value]="personality.id">{{ personality.label }}</option>
         }

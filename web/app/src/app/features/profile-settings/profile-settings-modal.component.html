@@ -84,7 +84,7 @@
           class="profile-settings__callout profile-settings__form"
           data-testid="chat-defaults">
           <legend>Thread defaults</legend>
-          <small>Choose what new threads start with. Changes save immediately; you can leave personality unset.</small>
+          <small>Choose what new threads start with. Changes save immediately; you can leave oracle unset.</small>
 
           <label class="profile-settings__field">
             <span>Default model</span>
@@ -99,13 +99,13 @@
             </select>
           </label>
           <label class="profile-settings__field">
-            <span>Default personality</span>
+            <span>Default oracle</span>
             <select
               [value]="preferences()?.default_personality_id ?? ''"
               [disabled]="loadingAction()"
-              uiTooltip="Personality new threads start with unless you pick another"
+              uiTooltip="Oracle new threads start with unless you pick another"
               (change)="onDefaultPersonalityChange($any($event.target).value)">
-              <option value="">No default personality</option>
+              <option value="">No default oracle</option>
               @for (personality of personalities(); track personality.id) {
                 <option [value]="personality.id">{{ personality.name }}</option>
               }

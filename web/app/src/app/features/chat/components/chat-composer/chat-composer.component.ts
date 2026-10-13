@@ -73,7 +73,7 @@ const SLASH_COMMANDS: readonly SlashCommand[] = [
   { id: 'skill', label: 'Skill', description: 'Add saved instructions to this message', keywords: ['ritual', 'rit', 'routine', 'skills'] },
   { id: 'thread', label: 'Thread', description: 'Attach threads your personality can read', keywords: ['threads', 'reference', 'context'] },
   { id: 'gallery', label: 'Gallery image', description: 'Attach an image from the gallery', keywords: ['photo', 'image'] },
-  { id: 'personality', label: 'Personality', description: 'Change the thread’s personality', keywords: ['persona', 'character'] },
+  { id: 'personality', label: 'Oracle', description: 'Change the thread’s oracle', keywords: ['persona', 'character'] },
   { id: 'mode', label: MODE_SINGULAR, description: 'Switch the thread’s mode: its instructions, skills and model', keywords: ['emotion', 'mood'] },
 ];
 /** How long the "Thread already added." notice stays visible. */

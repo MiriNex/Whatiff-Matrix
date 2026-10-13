@@ -385,7 +385,7 @@ import { ExpandIconComponent } from '../../../shared/ui/icons';
                   [style.left]="galleryPersonalityOnly() ? '13px' : '1px'"
                 ></span>
               </span>
-              {{ personalityName() || 'Personality' }} only
+              {{ personalityName() || 'Oracle' }} only
             </button>
           </div>
         </div>
