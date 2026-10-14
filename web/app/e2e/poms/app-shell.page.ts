@@ -67,9 +67,22 @@ export class AppShell {
    * inside the sidebar so the same POM works across all three projects.
    */
   async openMobileSidebarIfPresent(): Promise<void> {
+    // Decide by geometry, not an instant probe: the old isVisible() check raced
+    // the layout on mobile — the hamburger can render a beat after the shell,
+    // the probe missed it, and callers then spent their whole timeout clicking
+    // a profile/nav button that sits off-canvas ("element is outside of the
+    // viewport", the new-user-lifecycle flake). When the sidebar is already
+    // on-screen (desktop, or a mobile drawer already open) there is nothing to
+    // do; otherwise give the hamburger a short wait before concluding this is
+    // a desktop layout, which never renders it.
+    const sidebar = this.page.locator('aside.app-sidebar');
+    const viewportWidth = this.page.viewportSize()?.width ?? 0;
+    const box = await sidebar.boundingBox();
+    if (box && box.x >= 0 && box.x < viewportWidth) return;
     const menuButton = this.page.getByRole('button', {
       name: 'Open navigation menu',
     });
+    await menuButton.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
     if (await menuButton.isVisible().catch(() => false)) {
       await menuButton.click();
     }
