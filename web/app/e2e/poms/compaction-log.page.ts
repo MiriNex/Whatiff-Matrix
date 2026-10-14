@@ -17,8 +17,8 @@ export class CompactionLogPage {
     this.confirmation = new ConfirmationModal(page);
     this.heading = this.page.getByRole('heading', { name: 'Compaction log' });
     this.promptChangesToggle = this.page.getByTestId('prompt-change-toggle');
-    this.promptChangesList = this.page.getByRole('list', { name: 'Personality prompt changes' });
-    this.noPromptChangesMessage = this.page.getByText('No personality prompt changes logged yet.');
+    this.promptChangesList = this.page.getByRole('list', { name: 'Oracle prompt changes' });
+    this.noPromptChangesMessage = this.page.getByText('No oracle prompt changes logged yet.');
     this.promptChangesError = this.page.getByRole('alert');
   }
 
