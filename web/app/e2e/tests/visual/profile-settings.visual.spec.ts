@@ -28,7 +28,7 @@ test(
 
     const chatDefaults = page.getByTestId('chat-defaults');
     await expect(chatDefaults.getByText('Default model', { exact: true })).toBeVisible();
-    await expect(chatDefaults.getByText('Default personality', { exact: true })).toBeVisible();
+    await expect(chatDefaults.getByText('Default oracle', { exact: true })).toBeVisible();
 
     // pinIdentityToShortName() clicks Save Changes. The profile content has its
     // own overflow container inside the shared modal body, and the taller form
