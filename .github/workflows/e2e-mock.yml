@@ -55,6 +55,14 @@ on:
   schedule:
     - cron: '0 7 * * *'
   workflow_dispatch:
+    inputs:
+      # Fork addition: regenerates the visual golden baselines in the same
+      # CI image that later compares them, then uploads the rewritten PNGs
+      # as an artifact to review and commit — see the upload step below.
+      update-snapshots:
+        description: 'Regenerate the visual golden baselines instead of comparing, and upload them as an artifact'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -459,7 +467,7 @@ jobs:
         # A distinct filename: `merge-multiple` flattens every shard's blobs
         # into one directory, so two entries writing the default name would
         # collide there and the loser would vanish silently.
-        run: npx playwright test --config e2e/playwright.config.mock-llm.visual.ts --reporter=blob
+        run: npx playwright test --config e2e/playwright.config.mock-llm.visual.ts --reporter=blob ${{ github.event.inputs.update-snapshots == 'true' && '--update-snapshots' || '' }}
         env:
           PLAYWRIGHT_BLOB_OUTPUT_DIR: blob-report
           PLAYWRIGHT_BLOB_OUTPUT_FILE: blob-report/visual.zip
@@ -479,6 +487,20 @@ jobs:
           # build) writes no blob. Warn rather than add a second, misleading
           # failure on top of the real one.
           if-no-files-found: warn
+
+      # Fork addition: with the update-snapshots dispatch input set, the step
+      # above rewrote the golden PNGs in place. Upload them so the
+      # regenerated baselines can be reviewed and committed from the artifact;
+      # CI's Linux renderer is the one that compares them on every push, so
+      # baselines regenerated here cannot drift from what CI checks.
+      - name: Upload regenerated visual baselines
+        if: ${{ !cancelled() && matrix.visual && github.event.inputs.update-snapshots == 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-baselines
+          path: web/app/e2e/tests/visual/**/*-snapshots/*.png
+          retention-days: 7
+          if-no-files-found: error
 
       # Collection is Chromium-only, and a full run shards across three
       # projects, so a shard can legitimately finish with nothing to upload —
