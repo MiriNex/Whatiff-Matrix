@@ -202,10 +202,13 @@ var AvailableModels = []ModelConfig{
 	},
 
 	// Mistral models (routed through Mistral's OpenAI-compatible Chat Completions API).
+	// Curated 2026-10-19: open-mistral-nemo was retired upstream and is no longer
+	// served by La Plateforme, so it is replaced by ministral-3b. Note: mistral-small
+	// and mistral-medium answer 429 on free-tier keys; codestral and ministral work.
 	{
-		Name:          "open-mistral-nemo",
-		DisplayName:   "Mistral Nemo",
-		Description:   "Mistral's daily-use model with a 128k context window.",
+		Name:          "ministral-3b-latest",
+		DisplayName:   "Ministral 3B",
+		Description:   "Mistral's tiniest edge model: fast and frugal for light tasks.",
 		ToolSupport:   true,
 		VisionSupport: false,
 		Provider:      ModelProviderMistral,
@@ -221,7 +224,7 @@ var AvailableModels = []ModelConfig{
 	{
 		Name:          "mistral-small-latest",
 		DisplayName:   "Mistral Small",
-		Description:   "Mistral's balanced intermediate model for everyday language tasks.",
+		Description:   "Mistral's balanced intermediate model. Note: free-tier keys are frequently rate-limited here.",
 		ToolSupport:   true,
 		VisionSupport: false,
 		Provider:      ModelProviderMistral,
@@ -236,6 +239,10 @@ var AvailableModels = []ModelConfig{
 	},
 
 	// OpenRouter models (routed through OpenRouter's OpenAI-compatible Chat Completions API).
+	// Curated 2026-10-19: only models verified live with our key. Gemma 4 free and
+	// LFM free are permanently rate-limited upstream (shared pool), so they are
+	// deliberately excluded. Inkling free is gated to agentic harnesses by
+	// OpenRouter and cannot be served from this app.
 	{
 		Name:          "openrouter/free",
 		DisplayName:   "OpenRouter Free Router",
@@ -245,9 +252,41 @@ var AvailableModels = []ModelConfig{
 		Provider:      ModelProviderOpenRouter,
 	},
 	{
-		Name:          "google/gemma-4-26b-a4b-it:free",
-		DisplayName:   "Gemma 4 26B (free)",
-		Description:   "Google's Gemma 4 26B served free through OpenRouter's aggregator endpoint.",
+		Name:          "nvidia/nemotron-3.5-super-vl:free",
+		DisplayName:   "Nemotron 3.5 Super VL (free)",
+		Description:   "NVIDIA's Nemotron 3.5 Super, vision-capable, served free through OpenRouter.",
+		ToolSupport:   true,
+		VisionSupport: true,
+		Provider:      ModelProviderOpenRouter,
+	},
+	{
+		Name:          "nvidia/nemotron-3.5-lightning:free",
+		DisplayName:   "Nemotron 3.5 Lightning (free)",
+		Description:   "NVIDIA's fast compact Nemotron 3.5 Lightning, served free through OpenRouter.",
+		ToolSupport:   true,
+		VisionSupport: false,
+		Provider:      ModelProviderOpenRouter,
+	},
+	{
+		Name:          "poolside/laguna-s-2.1:free",
+		DisplayName:   "Laguna S 2.1 (free)",
+		Description:   "Poolside's Laguna S 2.1, served free through OpenRouter.",
+		ToolSupport:   true,
+		VisionSupport: false,
+		Provider:      ModelProviderOpenRouter,
+	},
+	{
+		Name:          "liquid/lfm-2.5-2.6b:free",
+		DisplayName:   "LFM 2.5 2.6B (free)",
+		Description:   "Liquid AI's tiny LFM 2.5 2.6B, served free through OpenRouter. Occasionally rate-limited upstream.",
+		ToolSupport:   true,
+		VisionSupport: false,
+		Provider:      ModelProviderOpenRouter,
+	},
+	{
+		Name:          "dots-studio/dots-3-note-preview:free",
+		DisplayName:   "Dots 3 Note Preview (free)",
+		Description:   "Dots Studio's Dots 3 Note preview, served free through OpenRouter.",
 		ToolSupport:   true,
 		VisionSupport: false,
 		Provider:      ModelProviderOpenRouter,

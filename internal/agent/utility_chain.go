@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/option"
 	"go.uber.org/zap"
 
 	"github.com/theimaginaryfoundation/what-iff/internal/agent/provider"
@@ -27,8 +28,22 @@ const utilityChainZAIModel = "glm-5.3"
 const utilityChainDefaultZAIMaxTokens = 2048
 
 // defaultOpenRouterUtilityModels are tried (in order) when the primary utility
-// LLM fails: the free auto-router plus two concrete free models as backups.
-const defaultOpenRouterUtilityModels = "openrouter/free,google/gemma-4-26b-a4b-it:free,nvidia/nemotron-3.5-lightning:free"
+// LLM fails: Nemotron 3.5 Lightning first (task specialist, fast, verified
+// live), then the free auto-router. Gemma free is excluded: its shared upstream
+// pool is permanently rate-limited. LFM free suffers the same and stays out.
+const defaultOpenRouterUtilityModels = "nvidia/nemotron-3.5-lightning:free,openrouter/free"
+
+// utilityChainCodestralModel is the Mistral step of the chain: codestral is
+// verified live on the free Mistral tier (mistral-small/medium answer 429).
+const utilityChainCodestralModel = "codestral-latest"
+
+// utilityChainGeminiModel is the direct-Gemini step of the chain, tried when
+// OpenRouter and Codestral both fail. It uses GEMINI_API_KEY directly (not the
+// UTIL_LLM_* primary, which may already have failed).
+const utilityChainGeminiModel = "gemini-3.5-flash"
+
+// utilityChainGeminiBaseURL is Gemini's OpenAI-compatible endpoint.
+const utilityChainGeminiBaseURL = "https://generativelanguage.googleapis.com/v1beta/openai"
 
 // openRouterUtilityModels returns the OpenRouter model ids tried for utility
 // calls, from OPENROUTER_UTILITY_MODELS (comma-separated) or the default list.
@@ -63,6 +78,22 @@ func utilityChainCapTokens(params *openai.ChatCompletionNewParams, maxTokens int
 	}
 }
 
+// utilityChainGeminiClient returns an OpenAI-compatible client pointed at
+// Gemini's OpenAI endpoint using GEMINI_API_KEY directly. Used by the chain's
+// Gemini step when the primary utility LLM (UTIL_LLM_*) has already failed.
+// Returns nil when GEMINI_API_KEY is unset.
+func utilityChainGeminiClient() *openai.Client {
+	apiKey := strings.TrimSpace(os.Getenv("GEMINI_API_KEY"))
+	if apiKey == "" {
+		return nil
+	}
+	client := openai.NewClient(
+		option.WithBaseURL(utilityChainGeminiBaseURL),
+		option.WithAPIKey(apiKey),
+	)
+	return &client
+}
+
 // utilityChainChat runs a plain system+user chat through the full fallback
 // chain — primary utility LLM, OpenRouter models, then z.ai GLM — and returns
 // the first non-empty reply.
@@ -86,8 +117,8 @@ func (a *Agent) utilityChainChat(ctx context.Context, callPath telemetry.CallPat
 }
 
 // utilityChainFallbacks runs only the post-primary chain steps (OpenRouter
-// models, then z.ai GLM). Use when the primary utility LLM was already tried
-// or is not configured.
+// models, Codestral, Gemini flash, then z.ai GLM). Use when the primary utility
+// LLM was already tried or is not configured.
 func (a *Agent) utilityChainFallbacks(ctx context.Context, callPath telemetry.CallPath, systemPrompt, userMessage string, maxTokens int) (string, error) {
 	if a.OpenRouterProvider != nil {
 		for _, model := range openRouterUtilityModels() {
@@ -104,6 +135,32 @@ func (a *Agent) utilityChainFallbacks(ctx context.Context, callPath telemetry.Ca
 			if text := strings.TrimSpace(provider.ExtractChatCompletionText(resp)); text != "" {
 				return text, nil
 			}
+		}
+	}
+	if a.MistralProvider != nil {
+		params := openai.ChatCompletionNewParams{
+			Model:    utilityChainCodestralModel,
+			Messages: utilityChainMessages(systemPrompt, userMessage),
+		}
+		utilityChainCapTokens(&params, maxTokens)
+		resp, err := a.MistralProvider.Call(telemetry.WithCallPath(ctx, callPath), params)
+		if err != nil {
+			a.logger.Warn("utility chain: Codestral step failed", zap.Error(err))
+		} else if text := strings.TrimSpace(provider.ExtractChatCompletionText(resp)); text != "" {
+			return text, nil
+		}
+	}
+	if client := utilityChainGeminiClient(); client != nil {
+		params := openai.ChatCompletionNewParams{
+			Model:    utilityChainGeminiModel,
+			Messages: utilityChainMessages(systemPrompt, userMessage),
+		}
+		utilityChainCapTokens(&params, maxTokens)
+		resp, err := client.Chat.Completions.New(telemetry.WithCallPath(ctx, callPath), params)
+		if err != nil {
+			a.logger.Warn("utility chain: Gemini flash step failed", zap.Error(err))
+		} else if text := strings.TrimSpace(provider.ExtractChatCompletionText(resp)); text != "" {
+			return text, nil
 		}
 	}
 	if a.ZAIProvider != nil {
@@ -153,6 +210,26 @@ func (a *Agent) utilityChainForkChat(ctx context.Context, callPath telemetry.Cal
 			if text := strings.TrimSpace(provider.ExtractChatCompletionText(resp)); text != "" {
 				return text, nil
 			}
+		}
+	}
+	if a.MistralProvider != nil {
+		params := fork.BuildOpenAIChatCompletionParams(utilityChainCodestralModel)
+		utilityChainCapTokens(&params, maxTokens)
+		resp, err := a.MistralProvider.Call(telemetry.WithCallPath(ctx, callPath), params)
+		if err != nil {
+			a.logger.Warn("utility chain: Codestral step failed", zap.Error(err))
+		} else if text := strings.TrimSpace(provider.ExtractChatCompletionText(resp)); text != "" {
+			return text, nil
+		}
+	}
+	if client := utilityChainGeminiClient(); client != nil {
+		params := fork.BuildOpenAIChatCompletionParams(utilityChainGeminiModel)
+		utilityChainCapTokens(&params, maxTokens)
+		resp, err := client.Chat.Completions.New(telemetry.WithCallPath(ctx, callPath), params)
+		if err != nil {
+			a.logger.Warn("utility chain: Gemini flash step failed", zap.Error(err))
+		} else if text := strings.TrimSpace(provider.ExtractChatCompletionText(resp)); text != "" {
+			return text, nil
 		}
 	}
 	if a.ZAIProvider != nil {
