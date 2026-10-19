@@ -10,16 +10,16 @@ type SafetyViolationProvider string
 
 // Mirrors the model provider values in ent/schema/model.go, plus "local".
 const (
-	SafetyViolationProviderOpenAI    SafetyViolationProvider = "openai"
-	SafetyViolationProviderAnthropic SafetyViolationProvider = "anthropic"
-	SafetyViolationProviderGoogle    SafetyViolationProvider = "google"
-	SafetyViolationProviderZAI       SafetyViolationProvider = "zai"
-	SafetyViolationProviderMistral   SafetyViolationProvider = "mistral"
-	SafetyViolationProviderDeepSeek  SafetyViolationProvider = "deepseek"
-	SafetyViolationProviderQwen      SafetyViolationProvider = "qwen"
-	SafetyViolationProviderXiaomi    SafetyViolationProvider = "xiaomi"
+	SafetyViolationProviderOpenAI     SafetyViolationProvider = "openai"
+	SafetyViolationProviderAnthropic  SafetyViolationProvider = "anthropic"
+	SafetyViolationProviderGoogle     SafetyViolationProvider = "google"
+	SafetyViolationProviderZAI        SafetyViolationProvider = "zai"
+	SafetyViolationProviderMistral    SafetyViolationProvider = "mistral"
+	SafetyViolationProviderDeepSeek   SafetyViolationProvider = "deepseek"
+	SafetyViolationProviderQwen       SafetyViolationProvider = "qwen"
+	SafetyViolationProviderXiaomi     SafetyViolationProvider = "xiaomi"
 	SafetyViolationProviderOpenRouter SafetyViolationProvider = "openrouter"
-	SafetyViolationProviderLocal     SafetyViolationProvider = "local"
+	SafetyViolationProviderLocal      SafetyViolationProvider = "local"
 )
 
 type SafetyViolationEvent struct {
