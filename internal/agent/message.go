@@ -111,6 +111,9 @@ type Agent struct {
 	QwenProvider *provider.QwenProvider
 	// XiaomiProvider is non-nil when XIAOMI_API_KEY is configured.
 	XiaomiProvider *provider.XiaomiProvider
+	// OpenRouterProvider is non-nil when OPENROUTER_API_KEY is configured. It
+	// speaks OpenRouter's OpenAI-compatible Chat Completions API.
+	OpenRouterProvider *provider.OpenRouterProvider
 	// LocalProvider is non-nil when LLMBackend == "local"; talks to a real
 	// local OpenAI-compatible server (e.g. Ollama, LM Studio).
 	LocalProvider  *provider.LocalProvider
@@ -261,6 +264,12 @@ type AgentConfig struct {
 	XiaomiKey string
 	// XiaomiBaseURL overrides Xiaomi MiMo's OpenAI-compatible base URL; optional.
 	XiaomiBaseURL string
+	// OpenRouterKey enables OpenRouter models (OpenAI-compatible Chat
+	// Completions) when set; optional.
+	OpenRouterKey string
+	// OpenRouterBaseURL overrides OpenRouter's base URL; optional. Empty uses
+	// provider.DefaultOpenRouterBaseURL.
+	OpenRouterBaseURL string
 }
 
 // NewAgent creates a new agent wired to OpenAI (required) and optionally Claude.
@@ -363,6 +372,12 @@ func NewAgent(ds *datastore.Datastore, logger *zap.Logger, tel *telemetry.Teleme
 		a.XiaomiProvider = provider.NewXiaomiProvider(cfg.XiaomiKey, cfg.XiaomiBaseURL, tel, cfg.HTTPClient)
 	} else {
 		logger.Info("XIAOMI_API_KEY not set; Xiaomi MiMo models will be unavailable")
+	}
+
+	if cfg.OpenRouterKey != "" {
+		a.OpenRouterProvider = provider.NewOpenRouterProvider(cfg.OpenRouterKey, cfg.OpenRouterBaseURL, tel, cfg.HTTPClient)
+	} else {
+		logger.Info("OPENROUTER_API_KEY not set; OpenRouter models will be unavailable")
 	}
 
 	if a.localLLM {
@@ -1705,6 +1720,11 @@ func (a *Agent) openAIChatCompletionsAdapter(chatCtx *chatContext, params openai
 			return nil, fmt.Errorf("Xiaomi model %q requested but XIAOMI_API_KEY is not configured", chatCtx.model)
 		}
 		return provider.NewXiaomiAdapter(a.XiaomiProvider, params, functionTools, disabledTools), nil
+	case models.ModelProviderOpenRouter:
+		if a.OpenRouterProvider == nil {
+			return nil, fmt.Errorf("OpenRouter model %q requested but OPENROUTER_API_KEY is not configured", chatCtx.model)
+		}
+		return provider.NewOpenRouterAdapter(a.OpenRouterProvider, params, functionTools, disabledTools), nil
 	default:
 		return nil, fmt.Errorf("unsupported OpenAI Chat Completions provider %q for model %q", chatCtx.modelProvider, chatCtx.model)
 	}

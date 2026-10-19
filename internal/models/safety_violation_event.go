@@ -18,6 +18,7 @@ const (
 	SafetyViolationProviderDeepSeek  SafetyViolationProvider = "deepseek"
 	SafetyViolationProviderQwen      SafetyViolationProvider = "qwen"
 	SafetyViolationProviderXiaomi    SafetyViolationProvider = "xiaomi"
+	SafetyViolationProviderOpenRouter SafetyViolationProvider = "openrouter"
 	SafetyViolationProviderLocal     SafetyViolationProvider = "local"
 )
 

@@ -146,5 +146,5 @@ func TestSummarizeConversationForCheckpoint_NilProviderReturnsError(t *testing.T
 	chatCtx := &chatContext{chat: &models.Chat{ID: uuid.New()}}
 	_, err := a.summarizeConversationForCheckpoint(context.Background(), uuid.New(), chatCtx, checkpointSummarySource{})
 	require.Error(t, err)
-	require.ErrorContains(t, err, "utility LLM not configured")
+	require.ErrorContains(t, err, "utility chain: all providers failed or unconfigured")
 }

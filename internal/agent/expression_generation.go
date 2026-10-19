@@ -18,10 +18,6 @@ import (
 
 const expressionPickModel = chatNameModel
 
-// expressionZAIModel is the z.ai GLM model used as fallback classifier when the
-// OpenAI expression picker is unavailable (missing/invalid key or provider error).
-const expressionZAIModel = "glm-5.3"
-
 // expressionPickStructuredOut is the OpenAI structured-output shape for the portrait classifier.
 type expressionPickStructuredOut struct {
 	ExpressionKey string `json:"expression_key"`
@@ -141,13 +137,13 @@ Assistant reply to evaluate:
 	resp, err := a.OpenAIProvider.CallWithRetry(telemetry.WithCallPath(ctx, telemetry.CallPathExpressionPick), params)
 	raw := ""
 	if err != nil {
-		a.logger.Warn("expression picker model call failed; trying z.ai GLM fallback", zap.Error(err))
+		a.logger.Warn("expression picker model call failed; trying utility chain fallback", zap.Error(err))
 	} else {
 		raw = strings.TrimSpace(provider.ProcessResponseOutput(resp))
 	}
 
 	if raw == "" {
-		raw = a.pickExpressionTextViaZAI(ctx, inferenceModelCtx, userTurn, assistantReply, catalog)
+		raw = a.pickExpressionTextViaUtilityChain(ctx, inferenceModelCtx, userTurn, assistantReply, catalog)
 	}
 	if raw == "" {
 		return nil, "", nil
@@ -169,14 +165,12 @@ Assistant reply to evaluate:
 	return nil, "", nil
 }
 
-// pickExpressionTextViaZAI asks the configured z.ai GLM provider (Anthropic Messages API)
-// to classify the assistant reply when the OpenAI expression picker is unavailable
-// (missing/invalid key, provider error, or empty output). Returns "" on any failure;
-// callers treat that as "no portrait" exactly like a failed OpenAI pick.
-func (a *Agent) pickExpressionTextViaZAI(ctx context.Context, inferenceModelCtx *provider.ModelContext, userTurn, assistantReply, catalog string) string {
-	if a.ZAIProvider == nil {
-		return ""
-	}
+// pickExpressionTextViaUtilityChain asks the utility fallback chain (primary
+// utility LLM → OpenRouter free models → z.ai GLM as last resort) to classify
+// the assistant reply when the OpenAI expression picker is unavailable
+// (missing/invalid key, provider error, or empty output). Returns "" on any
+// failure; callers treat that as "no portrait" exactly like a failed OpenAI pick.
+func (a *Agent) pickExpressionTextViaUtilityChain(ctx context.Context, inferenceModelCtx *provider.ModelContext, userTurn, assistantReply, catalog string) string {
 	var fork *provider.ModelContext
 	if inferenceModelCtx != nil {
 		fork = inferenceModelCtx.Clone()
@@ -192,16 +186,12 @@ func (a *Agent) pickExpressionTextViaZAI(ctx context.Context, inferenceModelCtx 
 	fork.AppendUserMessage(provider.RoleUser, buildExpressionPickUserMessageBody(catalog)+
 		"\n\nRespond with ONLY a JSON object on a single line: {\"expression_key\": \"<chosen key>\", \"reasoning\": \"<one or two sentences>\"}. No markdown fences, no extra text.", nil, false)
 
-	params := fork.BuildClaudeParamsWithMaxTokens(expressionZAIModel, 384)
-	msg, err := a.ZAIProvider.Call(telemetry.WithCallPath(ctx, telemetry.CallPathExpressionPick), params)
+	text, err := a.utilityChainForkChat(ctx, telemetry.CallPathExpressionPick, fork, 384)
 	if err != nil {
-		a.logger.Warn("expression picker z.ai GLM fallback failed", zap.Error(err))
+		a.logger.Warn("expression picker utility chain fallback failed", zap.Error(err))
 		return ""
 	}
-	if msg == nil {
-		return ""
-	}
-	return strings.TrimSpace(provider.ExtractClaudeText(msg))
+	return text
 }
 
 // buildExpressionPickCatalog formats one line per expression: always "- key" or "- key — label" when a label exists.

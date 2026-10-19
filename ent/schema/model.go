@@ -25,7 +25,7 @@ func (Model) Fields() []ent.Field {
 			Comment("The user-facing display name of the model"),
 		field.String("description"),
 		field.Enum("provider").
-			Values("openai", "anthropic", "zai", "google", "mistral", "deepseek", "qwen", "xiaomi").
+			Values("openai", "anthropic", "zai", "google", "mistral", "deepseek", "qwen", "xiaomi", "openrouter").
 			Default("openai").
 			Comment("Provider backing this model"),
 		field.Bool("tool_support").

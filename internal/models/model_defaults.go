@@ -35,6 +35,9 @@ const (
 	// ModelProviderXiaomi routes through Xiaomi MiMo's OpenAI-compatible Chat
 	// Completions API.
 	ModelProviderXiaomi ModelProvider = "xiaomi"
+	// ModelProviderOpenRouter routes through OpenRouter's OpenAI-compatible Chat
+	// Completions API (aggregator across many vendors' models).
+	ModelProviderOpenRouter ModelProvider = "openrouter"
 )
 
 // ModelConfig represents a model's configuration
@@ -231,6 +234,24 @@ var AvailableModels = []ModelConfig{
 		VisionSupport: false,
 		Provider:      ModelProviderMistral,
 	},
+
+	// OpenRouter models (routed through OpenRouter's OpenAI-compatible Chat Completions API).
+	{
+		Name:          "openrouter/free",
+		DisplayName:   "OpenRouter Free Router",
+		Description:   "OpenRouter's free auto-router: picks an available free model per request.",
+		ToolSupport:   true,
+		VisionSupport: false,
+		Provider:      ModelProviderOpenRouter,
+	},
+	{
+		Name:          "google/gemma-4-26b-a4b-it:free",
+		DisplayName:   "Gemma 4 26B (free)",
+		Description:   "Google's Gemma 4 26B served free through OpenRouter's aggregator endpoint.",
+		ToolSupport:   true,
+		VisionSupport: false,
+		Provider:      ModelProviderOpenRouter,
+	},
 }
 
 // GetDefaultModel returns the ModelConfig for the default model
@@ -282,7 +303,8 @@ func ProviderForModel(provider, name string) ModelProvider {
 func providerForModel(provider, name string) ModelProvider {
 	switch p := ModelProvider(strings.TrimSpace(strings.ToLower(provider))); p {
 	case ModelProviderAnthropic, ModelProviderOpenAI, ModelProviderZAI, ModelProviderGoogle,
-		ModelProviderMistral, ModelProviderDeepSeek, ModelProviderQwen, ModelProviderXiaomi:
+		ModelProviderMistral, ModelProviderDeepSeek, ModelProviderQwen, ModelProviderXiaomi,
+		ModelProviderOpenRouter:
 		return p
 	}
 	for _, m := range AvailableModels {
@@ -353,12 +375,18 @@ func IsXiaomiModel(provider, name string) bool {
 	return providerForModel(provider, name) == ModelProviderXiaomi
 }
 
+// IsOpenRouterModel reports whether a model routes through OpenRouter's OpenAI-compatible API.
+func IsOpenRouterModel(provider, name string) bool {
+	return providerForModel(provider, name) == ModelProviderOpenRouter
+}
+
 // UsesOpenAIChatCompletionsAPI reports whether a model is driven through an
-// OpenAI-compatible Chat Completions endpoint (Gemini, Mistral, DeepSeek, Qwen, Xiaomi).
+// OpenAI-compatible Chat Completions endpoint (Gemini, Mistral, DeepSeek, Qwen, Xiaomi,
+// OpenRouter).
 // These share message rendering but may use different adapters and API keys.
 func UsesOpenAIChatCompletionsAPI(provider, name string) bool {
 	switch providerForModel(provider, name) {
-	case ModelProviderGoogle, ModelProviderMistral, ModelProviderDeepSeek, ModelProviderQwen, ModelProviderXiaomi:
+	case ModelProviderGoogle, ModelProviderMistral, ModelProviderDeepSeek, ModelProviderQwen, ModelProviderXiaomi, ModelProviderOpenRouter:
 		return true
 	default:
 		return false

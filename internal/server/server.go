@@ -216,6 +216,8 @@ func (s *Server) setupRoutes() {
 		QwenBaseURL:        s.config.QwenBaseURL,
 		XiaomiKey:          s.config.XiaomiKey,
 		XiaomiBaseURL:      s.config.XiaomiBaseURL,
+		OpenRouterKey:      s.config.OpenRouterKey,
+		OpenRouterBaseURL:  s.config.OpenRouterBaseURL,
 	}
 	if s.config.LLMBackend == "vendor" {
 		// ErrNotConfigured (no PARALLEL_API_KEY) leaves vendor-native search in place; any
@@ -456,6 +458,7 @@ func (s *Server) dependencyHosts() []telemetry.HTTPTransportOption {
 		telemetry.WithDependencyHost(s.config.DeepSeekBaseURL, telemetry.DependencyDeepSeek),
 		telemetry.WithDependencyHost(s.config.QwenBaseURL, telemetry.DependencyQwen),
 		telemetry.WithDependencyHost(s.config.XiaomiBaseURL, telemetry.DependencyXiaomi),
+		telemetry.WithDependencyHost(s.config.OpenRouterBaseURL, telemetry.DependencyOpenRouter),
 	}
 }
 

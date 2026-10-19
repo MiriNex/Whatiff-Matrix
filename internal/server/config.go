@@ -74,6 +74,10 @@ type Config struct {
 	QwenBaseURL     string
 	XiaomiKey       string
 	XiaomiBaseURL   string
+	// OpenRouterKey enables OpenRouter models (OpenAI-compatible Chat Completions); optional.
+	OpenRouterKey string
+	// OpenRouterBaseURL overrides OpenRouter's OpenAI-compatible base URL; optional.
+	OpenRouterBaseURL string
 	// First-party web search (ADR 0x021). An empty key leaves the tools off.
 	ParallelAPIKey               string
 	ParallelSearchMode           string
@@ -209,6 +213,8 @@ func NewConfig() *Config {
 	qwenBaseURL := strings.TrimSpace(os.Getenv("QWEN_BASE_URL"))
 	xiaomiKey := os.Getenv("XIAOMI_API_KEY")
 	xiaomiBaseURL := strings.TrimSpace(os.Getenv("XIAOMI_BASE_URL"))
+	openRouterKey := os.Getenv("OPENROUTER_API_KEY")
+	openRouterBaseURL := strings.TrimSpace(os.Getenv("OPENROUTER_BASE_URL"))
 	parallelAPIKey := strings.TrimSpace(os.Getenv("PARALLEL_API_KEY"))
 	parallelSearchMode := strings.TrimSpace(os.Getenv("PARALLEL_SEARCH_MODE"))
 	tokenEncryptionSecret := strings.TrimSpace(os.Getenv("TOKEN_ENCRYPTION_SECRET"))
@@ -374,6 +380,8 @@ func NewConfig() *Config {
 		QwenBaseURL:                         qwenBaseURL,
 		XiaomiKey:                           xiaomiKey,
 		XiaomiBaseURL:                       xiaomiBaseURL,
+		OpenRouterKey:                       openRouterKey,
+		OpenRouterBaseURL:                   openRouterBaseURL,
 		ParallelAPIKey:                      parallelAPIKey,
 		ParallelSearchMode:                  parallelSearchMode,
 		TokenEncryptionSecret:               tokenEncryptionSecret,

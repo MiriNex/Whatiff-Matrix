@@ -62,6 +62,7 @@ const (
 	DependencyMistral   = "mistral"
 	DependencyQwen      = "qwen"
 	DependencyXiaomi    = "xiaomi"
+	DependencyOpenRouter = "openrouter"
 	DependencyLocalLLM  = "local_llm"
 	DependencyOther     = "other"
 )

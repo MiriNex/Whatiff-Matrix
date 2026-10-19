@@ -27,7 +27,7 @@ func (SafetyViolationEvent) Fields() []ent.Field {
 			Immutable().
 			Comment("Timestamp when the provider safety rejection occurred"),
 		field.Enum("provider").
-			Values("openai", "anthropic", "google", "zai", "mistral", "deepseek", "qwen", "xiaomi", "local").
+			Values("openai", "anthropic", "google", "zai", "mistral", "deepseek", "qwen", "xiaomi", "openrouter", "local").
 			Comment("Provider that rejected the request"),
 		field.String("violation_type").
 			Optional().

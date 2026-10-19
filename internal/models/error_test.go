@@ -69,7 +69,7 @@ func errorCodeEnumFromSpec(t *testing.T) []string {
 	lines := strings.Split(string(raw), "\n")
 	schema := -1
 	for i, l := range lines {
-		if strings.TrimRight(l, " ") == "    ErrorCode:" {
+		if strings.TrimRight(l, " \t\r") == "    ErrorCode:" {
 			schema = i
 			break
 		}

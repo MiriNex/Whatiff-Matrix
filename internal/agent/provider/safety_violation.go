@@ -154,6 +154,8 @@ func detectProvider(lower string) models.SafetyViolationProvider {
 		return models.SafetyViolationProviderMistral
 	case strings.Contains(lower, "xiaomi"):
 		return models.SafetyViolationProviderXiaomi
+	case strings.Contains(lower, "openrouter"):
+		return models.SafetyViolationProviderOpenRouter
 	case strings.Contains(lower, "qwen"):
 		return models.SafetyViolationProviderQwen
 	case strings.Contains(lower, "zai"), strings.Contains(lower, "glm"):
