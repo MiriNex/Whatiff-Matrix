@@ -4,6 +4,7 @@ import { isSandboxed } from '../../../../core/models/chat.model';
 import { ContextPanelService } from '../../services/context-panel.service';
 import { ContextBreakdownTabComponent } from './tabs/context-breakdown-tab.component';
 import { ContextMemoriesTabComponent } from './tabs/context-memories-tab.component';
+import { ContextMusicTabComponent } from './tabs/context-music-tab.component';
 import { ContextScratchpadTabComponent } from './tabs/context-scratchpad-tab.component';
 import { ContextToolsTabComponent } from './tabs/context-tools-tab.component';
 import { ThreadSandboxComponent } from './thread-sandbox.component';
@@ -23,6 +24,7 @@ import { TooltipDirective } from '../../../../shared/ui/tooltip/tooltip.directiv
     ContextScratchpadTabComponent,
     ContextMemoriesTabComponent,
     ContextToolsTabComponent,
+    ContextMusicTabComponent,
     ThreadSandboxComponent,
     ContextBreakdownTabComponent,
     XIconComponent,
@@ -71,6 +73,16 @@ import { TooltipDirective } from '../../../../shared/ui/tooltip/tooltip.directiv
         </button>
         <button
           type="button"
+          [class.context-panel__primary-tab--active]="context.activeTab() === 'music'"
+          [attr.aria-current]="context.activeTab() === 'music' ? 'page' : null"
+          uiTooltip="Music"
+          (click)="context.setActiveTab('music')"
+        >
+          <ui-note-icon class="context-panel__primary-tab-icon" [size]="20" />
+          <span class="context-panel__primary-tab-label">Music</span>
+        </button>
+        <button
+          type="button"
           [class.context-panel__primary-tab--active]="context.activeTab() === 'tools'"
           [attr.aria-current]="context.activeTab() === 'tools' ? 'page' : null"
           uiTooltip="Tools"
@@ -108,6 +120,9 @@ import { TooltipDirective } from '../../../../shared/ui/tooltip/tooltip.directiv
               [personalityId]="context.activeChat()?.personality_id ?? null"
               [sandboxed]="isSandboxed(context.activeChat())"
             />
+          }
+          @case ('music') {
+            <app-context-music-tab [chatId]="context.activeChatId()" />
           }
           @case ('tools') {
             <app-context-tools-tab [chat]="context.activeChat()" [toolCalls]="context.toolCalls()" />
@@ -244,6 +259,7 @@ export class ContextPanelComponent {
     const tab = this.context.activeTab();
     if (tab === 'scratchpad') return 'Scratchpad';
     if (tab === 'memories') return 'Memories';
+    if (tab === 'music') return 'Music';
     if (tab === 'context') return 'Context';
     return 'Tools';
   }

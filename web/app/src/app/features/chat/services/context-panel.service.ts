@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from '@angular/core';
+﻿import { Injectable, computed, signal } from '@angular/core';
 
 import { Chat } from '../../../core/models/chat.model';
 import { ContextBreakdown } from '../../../core/models/message.model';
@@ -6,7 +6,7 @@ import { RightPanelService } from '../../../core/services/right-panel.service';
 import { ToolCall } from '../../../core/models/toolcall.model';
 import { formatThreadReferences } from '../helpers/thread-reference.helpers';
 
-export type ContextPanelTab = 'scratchpad' | 'memories' | 'tools' | 'context';
+export type ContextPanelTab = 'scratchpad' | 'memories' | 'tools' | 'music' | 'context';
 
 const TAB_STORAGE_KEY = 'contextPanel.tabsByChat.v1';
 
